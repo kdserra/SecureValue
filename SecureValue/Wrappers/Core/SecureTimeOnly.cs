@@ -1,0 +1,245 @@
+#nullable enable
+using System;
+using System.Globalization;
+using System.Runtime.CompilerServices;
+
+namespace SecureValue
+{
+#if NET6_0_OR_GREATER
+	/// <summary>Memory-encrypted <see cref="TimeOnly"/> value.</summary>
+	[Serializable]
+	public partial struct SecureTimeOnly : ISecureSerialization
+#if UNITY_5_3_OR_NEWER
+			,
+			UnityEngine.ISerializationCallbackReceiver
+#endif
+	{
+		private Cell _cell;
+
+		/// <summary>Secures a TimeOnly value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public SecureTimeOnly(TimeOnly value)
+		{
+#if UNITY_5_3_OR_NEWER
+			_serialized = default;
+#endif
+			_cell = default;
+			_cell = default;
+			_cell.Protect((ulong)value.Ticks);
+		}
+
+		/// <summary>Gets the decrypted plain value.</summary>
+		public TimeOnly Decrypted
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => new TimeOnly(Bits.ToLong(_cell.Unprotect()));
+		}
+
+		/// <summary>Tries to decrypt without throwing. Returns false when never assigned or tampered; tampering still raises <see cref="TamperingNotifier.TamperingDetected"/>.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool TryDecrypt(out TimeOnly value)
+		{
+			if (_cell.TryUnprotect(out ulong plain))
+			{
+				value = new TimeOnly(Bits.ToLong(plain));
+				return true;
+			}
+			value = default;
+			return false;
+		}
+
+		/// <summary>True when never assigned.</summary>
+		public bool IsUnset
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => _cell.IsUnset;
+		}
+
+		/// <summary>Encrypts the type default when never initialized.</summary>
+		internal void EnsureInitialized()
+		{
+			if (_cell.IsUnset)
+			{
+				this = new SecureTimeOnly(default);
+			}
+		}
+
+		uint[] ISecureSerialization.SaveToSerialized()
+		{
+			Span<ulong> words = stackalloc ulong[10];
+			KeySet saveKey = Vault.NewStorageKey();
+			_cell.CopyStorageWords(words, saveKey);
+			saveKey.CopyTo(words.Slice(6));
+			return SerializationFormat.Pack(words);
+		}
+
+		void ISecureSerialization.LoadFromSerialized(uint[]? packed) => LoadFromSerialized(packed);
+
+		private void LoadFromSerialized(uint[]? packed)
+		{
+			if (packed == null)
+			{
+				// Never serialized: materialize a default (bad lengths fail closed on read).
+				EnsureInitialized();
+				return;
+			}
+			Span<ulong> words = stackalloc ulong[10];
+			if (SerializationFormat.TryUnpack(packed, words))
+			{
+				KeySet saveKey = KeySet.FromWords(words.Slice(6));
+				_cell.RestoreStorageWords(words, saveKey);
+			}
+		}
+
+#if UNITY_5_3_OR_NEWER
+		[UnityEngine.SerializeField, UnityEngine.HideInInspector]
+		private uint[]? _serialized;
+
+		void UnityEngine.ISerializationCallbackReceiver.OnBeforeSerialize()
+		{
+			EnsureInitialized();
+			_serialized = ((ISecureSerialization)this).SaveToSerialized();
+		}
+
+		void UnityEngine.ISerializationCallbackReceiver.OnAfterDeserialize()
+		{
+			// Restores through a direct instance call: casting this to
+			// ISecureSerialization would box the struct and the restored
+			// cell would be lost with the box.
+			LoadFromSerialized(_serialized);
+		}
+#endif
+
+		/// <summary>Converts a plain TimeOnly value into its secured form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static implicit operator SecureTimeOnly(TimeOnly value) => new SecureTimeOnly(value);
+
+		/// <summary>Converts back to the plain TimeOnly value (decrypts on read).</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static implicit operator TimeOnly(SecureTimeOnly value) => value.Decrypted;
+
+		/// <summary>Compares this value with another secured TimeOnly for equality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool Equals(SecureTimeOnly other) => Decrypted == other.Decrypted;
+
+		/// <summary>Compares this value with another object for equality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public override bool Equals(object? obj) => obj is SecureTimeOnly other && Equals(other);
+
+		/// <summary>Compares this value with another secured TimeOnly.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public int CompareTo(SecureTimeOnly other) => Decrypted.CompareTo(other.Decrypted);
+
+		/// <summary>Compares this value with another object.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public int CompareTo(object? obj) =>
+			obj is SecureTimeOnly other
+				? CompareTo(other)
+				: throw new ArgumentException(
+					"Object must be of type SecureTimeOnly.",
+					nameof(obj)
+				);
+
+		/// <summary>Returns the hash code of the decrypted value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public override int GetHashCode() => Decrypted.GetHashCode();
+
+		/// <summary>Returns the decrypted value as a string.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public override string ToString() => Decrypted.ToString();
+
+		/// <summary>Returns the decrypted value formatted with the specified format.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public string ToString(string? format) => Decrypted.ToString(format);
+
+		/// <summary>Returns the decrypted value formatted with the specified format and provider.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public string ToString(string? format, IFormatProvider? formatProvider) =>
+			Decrypted.ToString(format, formatProvider);
+
+		/// <summary>Tests two secured TimeOnly values for equality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator ==(SecureTimeOnly left, SecureTimeOnly right) =>
+			left.Equals(right);
+
+		/// <summary>Tests two secured TimeOnly values for inequality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator !=(SecureTimeOnly left, SecureTimeOnly right) =>
+			!left.Equals(right);
+
+		/// <summary>Compares two secured TimeOnly values.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator <(SecureTimeOnly left, SecureTimeOnly right) =>
+			left.Decrypted < right.Decrypted;
+
+		/// <summary>Compares two secured TimeOnly values.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator <=(SecureTimeOnly left, SecureTimeOnly right) =>
+			left.Decrypted <= right.Decrypted;
+
+		/// <summary>Compares two secured TimeOnly values.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator >(SecureTimeOnly left, SecureTimeOnly right) =>
+			left.Decrypted > right.Decrypted;
+
+		/// <summary>Compares two secured TimeOnly values.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator >=(SecureTimeOnly left, SecureTimeOnly right) =>
+			left.Decrypted >= right.Decrypted;
+
+		/// <summary>Subtracts two secured time of day values.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureTimeSpan operator -(SecureTimeOnly a, SecureTimeOnly b) =>
+			new SecureTimeSpan(a.Decrypted - b.Decrypted);
+
+		/// <summary>Parses a string into its secured form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureTimeOnly Parse(string value) =>
+			new SecureTimeOnly(TimeOnly.Parse(value));
+
+		/// <summary>Parses a string into its secured form with the specified provider.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureTimeOnly Parse(string value, IFormatProvider? provider) =>
+			new SecureTimeOnly(TimeOnly.Parse(value, provider));
+
+		/// <summary>Parses a string into its secured form with the specified provider and style.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureTimeOnly Parse(
+			string value,
+			IFormatProvider? provider,
+			DateTimeStyles style
+		) => new SecureTimeOnly(TimeOnly.Parse(value, provider, style));
+
+		/// <summary>Tries to parse a string into its secured form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool TryParse(string? value, out SecureTimeOnly result)
+		{
+			if (TimeOnly.TryParse(value, out TimeOnly plain))
+			{
+				result = new SecureTimeOnly(plain);
+				return true;
+			}
+			result = default;
+			return false;
+		}
+
+		/// <summary>Tries to parse a string into its secured form with the specified provider and style.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool TryParse(
+			string? value,
+			IFormatProvider? provider,
+			DateTimeStyles style,
+			out SecureTimeOnly result
+		)
+		{
+			if (TimeOnly.TryParse(value, provider, style, out TimeOnly plain))
+			{
+				result = new SecureTimeOnly(plain);
+				return true;
+			}
+			result = default;
+			return false;
+		}
+	}
+#endif
+}

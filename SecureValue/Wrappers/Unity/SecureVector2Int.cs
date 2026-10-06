@@ -1,0 +1,160 @@
+#nullable enable
+#if UNITY_5_3_OR_NEWER
+using System;
+using UnityEngine;
+using SecureValue;
+using System.Runtime.CompilerServices;
+
+namespace SecureValue.Unity
+{
+	/// <summary>Memory-encrypted <see cref="Vector2Int"/> (UnityEngine).</summary>
+	[Serializable]
+	public partial struct SecureVector2Int
+		: ISecureSerialization,
+			UnityEngine.ISerializationCallbackReceiver
+	{
+		private Cell _cell;
+
+		/// <summary>Secures a Vector2Int value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public SecureVector2Int(Vector2Int value)
+		{
+			_serialized = default;
+			_cell = default;
+			_cell.Protect(Enc(value));
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static ulong Enc(Vector2Int v) => (ulong)(uint)v.x | ((ulong)(uint)v.y << 32);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static Vector2Int Dec(ulong w) =>
+			new Vector2Int(unchecked((int)(uint)w), unchecked((int)(uint)(w >> 32)));
+
+		/// <summary>Gets the decrypted plain value.</summary>
+		public Vector2Int Decrypted
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => Dec(_cell.Unprotect());
+		}
+
+		/// <summary>Tries to decrypt without throwing. Returns false when never assigned or tampered; tampering still raises <see cref="TamperingNotifier.TamperingDetected"/>.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool TryDecrypt(out Vector2Int value)
+		{
+			if (_cell.TryUnprotect(out ulong plain))
+			{
+				value = Dec(plain);
+				return true;
+			}
+			value = default;
+			return false;
+		}
+
+		/// <summary>True when never assigned.</summary>
+		public bool IsUnset
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => _cell.IsUnset;
+		}
+
+		/// <summary>Encrypts the type default when never initialized.</summary>
+		internal void EnsureInitialized()
+		{
+			if (_cell.IsUnset)
+			{
+				this = new SecureVector2Int(default);
+			}
+		}
+
+		[UnityEngine.SerializeField, UnityEngine.HideInInspector]
+		private uint[]? _serialized;
+
+		void UnityEngine.ISerializationCallbackReceiver.OnBeforeSerialize()
+		{
+			EnsureInitialized();
+			_serialized = ((ISecureSerialization)this).SaveToSerialized();
+		}
+
+		void UnityEngine.ISerializationCallbackReceiver.OnAfterDeserialize()
+		{
+			// Restores through a direct instance call: casting this to
+			// ISecureSerialization would box the struct and the restored
+			// cell would be lost with the box.
+			LoadFromSerialized(_serialized);
+		}
+
+		uint[] ISecureSerialization.SaveToSerialized()
+		{
+			Span<ulong> words = stackalloc ulong[10];
+			KeySet saveKey = Vault.NewStorageKey();
+			_cell.CopyStorageWords(words, saveKey);
+			saveKey.CopyTo(words.Slice(6));
+			return SerializationFormat.Pack(words);
+		}
+
+		void ISecureSerialization.LoadFromSerialized(uint[]? packed) => LoadFromSerialized(packed);
+
+		private void LoadFromSerialized(uint[]? packed)
+		{
+			if (packed == null)
+			{
+				// Never serialized: materialize a default (bad lengths fail closed on read).
+				EnsureInitialized();
+				return;
+			}
+			Span<ulong> words = stackalloc ulong[10];
+			if (SerializationFormat.TryUnpack(packed, words))
+			{
+				KeySet saveKey = KeySet.FromWords(words.Slice(6));
+				_cell.RestoreStorageWords(words, saveKey);
+			}
+		}
+
+		/// <summary>Converts a plain Vector2Int value into its secured form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static implicit operator SecureVector2Int(Vector2Int value) =>
+			new SecureVector2Int(value);
+
+		/// <summary>Converts back to the plain Vector2Int value (decrypts on read).</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static implicit operator Vector2Int(SecureVector2Int value) => value.Decrypted;
+
+		/// <summary>Compares this value with another secured Vector2Int for equality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool Equals(SecureVector2Int other) => Decrypted.Equals(other.Decrypted);
+
+		/// <summary>Compares this value with another object for equality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public override bool Equals(object? obj) => obj is SecureVector2Int other && Equals(other);
+
+		/// <summary>Returns the hash code of the decrypted value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public override int GetHashCode() => Decrypted.GetHashCode();
+
+		/// <summary>Returns the decrypted value as a string.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public override string ToString() => Decrypted.ToString();
+
+		/// <summary>Tests two secured Vector2Int values for equality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator ==(SecureVector2Int left, SecureVector2Int right) =>
+			left.Equals(right);
+
+		/// <summary>Tests two secured Vector2Int values for inequality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator !=(SecureVector2Int left, SecureVector2Int right) =>
+			!left.Equals(right);
+
+		/// <summary>Adds two secured Vector2Int values.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureVector2Int operator +(SecureVector2Int a, SecureVector2Int b) =>
+			new SecureVector2Int(a.Decrypted + b.Decrypted);
+
+		/// <summary>Subtracts two secured Vector2Int values.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureVector2Int operator -(SecureVector2Int a, SecureVector2Int b) =>
+			new SecureVector2Int(a.Decrypted - b.Decrypted);
+	}
+}
+#endif

@@ -1,0 +1,483 @@
+#nullable enable
+using System;
+using System.Globalization;
+using System.Numerics;
+using System.Runtime.CompilerServices;
+
+namespace SecureValue.Numerics
+{
+	/// <summary>
+	/// Memory-encrypted <see cref="BigInteger"/> value.
+	/// Allocates by nature of BigInteger; every primitive wrapper is allocation-free.
+	/// </summary>
+	[Serializable]
+	public partial struct SecureBigInteger
+		: ISecureSerialization
+#if UNITY_5_3_OR_NEWER
+			,
+			UnityEngine.ISerializationCallbackReceiver
+#endif
+	{
+		private ulong _salt;
+		private ulong[] _ciphers;
+		private uint _tag;
+		private ulong _saltB;
+		private ulong[] _ciphersB;
+		private uint _tagB;
+
+		/// <summary>True when never assigned.</summary>
+		public bool IsUnset
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => _ciphers == null && _ciphersB == null;
+		}
+
+		/// <summary>Encrypts the type default when never initialized.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal void EnsureInitialized()
+		{
+			if (_ciphers == null)
+			{
+				this = new SecureBigInteger(BigInteger.Zero);
+			}
+		}
+
+		uint[] ISecureSerialization.SaveToSerialized()
+		{
+			// Fail closed on doubly-corrupted values; a singly-corrupted value
+			// exports as-is (raising) and heals on load. Saves never re-seal:
+			// interface dispatch boxes the struct, so live healing would be lost.
+			if (_ciphers == null && _ciphersB == null)
+			{
+				Vault.ThrowUninitialized();
+			}
+			bool okA = Verify(_ciphers, _salt, _tag, out _);
+			bool okB = Verify(_ciphersB, _saltB, _tagB, out _);
+			if (!okA && !okB)
+			{
+				Vault.ThrowTampered();
+			}
+			if (!okA || !okB)
+			{
+				TamperingNotifier.Raise();
+			}
+			// Each half carries its own storage key ([salt, ciphers, tag, key]),
+			// mirroring the single-copy layout twice.
+			KeySet saveKeyA = Vault.NewStorageKey();
+			uint[] packedA = PackCopy(_salt, _ciphers!, saveKeyA);
+			KeySet saveKeyB = Vault.NewStorageKey();
+			uint[] packedB = PackCopy(_saltB, _ciphersB!, saveKeyB);
+			uint[] packed = new uint[packedA.Length + packedB.Length];
+			Array.Copy(packedA, 0, packed, 0, packedA.Length);
+			Array.Copy(packedB, 0, packed, packedA.Length, packedB.Length);
+			return packed;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static uint[] PackCopy(ulong salt, ulong[] ciphers, in KeySet saveKey)
+		{
+			ulong[] words = new ulong[ciphers.Length + 2 + KeySet.WordCount];
+			words[0] = salt;
+			KeySet rkP = Vault.DeriveProcessKeys(salt);
+			KeySet rkS = Keys.Derive(salt, saveKey);
+			for (int i = 0; i < ciphers.Length; i++)
+			{
+				words[1 + i] = Vault.SealWord(Vault.OpenWord(ciphers[i], rkP), rkS);
+			}
+			words[ciphers.Length + 1] = 0UL;
+			saveKey.CopyTo(words.AsSpan(ciphers.Length + 2));
+			// The tag covers the ciphers AND the key words (the tag slot itself
+			// reads as zero while hashing); short Mac inputs mix rk.K3 only, so a
+			// cipher-only tag would leave key-word flips silent.
+			words[ciphers.Length + 1] = Vault.ComputeTag(
+				words.AsSpan(1, ciphers.Length + 1 + KeySet.WordCount),
+				rkS
+			);
+			return SerializationFormat.Pack(words);
+		}
+
+		void ISecureSerialization.LoadFromSerialized(uint[]? packed) => LoadFromSerialized(packed);
+
+		private void LoadFromSerialized(uint[]? packed)
+		{
+			if (packed == null)
+			{
+				// Never serialized: materialize a default (bad lengths fail closed on read).
+				EnsureInitialized();
+				return;
+			}
+			// Dual halves, each [salt, ciphers, tag, key].
+			// Minimum: 2 * (2 * (0 + 2 + KeySet.WordCount)) = 24 uints.
+			if (packed.Length < 24 || (packed.Length % 4 != 0))
+			{
+				return;
+			}
+			int halfUints = packed.Length / 2;
+			int cipherCount = halfUints / 2 - 2 - KeySet.WordCount;
+			if (cipherCount < 0)
+			{
+				return;
+			}
+			if (cipherCount == 0)
+			{
+				// No words: mirrors the single-copy path (null ciphers read as
+				// uninitialized). Real saves always carry at least one word.
+				_ciphers = null!;
+				_tag = Vault.ComputeTag(Span<ulong>.Empty, Vault.DeriveProcessKeys(_salt));
+				_ciphersB = null!;
+				_tagB = Vault.ComputeTag(Span<ulong>.Empty, Vault.DeriveProcessKeys(_saltB));
+				return;
+			}
+			bool okA = TryParseHalf(
+				packed,
+				0,
+				cipherCount,
+				out ulong saltA,
+				out ulong[] cA,
+				out uint tagA
+			);
+			bool okB = TryParseHalf(
+				packed,
+				halfUints,
+				cipherCount,
+				out ulong saltB,
+				out ulong[] cB,
+				out uint tagB
+			);
+			if (okA && okB)
+			{
+				_salt = saltA;
+				_ciphers = cA;
+				_tag = tagA;
+				_saltB = saltB;
+				_ciphersB = cB;
+				_tagB = tagB;
+				return;
+			}
+			if (okA)
+			{
+				_salt = saltA;
+				_ciphers = cA;
+				_tag = tagA;
+				_saltB = Vault.RandomSalt();
+				(_ciphersB, _tagB) = SealWords(
+					Decode(saltA, cA, Vault.DeriveProcessKeys(saltA)),
+					_saltB
+				);
+				TamperingNotifier.Raise();
+				return;
+			}
+			if (okB)
+			{
+				_saltB = saltB;
+				_ciphersB = cB;
+				_tagB = tagB;
+				_salt = Vault.RandomSalt();
+				(_ciphers, _tag) = SealWords(
+					Decode(saltB, cB, Vault.DeriveProcessKeys(saltB)),
+					_salt
+				);
+				TamperingNotifier.Raise();
+				return;
+			}
+			Vault.ThrowTampered();
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static bool TryParseHalf(
+			uint[] packed,
+			int offset,
+			int cipherCount,
+			out ulong salt,
+			out ulong[] ciphers,
+			out uint tag
+		)
+		{
+			int wordCount = cipherCount + 2 + KeySet.WordCount;
+			ulong[] words = new ulong[wordCount];
+			for (int i = 0; i < wordCount; i++)
+			{
+				words[i] =
+					(uint)packed[offset + i * 2] | (ulong)(uint)packed[offset + 1 + i * 2] << 32;
+			}
+			salt = words[0];
+			KeySet rkS = Keys.Derive(salt, KeySet.FromWords(words.AsSpan(cipherCount + 2)));
+			uint storedTag = (uint)words[cipherCount + 1];
+			words[cipherCount + 1] = 0UL;
+			if (
+				Vault.ComputeTag(words.AsSpan(1, cipherCount + 1 + KeySet.WordCount), rkS)
+				!= storedTag
+			)
+			{
+				ciphers = null!;
+				tag = 0U;
+				return false;
+			}
+			KeySet rkP = Vault.DeriveProcessKeys(salt);
+			ciphers = new ulong[cipherCount];
+			for (int i = 0; i < cipherCount; i++)
+			{
+				ciphers[i] = Vault.SealWord(Vault.OpenWord(words[1 + i], rkS), rkP);
+			}
+			tag = Vault.ComputeTag(ciphers, rkP);
+			return true;
+		}
+
+#if UNITY_5_3_OR_NEWER
+		[UnityEngine.SerializeField, UnityEngine.HideInInspector]
+		private uint[]? _serialized;
+
+		void UnityEngine.ISerializationCallbackReceiver.OnBeforeSerialize()
+		{
+			EnsureInitialized();
+			_serialized = ((ISecureSerialization)this).SaveToSerialized();
+		}
+
+		void UnityEngine.ISerializationCallbackReceiver.OnAfterDeserialize()
+		{
+			// Restores through a direct instance call: casting this to
+			// ISecureSerialization would box the struct and the restored
+			// state would be lost with the box.
+			LoadFromSerialized(_serialized);
+		}
+#endif
+
+		/// <summary>Secures a BigInteger value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public SecureBigInteger(BigInteger value)
+		{
+#if UNITY_5_3_OR_NEWER
+			_serialized = default;
+#endif
+			_salt = Vault.RandomSalt();
+			_saltB = Vault.RandomSalt();
+			(_ciphers, _tag) = SealWords(value, _salt);
+			(_ciphersB, _tagB) = SealWords(value, _saltB);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static (ulong[] ciphers, uint tag) SealWords(BigInteger value, ulong salt)
+		{
+			byte[] bytes = value.ToByteArray();
+			int wordCount = (bytes.Length + 7) / 8;
+			KeySet rk = Vault.DeriveProcessKeys(salt);
+			ulong[] ciphers = new ulong[wordCount];
+			Span<byte> word = stackalloc byte[8];
+			byte sign = (byte)((bytes[bytes.Length - 1] & 0x80) != 0 ? 0xFF : 0x00);
+			for (int i = 0; i < wordCount; i++)
+			{
+				int n = Math.Min(8, bytes.Length - i * 8);
+				bytes.AsSpan(i * 8, n).CopyTo(word);
+				for (int j = n; j < 8; j++)
+				{
+					// sign-extend the final partial word to match BigInteger's
+					// signed little-endian encoding
+					word[j] = sign;
+				}
+				ulong w = BitConverter.ToUInt64(word);
+				ciphers[i] = Vault.SealWord(w ^ Vault.MixStream(salt, (ulong)i), rk);
+			}
+			return (ciphers, Vault.ComputeTag(ciphers, rk));
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static bool Verify(ulong[]? ciphers, ulong salt, uint tag, out KeySet rk)
+		{
+			// The derived keys are handed to the winning decode, so a read pays
+			// one derivation per copy instead of two.
+			rk = Vault.DeriveProcessKeys(salt);
+			return ciphers != null && Vault.ComputeTag(ciphers, rk) == tag;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static BigInteger Decode(ulong salt, ulong[] ciphers, in KeySet rk)
+		{
+			byte[] bytes = new byte[ciphers.Length * 8];
+			for (int i = 0; i < ciphers.Length; i++)
+			{
+				ulong w = Vault.OpenWord(ciphers[i], rk) ^ Vault.MixStream(salt, (ulong)i);
+				BitConverter.GetBytes(w).CopyTo(bytes, i * 8);
+			}
+			return new BigInteger(bytes);
+		}
+
+		/// <summary>Gets the decrypted plain value.</summary>
+		public BigInteger Decrypted
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get
+			{
+				if (_ciphers == null && _ciphersB == null)
+				{
+					Vault.ThrowUninitialized();
+				}
+				bool okA = Verify(_ciphers, _salt, _tag, out KeySet rkA);
+				bool okB = Verify(_ciphersB, _saltB, _tagB, out KeySet rkB);
+				if (okA && okB)
+				{
+					return Decode(_salt, _ciphers!, rkA);
+				}
+				if (okA || okB)
+				{
+					BigInteger recovered = okA
+						? Decode(_salt, _ciphers!, rkA)
+						: Decode(_saltB, _ciphersB!, rkB);
+					// Heal the damaged copy from the recovered value (fresh salt).
+					if (okA)
+					{
+						_saltB = Vault.RandomSalt();
+						(_ciphersB, _tagB) = SealWords(recovered, _saltB);
+					}
+					else
+					{
+						_salt = Vault.RandomSalt();
+						(_ciphers, _tag) = SealWords(recovered, _salt);
+					}
+					TamperingNotifier.Raise();
+					return recovered;
+				}
+				Vault.ThrowTampered();
+				return default;
+			}
+		}
+
+		/// <summary>Tries to decrypt without throwing. Returns false when never assigned or tampered; tampering still raises <see cref="TamperingNotifier.TamperingDetected"/>.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool TryDecrypt(out BigInteger value)
+		{
+			if (_ciphers == null && _ciphersB == null)
+			{
+				value = default;
+				return false;
+			}
+			bool okA = Verify(_ciphers, _salt, _tag, out KeySet rkA);
+			bool okB = Verify(_ciphersB, _saltB, _tagB, out KeySet rkB);
+			if (okA && okB)
+			{
+				value = Decode(_salt, _ciphers!, rkA);
+				return true;
+			}
+			if (okA || okB)
+			{
+				value = okA ? Decode(_salt, _ciphers!, rkA) : Decode(_saltB, _ciphersB!, rkB);
+				if (okA)
+				{
+					_saltB = Vault.RandomSalt();
+					(_ciphersB, _tagB) = SealWords(value, _saltB);
+				}
+				else
+				{
+					_salt = Vault.RandomSalt();
+					(_ciphers, _tag) = SealWords(value, _salt);
+				}
+				TamperingNotifier.Raise();
+				return true;
+			}
+			TamperingNotifier.Raise();
+			value = default;
+			return false;
+		}
+
+		/// <summary>Converts a plain BigInteger value into its secured form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static implicit operator SecureBigInteger(BigInteger value) =>
+			new SecureBigInteger(value);
+
+		/// <summary>Converts back to the plain BigInteger value (decrypts on read).</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static implicit operator BigInteger(SecureBigInteger value) => value.Decrypted;
+
+		/// <summary>Compares this value with another secured BigInteger for equality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool Equals(SecureBigInteger other) => Decrypted.Equals(other.Decrypted);
+
+		/// <summary>Compares this value with another object for equality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public override bool Equals(object? obj) => obj is SecureBigInteger other && Equals(other);
+
+		/// <summary>Returns the hash code of the decrypted value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public override int GetHashCode() => Decrypted.GetHashCode();
+
+		/// <summary>Returns the decrypted value as a string.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public override string ToString() => Decrypted.ToString();
+
+		/// <summary>Returns the decrypted value formatted with the specified format.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public string ToString(string? format) => Decrypted.ToString(format);
+
+		/// <summary>Returns the decrypted value formatted with the specified format and provider.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public string ToString(string? format, IFormatProvider? formatProvider) =>
+			Decrypted.ToString(format, formatProvider);
+
+		/// <summary>Compares this value with another secured BigInteger.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public int CompareTo(SecureBigInteger other) => Decrypted.CompareTo(other.Decrypted);
+
+		/// <summary>Compares this value with another object.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public int CompareTo(object? obj) =>
+			obj is SecureBigInteger other
+				? CompareTo(other)
+				: throw new ArgumentException(
+					"Object must be of type SecureBigInteger.",
+					nameof(obj)
+				);
+
+		/// <summary>Parses a string into its secured form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger Parse(string value) =>
+			new SecureBigInteger(BigInteger.Parse(value));
+
+		/// <summary>Parses a string into its secured form with the specified style.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger Parse(string value, NumberStyles style) =>
+			new SecureBigInteger(BigInteger.Parse(value, style));
+
+		/// <summary>Parses a string into its secured form with the specified provider.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger Parse(string value, IFormatProvider? provider) =>
+			new SecureBigInteger(BigInteger.Parse(value, provider));
+
+		/// <summary>Parses a string into its secured form with the specified style and provider.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger Parse(
+			string value,
+			NumberStyles style,
+			IFormatProvider? provider
+		) => new SecureBigInteger(BigInteger.Parse(value, style, provider));
+
+		/// <summary>Tries to parse a string into its secured form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool TryParse(string? value, out SecureBigInteger result)
+		{
+			if (BigInteger.TryParse(value, out BigInteger plain))
+			{
+				result = new SecureBigInteger(plain);
+				return true;
+			}
+			result = default;
+			return false;
+		}
+
+		/// <summary>Tries to parse a string into its secured form with the specified style and provider.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool TryParse(
+			string? value,
+			NumberStyles style,
+			IFormatProvider? provider,
+			out SecureBigInteger result
+		)
+		{
+			if (BigInteger.TryParse(value, style, provider, out BigInteger plain))
+			{
+				result = new SecureBigInteger(plain);
+				return true;
+			}
+			result = default;
+			return false;
+		}
+	}
+}

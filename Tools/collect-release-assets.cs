@@ -1,0 +1,223 @@
+//:property TargetFramework=net10.0
+
+// Collects release assets into dist/ (repo root):
+// - discovers *.csproj dynamically (one level below root), excluding
+//   SecureValue.Unity/** and anything matching *Tests*
+// - rebuilds via pack/publish as needed, both stamped
+//   with -p:Version=<version> (pack AND publish: publish output carries
+//   the release assembly version too, not the csproj's checked-in default)
+// - publishes each discovered project's every TFM to a temp dir and zips it
+//   as dist/<Project>-<tfm>.zip (publish output is the clean redistributable
+//   closure; raw bin/ dirs can hold stale tool junk e.g. BenchmarkDotNet
+//   GUID workdirs, so they are never zipped directly)
+// TFMs come from live MSBuild evaluation (TargetFrameworks/TargetFramework)
+// and OutputType decides pack-vs-binaries-only, so TFM changes and new
+// projects are picked up with zero config edits.
+// Exe (OutputType) projects contribute binaries only, never .nupkg.
+//
+// Run: dotnet run Tools/collect-release-assets.cs -- <version>
+//   (called by semantic-release exec prepare; see .releaserc.json)
+
+using System.Diagnostics;
+using System.IO.Compression;
+
+if (args.Length != 1 || string.IsNullOrWhiteSpace(args[0]))
+{
+	Console.Error.WriteLine("Usage: dotnet run Tools/collect-release-assets.cs -- <version>");
+	return 2;
+}
+
+string version = args[0].Trim();
+string repoRoot = FindRepoRoot(Environment.CurrentDirectory);
+string distDir = Path.Combine(repoRoot, "dist");
+Directory.CreateDirectory(distDir);
+
+List<string> projects = DiscoverProjects(repoRoot);
+if (projects.Count == 0)
+{
+	Console.Error.WriteLine("No projects discovered.");
+	return 1;
+}
+
+if (
+	Run(
+		"dotnet",
+		$"build \"{Path.Combine(repoRoot, "SecureValue.slnx")}\" -c Release --no-restore --nologo -v minimal",
+		repoRoot
+	) != 0
+)
+{
+	return 1;
+}
+
+int failures = 0;
+foreach (string csproj in projects.OrderBy(p => p, StringComparer.Ordinal))
+{
+	string name = Path.GetFileNameWithoutExtension(csproj);
+	string tfmsRaw = MsBuildProp(csproj, repoRoot, "TargetFrameworks");
+	if (string.IsNullOrWhiteSpace(tfmsRaw))
+	{
+		tfmsRaw = MsBuildProp(csproj, repoRoot, "TargetFramework");
+	}
+	string[] tfms = tfmsRaw.Split(
+		';',
+		StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
+	);
+	string outputType = MsBuildProp(csproj, repoRoot, "OutputType");
+	if (string.IsNullOrWhiteSpace(outputType))
+	{
+		outputType = "Library";
+	}
+
+	if (!outputType.Equals("Exe", StringComparison.OrdinalIgnoreCase))
+	{
+		Console.WriteLine($"packing {name} ({version})");
+		if (
+			Run(
+				"dotnet",
+				$"pack \"{csproj}\" -c Release --no-build -o \"{distDir}\" -p:Version={version} --nologo -v minimal",
+				repoRoot
+			) != 0
+		)
+		{
+			failures++;
+			continue;
+		}
+	}
+	else
+	{
+		Console.WriteLine($"skipping pack for {name} (OutputType=Exe, binaries only)");
+	}
+
+	foreach (string tfm in tfms)
+	{
+		string stageDir = Path.Combine(distDir, "publish-tmp", $"{name}-{tfm}");
+		if (Directory.Exists(stageDir))
+		{
+			Directory.Delete(stageDir, recursive: true);
+		}
+		if (
+			Run(
+				"dotnet",
+				$"publish \"{csproj}\" -c Release -f {tfm} -o \"{stageDir}\" -p:Version={version} --nologo -v minimal",
+				repoRoot
+			) != 0
+		)
+		{
+			Console.Error.WriteLine($"::warning::publish failed for {name} ({tfm}), skipped.");
+			continue;
+		}
+		string zipPath = Path.Combine(distDir, $"{name}-{tfm}.zip");
+		if (File.Exists(zipPath))
+		{
+			File.Delete(zipPath);
+		}
+		ZipFile.CreateFromDirectory(
+			stageDir,
+			zipPath,
+			CompressionLevel.Optimal,
+			includeBaseDirectory: false
+		);
+		Console.WriteLine($"collected {Path.GetFileName(zipPath)}");
+	}
+}
+
+string tmpRoot = Path.Combine(distDir, "publish-tmp");
+if (Directory.Exists(tmpRoot))
+{
+	Directory.Delete(tmpRoot, recursive: true);
+}
+
+return failures == 0 ? 0 : 1;
+
+static List<string> DiscoverProjects(string repoRoot)
+{
+	var found = new List<string>();
+	foreach (
+		string csproj in Directory.EnumerateFiles(repoRoot, "*.csproj", SearchOption.AllDirectories)
+	)
+	{
+		string rel = Path.GetRelativePath(repoRoot, csproj);
+		string[] parts = rel.Split(Path.DirectorySeparatorChar);
+		if (parts.Length > 2)
+		{
+			continue;
+		}
+		if (
+			parts.Any(p =>
+				p.Contains("Tests", StringComparison.OrdinalIgnoreCase)
+				|| p.Equals("SecureValue.Unity", StringComparison.OrdinalIgnoreCase)
+				|| p.Equals("bin", StringComparison.OrdinalIgnoreCase)
+				|| p.Equals("obj", StringComparison.OrdinalIgnoreCase)
+				|| p.Equals("node_modules", StringComparison.OrdinalIgnoreCase)
+				|| p.Equals(".git", StringComparison.OrdinalIgnoreCase)
+			)
+		)
+		{
+			continue;
+		}
+		found.Add(csproj);
+	}
+	return found;
+}
+
+static string MsBuildProp(string csproj, string workDir, string prop)
+{
+	var psi = new ProcessStartInfo(
+		"dotnet",
+		$"msbuild \"{csproj}\" -nologo -v:q -getProperty:{prop}"
+	)
+	{
+		RedirectStandardOutput = true,
+		RedirectStandardError = true,
+		UseShellExecute = false,
+		WorkingDirectory = workDir,
+	};
+	using var proc = Process.Start(psi)!;
+	string stdout = proc.StandardOutput.ReadToEnd();
+	proc.WaitForExit();
+	if (proc.ExitCode != 0)
+	{
+		return string.Empty;
+	}
+	foreach (string line in stdout.Split('\n'))
+	{
+		string trimmed = line.Trim();
+		if (!string.IsNullOrEmpty(trimmed))
+		{
+			return trimmed;
+		}
+	}
+	return string.Empty;
+}
+
+static int Run(string cmd, string arguments, string workDir)
+{
+	var psi = new ProcessStartInfo(cmd, arguments)
+	{
+		UseShellExecute = false,
+		WorkingDirectory = workDir,
+	};
+	using var proc = Process.Start(psi)!;
+	proc.WaitForExit();
+	return proc.ExitCode;
+}
+
+static string FindRepoRoot(string start)
+{
+	string? dir = start;
+
+	while (dir is not null)
+	{
+		if (File.Exists(Path.Combine(dir, "SecureValue.slnx")))
+		{
+			return dir;
+		}
+
+		dir = Path.GetDirectoryName(dir);
+	}
+
+	throw new InvalidOperationException(
+		$"Could not locate SecureValue.slnx upward from '{start}'. Run from inside the repo."
+	);
+}

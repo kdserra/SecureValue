@@ -1,0 +1,96 @@
+#nullable enable
+using System;
+using System.Runtime.CompilerServices;
+
+namespace SecureValue
+{
+	/// <summary>Bit-packing helpers converting wrapped types to/from 64-bit payloads.</summary>
+	internal static class Bits
+	{
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ulong From(bool v) => v ? 1UL : 0UL;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static bool ToBool(ulong v) => (v & 1UL) != 0UL;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ulong From(char v) => v;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static char ToChar(ulong v) => (char)v;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ulong From(sbyte v) => (ulong)(byte)v;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static sbyte ToSByte(ulong v) => unchecked((sbyte)(byte)v);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ulong From(byte v) => v;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static byte ToByte(ulong v) => (byte)v;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ulong From(short v) => (ulong)(ushort)v;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static short ToShort(ulong v) => unchecked((short)(ushort)v);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ulong From(ushort v) => v;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ushort ToUShort(ulong v) => (ushort)v;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ulong From(int v) => (ulong)(uint)v;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static int ToInt(ulong v) => unchecked((int)(uint)v);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ulong From(uint v) => v;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static uint ToUInt(ulong v) => (uint)v;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ulong From(long v) => unchecked((ulong)v);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static long ToLong(ulong v) => unchecked((long)v);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ulong From(ulong v) => v;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ulong ToULong(ulong v) => v;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ulong From(double v) => (ulong)BitConverter.DoubleToInt64Bits(v);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static double ToDouble(ulong v) =>
+			BitConverter.Int64BitsToDouble(unchecked((long)v));
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ulong From(float v) => (ulong)BitConverter.SingleToInt32Bits(v);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static float ToFloat(ulong v) => BitConverter.Int32BitsToSingle(unchecked((int)v));
+
+		/// <summary>
+		/// Bitwise OR with BCL sign-extension semantics.
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static int Or(int x, int y) => x | y;
+
+		/// <summary>
+		/// Bitwise OR with BCL sign-extension semantics (64-bit). See
+		/// <see cref="Or(int, int)"/>.
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static long Or(long x, long y) => x | y;
+	}
+}

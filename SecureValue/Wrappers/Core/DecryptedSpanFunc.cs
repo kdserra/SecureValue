@@ -1,0 +1,32 @@
+#nullable enable
+using System;
+
+namespace SecureValue
+{
+	/// <summary>
+	/// Evaluates a decrypted character span and returns a result (e.g. inside
+	/// <c>SecureString.StackDecrypt</c>). The span is stack-allocated and zeroed
+	/// after the call returns.
+	/// </summary>
+	/// <typeparam name="TResult">The result type.</typeparam>
+	/// <param name="decrypted">The decrypted characters. Do not store or capture this span.</param>
+	/// <returns>The computed result.</returns>
+	public delegate TResult DecryptedSpanFunc<TResult>(ReadOnlySpan<char> decrypted);
+
+	/// <summary>
+	/// Evaluates a decrypted character span with additional state and returns a
+	/// result (e.g. inside <c>SecureString.StackDecrypt</c>). The span is
+	/// stack-allocated and zeroed after the call returns. Prefer this overload
+	/// over capturing locals: a <c>static</c> lambda with explicit state stays
+	/// allocation-free, while a capturing lambda allocates a closure.
+	/// </summary>
+	/// <typeparam name="TState">The state type.</typeparam>
+	/// <typeparam name="TResult">The result type.</typeparam>
+	/// <param name="decrypted">The decrypted characters. Do not store or capture this span.</param>
+	/// <param name="state">Caller-provided state.</param>
+	/// <returns>The computed result.</returns>
+	public delegate TResult DecryptedSpanFunc<TState, TResult>(
+		ReadOnlySpan<char> decrypted,
+		TState state
+	);
+}

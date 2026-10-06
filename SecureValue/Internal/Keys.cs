@@ -1,0 +1,102 @@
+#nullable enable
+using System;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+
+namespace SecureValue
+{
+	/// <summary>A set of four key words driving the cipher, MAC, and RNG layers.</summary>
+	internal readonly struct KeySet
+	{
+		/// <summary>Key words in a serialized payload (appended after the data words).</summary>
+		internal const int WordCount = 4;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal KeySet(ulong k0, ulong k1, ulong k2, ulong k3)
+		{
+			K0 = k0;
+			K1 = k1;
+			K2 = k2;
+			K3 = k3;
+		}
+
+		internal ulong K0 { get; }
+		internal ulong K1 { get; }
+		internal ulong K2 { get; }
+		internal ulong K3 { get; }
+
+		/// <summary>Writes the four key words for a serialized payload.</summary>
+		internal void CopyTo(Span<ulong> dst)
+		{
+			dst[0] = K0;
+			dst[1] = K1;
+			dst[2] = K2;
+			dst[3] = K3;
+		}
+
+		/// <summary>Reads four key words back from a serialized payload.</summary>
+		internal static KeySet FromWords(ReadOnlySpan<ulong> src) =>
+			new KeySet(src[0], src[1], src[2], src[3]);
+	}
+
+	/// <summary>
+	/// Per-process master key from a CSPRNG. Live values decrypt only in this
+	/// process run; saved data uses a fresh per-value CSPRNG key stored with the payload.
+	/// </summary>
+	internal static class Keys
+	{
+		internal static readonly ulong K0;
+		internal static readonly ulong K1;
+		internal static readonly ulong K2;
+		internal static readonly ulong K3;
+
+		/// <summary>Process key set, passed by readonly reference on hot paths.</summary>
+		internal static readonly KeySet ProcessSet;
+
+		static Keys()
+		{
+			Span<byte> bytes = stackalloc byte[32];
+			RandomNumberGenerator.Fill(bytes);
+			K0 = ReadULong(bytes, 0);
+			K1 = ReadULong(bytes, 8);
+			K2 = ReadULong(bytes, 16);
+			K3 = ReadULong(bytes, 24);
+			ProcessSet = new KeySet(K0, K1, K2, K3);
+		}
+
+		/// <summary>
+		/// Derives per-operation subkeys from a salt in one pass, shared by cipher and MAC.
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static KeySet Derive(ulong salt, in KeySet ks) =>
+			new KeySet(
+				Mixing.SplitMix(salt ^ ks.K0),
+				Mixing.SplitMix(salt ^ ks.K1),
+				Mixing.SplitMix(salt ^ ks.K2),
+				Mixing.SplitMix(salt ^ ks.K3)
+			);
+
+		/// <summary>Generates a fresh unique storage key from the CSPRNG (serialize path only).</summary>
+		internal static KeySet NewStorageKey()
+		{
+			Span<byte> bytes = stackalloc byte[32];
+			RandomNumberGenerator.Fill(bytes);
+			return new KeySet(
+				ReadULong(bytes, 0),
+				ReadULong(bytes, 8),
+				ReadULong(bytes, 16),
+				ReadULong(bytes, 24)
+			);
+		}
+
+		private static ulong ReadULong(ReadOnlySpan<byte> b, int i) =>
+			(ulong)b[i]
+			| (ulong)b[i + 1] << 8
+			| (ulong)b[i + 2] << 16
+			| (ulong)b[i + 3] << 24
+			| (ulong)b[i + 4] << 32
+			| (ulong)b[i + 5] << 40
+			| (ulong)b[i + 6] << 48
+			| (ulong)b[i + 7] << 56;
+	}
+}

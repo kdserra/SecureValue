@@ -1,0 +1,19 @@
+<Solution>
+	<Project
+		Path="SecureValue.Benchmarks/SecureValue.Benchmarks.csproj"
+		Id="b7e4d8c2-9f0a-4b1c-8d3e-2f4a5b6c7d8e"
+	/>
+	<Project
+		Path="SecureValue.Sample/SecureValue.Sample.csproj"
+		Id="19348429-807d-4538-9b4f-7a12446454e3"
+	/>
+	<Project
+		Path="SecureValue.Tests/SecureValue.Tests.csproj"
+		Id="7cc0426f-3825-40a6-a380-bc798e957f42"
+	/>
+	<Project Path="SecureValue/SecureValue.csproj" />
+	<Project
+		Path="SecureValue.CodeGen/SecureValue.CodeGen.csproj"
+		Id="c3f7a1e5-8b2d-4c4a-9e6f-1a2b3c4d5e6f"
+	/>
+</Solution>

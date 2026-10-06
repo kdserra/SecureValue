@@ -1,0 +1,201 @@
+#nullable enable
+using System;
+using System.Globalization;
+using System.Numerics;
+using System.Runtime.CompilerServices;
+
+namespace SecureValue.Numerics
+{
+	/// <summary>Memory-encrypted <see cref="Vector3"/>.</summary>
+	[Serializable]
+	public partial struct SecureVector3
+		: ISecureSerialization
+#if UNITY_5_3_OR_NEWER
+			,
+			UnityEngine.ISerializationCallbackReceiver
+#endif
+	{
+		private Cell128 _cell;
+
+		/// <summary>Secures a Vector3 value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public SecureVector3(Vector3 value)
+		{
+#if UNITY_5_3_OR_NEWER
+			_serialized = default;
+#endif
+			_cell = default;
+			_cell = default;
+			_cell.Protect(EncLo(value), EncHi(value));
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static ulong EncLo(Vector3 v) =>
+			(ulong)(uint)BitConverter.SingleToInt32Bits(v.X)
+			| ((ulong)(uint)BitConverter.SingleToInt32Bits(v.Y) << 32);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static ulong EncHi(Vector3 v) => (ulong)(uint)BitConverter.SingleToInt32Bits(v.Z);
+
+		/// <summary>Gets the decrypted plain value.</summary>
+		public Vector3 Decrypted
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get
+			{
+				(ulong lo, ulong hi) = _cell.Unprotect();
+				return new Vector3(
+					BitConverter.Int32BitsToSingle(unchecked((int)lo)),
+					BitConverter.Int32BitsToSingle(unchecked((int)(lo >> 32))),
+					BitConverter.Int32BitsToSingle(unchecked((int)hi))
+				);
+			}
+		}
+
+		/// <summary>Tries to decrypt without throwing. Returns false when never assigned or tampered; tampering still raises <see cref="TamperingNotifier.TamperingDetected"/>.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool TryDecrypt(out Vector3 value)
+		{
+			if (_cell.TryUnprotect(out ulong lo, out ulong hi))
+			{
+				value = new Vector3(
+					BitConverter.Int32BitsToSingle(unchecked((int)lo)),
+					BitConverter.Int32BitsToSingle(unchecked((int)(lo >> 32))),
+					BitConverter.Int32BitsToSingle(unchecked((int)hi))
+				);
+				return true;
+			}
+			value = default;
+			return false;
+		}
+
+		/// <summary>True when never assigned.</summary>
+		public bool IsUnset
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => _cell.IsUnset;
+		}
+
+		/// <summary>Encrypts the type default when never initialized.</summary>
+		internal void EnsureInitialized()
+		{
+			if (_cell.IsUnset)
+			{
+				this = new SecureVector3(default);
+			}
+		}
+
+		uint[] ISecureSerialization.SaveToSerialized()
+		{
+			Span<ulong> words = stackalloc ulong[12];
+			KeySet saveKey = Vault.NewStorageKey();
+			_cell.CopyStorageWords(words, saveKey);
+			saveKey.CopyTo(words.Slice(8));
+			return SerializationFormat.Pack(words);
+		}
+
+		void ISecureSerialization.LoadFromSerialized(uint[]? packed) => LoadFromSerialized(packed);
+
+		private void LoadFromSerialized(uint[]? packed)
+		{
+			if (packed == null)
+			{
+				// Never serialized: materialize a default (bad lengths fail closed on read).
+				EnsureInitialized();
+				return;
+			}
+			Span<ulong> words = stackalloc ulong[12];
+			if (SerializationFormat.TryUnpack(packed, words))
+			{
+				KeySet saveKey = KeySet.FromWords(words.Slice(8));
+				_cell.RestoreStorageWords(words, saveKey);
+			}
+		}
+
+#if UNITY_5_3_OR_NEWER
+		[UnityEngine.SerializeField, UnityEngine.HideInInspector]
+		private uint[]? _serialized;
+
+		void UnityEngine.ISerializationCallbackReceiver.OnBeforeSerialize()
+		{
+			EnsureInitialized();
+			_serialized = ((ISecureSerialization)this).SaveToSerialized();
+		}
+
+		void UnityEngine.ISerializationCallbackReceiver.OnAfterDeserialize()
+		{
+			// Restores through a direct instance call: casting this to
+			// ISecureSerialization would box the struct and the restored
+			// cell would be lost with the box.
+			LoadFromSerialized(_serialized);
+		}
+#endif
+
+		/// <summary>Converts a plain Vector3 value into its secured form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static implicit operator SecureVector3(Vector3 value) => new SecureVector3(value);
+
+		/// <summary>Converts back to the plain Vector3 value (decrypts on read).</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static implicit operator Vector3(SecureVector3 value) => value.Decrypted;
+
+		/// <summary>Compares this value with another secured Vector3 for equality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool Equals(SecureVector3 other) => Decrypted == other.Decrypted;
+
+		/// <summary>Compares this value with another object for equality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public override bool Equals(object? obj) => obj is SecureVector3 other && Equals(other);
+
+		/// <summary>Returns the hash code of the decrypted value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public override int GetHashCode() => Decrypted.GetHashCode();
+
+		/// <summary>Returns the decrypted value as a string.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public override string ToString() => Decrypted.ToString();
+
+		/// <summary>Returns the decrypted value formatted with the specified format.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public string ToString(string? format) => Decrypted.ToString(format);
+
+		/// <summary>Returns the decrypted value formatted with the specified format and provider.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public string ToString(string? format, IFormatProvider? formatProvider) =>
+			Decrypted.ToString(format, formatProvider);
+
+		/// <summary>Tests two secured Vector3 values for equality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator ==(SecureVector3 left, SecureVector3 right) =>
+			left.Equals(right);
+
+		/// <summary>Tests two secured Vector3 values for inequality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator !=(SecureVector3 left, SecureVector3 right) =>
+			!left.Equals(right);
+
+		/// <summary>Adds two secured Vector3 values.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureVector3 operator +(SecureVector3 a, SecureVector3 b) =>
+			new SecureVector3(a.Decrypted + b.Decrypted);
+
+		/// <summary>Subtracts two secured Vector3 values.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureVector3 operator -(SecureVector3 a, SecureVector3 b) =>
+			new SecureVector3(a.Decrypted - b.Decrypted);
+
+		/// <summary>Negates a secured Vector3 value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureVector3 operator -(SecureVector3 a) => new SecureVector3(-a.Decrypted);
+
+		/// <summary>Multiplies two secured Vector3 values.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureVector3 operator *(SecureVector3 a, SecureVector3 b) =>
+			new SecureVector3(a.Decrypted * b.Decrypted);
+
+		/// <summary>Divides two secured Vector3 values.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureVector3 operator /(SecureVector3 a, SecureVector3 b) =>
+			new SecureVector3(a.Decrypted / b.Decrypted);
+	}
+}

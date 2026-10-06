@@ -1,0 +1,210 @@
+#nullable enable
+using System;
+using System.Globalization;
+using System.Runtime.CompilerServices;
+
+namespace SecureValue
+{
+	/// <summary>Memory-encrypted <see cref="ushort"/> value.</summary>
+	[Serializable]
+	public partial struct SecureUShort
+		: ISecureSerialization
+#if UNITY_5_3_OR_NEWER
+			,
+			UnityEngine.ISerializationCallbackReceiver
+#endif
+	{
+		private Cell _cell;
+
+		/// <summary>Secures a ushort value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public SecureUShort(ushort value)
+		{
+#if UNITY_5_3_OR_NEWER
+			_serialized = default;
+#endif
+			_cell = default;
+			_cell = default;
+			_cell.Protect(Bits.From(value));
+		}
+
+		/// <summary>Gets the decrypted plain value.</summary>
+		public ushort Decrypted
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => Bits.ToUShort(_cell.Unprotect());
+		}
+
+		/// <summary>Tries to decrypt without throwing. Returns false when never assigned or tampered; tampering still raises <see cref="TamperingNotifier.TamperingDetected"/>.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool TryDecrypt(out ushort value)
+		{
+			if (_cell.TryUnprotect(out ulong plain))
+			{
+				value = Bits.ToUShort(plain);
+				return true;
+			}
+			value = default;
+			return false;
+		}
+
+		/// <summary>True when never assigned.</summary>
+		public bool IsUnset
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => _cell.IsUnset;
+		}
+
+		/// <summary>Encrypts the type default when never initialized.</summary>
+		internal void EnsureInitialized()
+		{
+			if (_cell.IsUnset)
+			{
+				this = new SecureUShort(default);
+			}
+		}
+
+		uint[] ISecureSerialization.SaveToSerialized()
+		{
+			Span<ulong> words = stackalloc ulong[10];
+			KeySet saveKey = Vault.NewStorageKey();
+			_cell.CopyStorageWords(words, saveKey);
+			saveKey.CopyTo(words.Slice(6));
+			return SerializationFormat.Pack(words);
+		}
+
+		void ISecureSerialization.LoadFromSerialized(uint[]? packed) => LoadFromSerialized(packed);
+
+		private void LoadFromSerialized(uint[]? packed)
+		{
+			if (packed == null)
+			{
+				// Never serialized: materialize a default (bad lengths fail closed on read).
+				EnsureInitialized();
+				return;
+			}
+			Span<ulong> words = stackalloc ulong[10];
+			if (SerializationFormat.TryUnpack(packed, words))
+			{
+				KeySet saveKey = KeySet.FromWords(words.Slice(6));
+				_cell.RestoreStorageWords(words, saveKey);
+			}
+		}
+
+#if UNITY_5_3_OR_NEWER
+		[UnityEngine.SerializeField, UnityEngine.HideInInspector]
+		private uint[]? _serialized;
+
+		void UnityEngine.ISerializationCallbackReceiver.OnBeforeSerialize()
+		{
+			EnsureInitialized();
+			_serialized = ((ISecureSerialization)this).SaveToSerialized();
+		}
+
+		void UnityEngine.ISerializationCallbackReceiver.OnAfterDeserialize()
+		{
+			// Restores through a direct instance call: casting this to
+			// ISecureSerialization would box the struct and the restored
+			// cell would be lost with the box.
+			LoadFromSerialized(_serialized);
+		}
+#endif
+
+		/// <summary>Converts a plain ushort value into its secured form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static implicit operator SecureUShort(ushort value) => new SecureUShort(value);
+
+		/// <summary>Converts back to the plain ushort value (decrypts on read).</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static implicit operator ushort(SecureUShort value) => value.Decrypted;
+
+		/// <summary>Compares this value with another secured ushort for equality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool Equals(SecureUShort other) => Decrypted == other.Decrypted;
+
+		/// <summary>Compares this value with another object for equality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public override bool Equals(object? obj) => obj is SecureUShort other && Equals(other);
+
+		/// <summary>Returns the hash code of the decrypted value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public override int GetHashCode() => Decrypted.GetHashCode();
+
+		/// <summary>Returns the decrypted value as a string.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public override string ToString() => Decrypted.ToString();
+
+		/// <summary>Returns the decrypted value formatted with the specified format.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public string ToString(string? format) => Decrypted.ToString(format);
+
+		/// <summary>Returns the decrypted value formatted with the specified format and provider.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public string ToString(string? format, IFormatProvider? formatProvider) =>
+			Decrypted.ToString(format, formatProvider);
+
+		/// <summary>Compares this value with another secured ushort.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public int CompareTo(SecureUShort other) => Decrypted.CompareTo(other.Decrypted);
+
+		/// <summary>Compares this value with another object.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public int CompareTo(object? obj) =>
+			obj is SecureUShort other
+				? CompareTo(other)
+				: throw new ArgumentException("Object must be of type SecureUShort.", nameof(obj));
+
+		/// <summary>Parses a string into its secured form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureUShort Parse(string value) => new SecureUShort(ushort.Parse(value));
+
+		/// <summary>Parses a string into its secured form with the specified style.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureUShort Parse(string value, NumberStyles style) =>
+			new SecureUShort(ushort.Parse(value, style));
+
+		/// <summary>Parses a string into its secured form with the specified provider.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureUShort Parse(string value, IFormatProvider? provider) =>
+			new SecureUShort(ushort.Parse(value, provider));
+
+		/// <summary>Parses a string into its secured form with the specified style and provider.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureUShort Parse(
+			string value,
+			NumberStyles style,
+			IFormatProvider? provider
+		) => new SecureUShort(ushort.Parse(value, style, provider));
+
+		/// <summary>Tries to parse a string into its secured form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool TryParse(string? value, out SecureUShort result)
+		{
+			if (ushort.TryParse(value, out ushort plain))
+			{
+				result = new SecureUShort(plain);
+				return true;
+			}
+			result = default;
+			return false;
+		}
+
+		/// <summary>Tries to parse a string into its secured form with the specified style and provider.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool TryParse(
+			string? value,
+			NumberStyles style,
+			IFormatProvider? provider,
+			out SecureUShort result
+		)
+		{
+			if (ushort.TryParse(value, style, provider, out ushort plain))
+			{
+				result = new SecureUShort(plain);
+				return true;
+			}
+			result = default;
+			return false;
+		}
+	}
+}

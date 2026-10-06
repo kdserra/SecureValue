@@ -1,0 +1,261 @@
+#nullable enable
+using System;
+using System.Globalization;
+using System.Runtime.CompilerServices;
+
+namespace SecureValue
+{
+	/// <summary>Memory-encrypted <see cref="DateTime"/> value.</summary>
+	[Serializable]
+	public partial struct SecureDateTime
+		: ISecureSerialization
+#if UNITY_5_3_OR_NEWER
+			,
+			UnityEngine.ISerializationCallbackReceiver
+#endif
+	{
+		private Cell _cell;
+
+		/// <summary>Secures a DateTime value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public SecureDateTime(DateTime value)
+		{
+#if UNITY_5_3_OR_NEWER
+			_serialized = default;
+#endif
+			_cell = default;
+			_cell = default;
+			_cell.Protect((ulong)value.Ticks | ((ulong)(int)value.Kind << 62));
+		}
+
+		/// <summary>Gets the decrypted plain value.</summary>
+		public DateTime Decrypted
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get
+			{
+				ulong w = _cell.Unprotect();
+				return new DateTime(Bits.ToLong(w & 0x3FFFFFFFFFFFFFFFUL), (DateTimeKind)(w >> 62));
+			}
+		}
+
+		/// <summary>Tries to decrypt without throwing. Returns false when never assigned or tampered; tampering still raises <see cref="TamperingNotifier.TamperingDetected"/>.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool TryDecrypt(out DateTime value)
+		{
+			if (_cell.TryUnprotect(out ulong w))
+			{
+				value = new DateTime(
+					Bits.ToLong(w & 0x3FFFFFFFFFFFFFFFUL),
+					(DateTimeKind)(w >> 62)
+				);
+				return true;
+			}
+			value = default;
+			return false;
+		}
+
+		/// <summary>True when never assigned.</summary>
+		public bool IsUnset
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => _cell.IsUnset;
+		}
+
+		/// <summary>Encrypts the type default when never initialized.</summary>
+		internal void EnsureInitialized()
+		{
+			if (_cell.IsUnset)
+			{
+				this = new SecureDateTime(default);
+			}
+		}
+
+		uint[] ISecureSerialization.SaveToSerialized()
+		{
+			Span<ulong> words = stackalloc ulong[10];
+			KeySet saveKey = Vault.NewStorageKey();
+			_cell.CopyStorageWords(words, saveKey);
+			saveKey.CopyTo(words.Slice(6));
+			return SerializationFormat.Pack(words);
+		}
+
+		void ISecureSerialization.LoadFromSerialized(uint[]? packed) => LoadFromSerialized(packed);
+
+		private void LoadFromSerialized(uint[]? packed)
+		{
+			if (packed == null)
+			{
+				// Never serialized: materialize a default (bad lengths fail closed on read).
+				EnsureInitialized();
+				return;
+			}
+			Span<ulong> words = stackalloc ulong[10];
+			if (SerializationFormat.TryUnpack(packed, words))
+			{
+				KeySet saveKey = KeySet.FromWords(words.Slice(6));
+				_cell.RestoreStorageWords(words, saveKey);
+			}
+		}
+
+#if UNITY_5_3_OR_NEWER
+		[UnityEngine.SerializeField, UnityEngine.HideInInspector]
+		private uint[]? _serialized;
+
+		void UnityEngine.ISerializationCallbackReceiver.OnBeforeSerialize()
+		{
+			EnsureInitialized();
+			_serialized = ((ISecureSerialization)this).SaveToSerialized();
+		}
+
+		void UnityEngine.ISerializationCallbackReceiver.OnAfterDeserialize()
+		{
+			// Restores through a direct instance call: casting this to
+			// ISecureSerialization would box the struct and the restored
+			// cell would be lost with the box.
+			LoadFromSerialized(_serialized);
+		}
+#endif
+
+		/// <summary>Converts a plain DateTime value into its secured form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static implicit operator SecureDateTime(DateTime value) => new SecureDateTime(value);
+
+		/// <summary>Converts back to the plain DateTime value (decrypts on read).</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static implicit operator DateTime(SecureDateTime value) => value.Decrypted;
+
+		/// <summary>Compares this value with another secured DateTime for equality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool Equals(SecureDateTime other) => Decrypted == other.Decrypted;
+
+		/// <summary>Compares this value with another object for equality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public override bool Equals(object? obj) => obj is SecureDateTime other && Equals(other);
+
+		/// <summary>Compares this value with another secured DateTime.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public int CompareTo(SecureDateTime other) => Decrypted.CompareTo(other.Decrypted);
+
+		/// <summary>Compares this value with another object.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public int CompareTo(object? obj) =>
+			obj is SecureDateTime other
+				? CompareTo(other)
+				: throw new ArgumentException(
+					"Object must be of type SecureDateTime.",
+					nameof(obj)
+				);
+
+		/// <summary>Returns the hash code of the decrypted value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public override int GetHashCode() => Decrypted.GetHashCode();
+
+		/// <summary>Returns the decrypted value as a string.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public override string ToString() => Decrypted.ToString();
+
+		/// <summary>Returns the decrypted value formatted with the specified format.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public string ToString(string? format) => Decrypted.ToString(format);
+
+		/// <summary>Returns the decrypted value formatted with the specified format and provider.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public string ToString(string? format, IFormatProvider? formatProvider) =>
+			Decrypted.ToString(format, formatProvider);
+
+		/// <summary>Tests two secured DateTime values for equality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator ==(SecureDateTime left, SecureDateTime right) =>
+			left.Equals(right);
+
+		/// <summary>Tests two secured DateTime values for inequality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator !=(SecureDateTime left, SecureDateTime right) =>
+			!left.Equals(right);
+
+		/// <summary>Compares two secured DateTime values.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator <(SecureDateTime left, SecureDateTime right) =>
+			left.Decrypted < right.Decrypted;
+
+		/// <summary>Compares two secured DateTime values.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator <=(SecureDateTime left, SecureDateTime right) =>
+			left.Decrypted <= right.Decrypted;
+
+		/// <summary>Compares two secured DateTime values.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator >(SecureDateTime left, SecureDateTime right) =>
+			left.Decrypted > right.Decrypted;
+
+		/// <summary>Compares two secured DateTime values.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator >=(SecureDateTime left, SecureDateTime right) =>
+			left.Decrypted >= right.Decrypted;
+
+		/// <summary>Adds a secured time span to a secured date and time.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureDateTime operator +(SecureDateTime a, SecureTimeSpan b) =>
+			new SecureDateTime(a.Decrypted + b.Decrypted);
+
+		/// <summary>Subtracts a secured time span from a secured date and time.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureDateTime operator -(SecureDateTime a, SecureTimeSpan b) =>
+			new SecureDateTime(a.Decrypted - b.Decrypted);
+
+		/// <summary>Subtracts two secured date and time values.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureTimeSpan operator -(SecureDateTime a, SecureDateTime b) =>
+			new SecureTimeSpan(a.Decrypted - b.Decrypted);
+
+		/// <summary>Parses a string into its secured form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureDateTime Parse(string value) =>
+			new SecureDateTime(DateTime.Parse(value));
+
+		/// <summary>Parses a string into its secured form with the specified provider.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureDateTime Parse(string value, IFormatProvider? provider) =>
+			new SecureDateTime(DateTime.Parse(value, provider));
+
+		/// <summary>Parses a string into its secured form with the specified provider and style.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureDateTime Parse(
+			string value,
+			IFormatProvider? provider,
+			DateTimeStyles style
+		) => new SecureDateTime(DateTime.Parse(value, provider, style));
+
+		/// <summary>Tries to parse a string into its secured form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool TryParse(string? value, out SecureDateTime result)
+		{
+			if (DateTime.TryParse(value, out DateTime plain))
+			{
+				result = new SecureDateTime(plain);
+				return true;
+			}
+			result = default;
+			return false;
+		}
+
+		/// <summary>Tries to parse a string into its secured form with the specified provider and style.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool TryParse(
+			string? value,
+			IFormatProvider? provider,
+			DateTimeStyles style,
+			out SecureDateTime result
+		)
+		{
+			if (DateTime.TryParse(value, provider, style, out DateTime plain))
+			{
+				result = new SecureDateTime(plain);
+				return true;
+			}
+			result = default;
+			return false;
+		}
+	}
+}

@@ -1,0 +1,27 @@
+{
+  "branches": ["master"],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    "@semantic-release/changelog",
+    [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "dotnet run Tools/collect-release-assets.cs -- ${nextRelease.version} && dotnet run Tools/bump-versions.cs -- ${nextRelease.version} && dotnet run Tools/pack-unitypackage.cs"
+      }
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "assets": ["dist/*.nupkg", "dist/*.zip", "dist/*.unitypackage"]
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": ["CHANGELOG.md", "SecureValue.Unity/package.json", "SecureValue/SecureValue.csproj"],
+        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+      }
+    ]
+  ]
+}

@@ -1,0 +1,130 @@
+#nullable enable
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+
+namespace SecureValue
+{
+	/// <summary>
+	/// Internal façade over the security engine (keys, PRNG, cipher, MAC).
+	/// Seal/Open fuse derivation, encryption, and tagging into one call.
+	/// </summary>
+	internal static class Vault
+	{
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ulong NextRandom() => Prng.Next();
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ulong RandomSalt() => Prng.Next();
+
+		/// <summary>Derives the per-operation subkeys for a salt (process key).</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static KeySet DeriveProcessKeys(ulong salt) => Keys.Derive(salt, Keys.ProcessSet);
+
+		/// <summary>Derives only the tag key for a salt (process key).</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ulong DeriveProcessTagKey(ulong salt) => Mixing.SplitMix(salt ^ Keys.K3);
+
+		/// <summary>Generates a fresh unique storage key from the CSPRNG (serialize path only).</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static KeySet NewStorageKey() => Keys.NewStorageKey();
+
+		/// <summary>
+		/// Derives chained hi-word subkeys from the lo ciphertext (same key domain).
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static KeySet DeriveChainedKeys(ulong salt, ulong cLo, in KeySet ks) =>
+			Keys.Derive(salt ^ Mixing.SplitMix(cLo ^ ks.K1), ks);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static (ulong Cipher, uint Tag) Seal(ulong plain, ulong salt) =>
+			BlockCipher.Seal(plain, salt, Keys.ProcessSet);
+
+		/// <summary>Verifies the tag and decrypts; throws on tampering.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ulong Open(ulong cipher, uint tag, ulong salt)
+		{
+			if (!BlockCipher.TryOpen(cipher, tag, salt, Keys.ProcessSet, out ulong plain))
+			{
+				ThrowTampered();
+			}
+			return plain;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static (ulong Lo, ulong Hi, uint Tag) Seal128(ulong lo, ulong hi, ulong salt) =>
+			BlockCipher.Seal128(lo, hi, salt, Keys.ProcessSet);
+
+		/// <summary>Verifies the pair tag and decrypts; throws on tampering.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static (ulong Lo, ulong Hi) Open128(ulong cLo, ulong cHi, uint tag, ulong salt)
+		{
+			if (
+				!BlockCipher.TryOpen128(
+					cLo,
+					cHi,
+					tag,
+					salt,
+					Keys.ProcessSet,
+					out ulong lo,
+					out ulong hi
+				)
+			)
+			{
+				ThrowTampered();
+			}
+			return (lo, hi);
+		}
+
+		/// <summary>Encrypts one word with already-derived subkeys (any key domain).</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ulong SealWord(ulong plain, in KeySet rk) =>
+			BlockCipher.EncryptCore(plain, rk);
+
+		/// <summary>Decrypts one word with already-derived subkeys (no tag check).</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ulong OpenWord(ulong cipher, in KeySet rk) =>
+			BlockCipher.DecryptCore(cipher, rk);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static uint ComputeTag(ulong cipher, in KeySet rk) => Mac.ComputeTag(cipher, rk);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static uint ComputeTag(ulong cipher, ulong k3) => Mac.ComputeTag(cipher, k3);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static uint ComputeTag(ulong c0, ulong c1, ulong k3) => Mac.ComputeTag(c0, c1, k3);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static uint ComputeTag(ulong c0, ulong c1, in KeySet rk) =>
+			Mac.ComputeTag(c0, c1, rk);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static uint ComputeTag(ReadOnlySpan<ulong> ciphers, in KeySet rk) =>
+			Mac.ComputeTag(ciphers, rk);
+
+		/// <summary>
+		/// Per-word keystream mask for array-backed wrappers (index folded in cheaply).
+		/// A pure function of (salt, index). Each value and each backup copy
+		/// gets a fresh random salt, and the seal keys stay per-process secret.
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ulong MixStream(ulong salt, ulong index) =>
+			Mixing.SplitMix(salt ^ (index * 0x9E3779B97F4A7C15UL));
+
+		/// <summary>Raises the global tampering event, then throws.</summary>
+		[DoesNotReturn]
+		internal static void ThrowTampered()
+		{
+			TamperingNotifier.Raise();
+			throw new TamperedException();
+		}
+
+		/// <summary>Throws for a read on a never-initialized value (no tamper event).</summary>
+		[DoesNotReturn]
+		internal static void ThrowUninitialized()
+		{
+			throw new UninitializedException();
+		}
+	}
+}

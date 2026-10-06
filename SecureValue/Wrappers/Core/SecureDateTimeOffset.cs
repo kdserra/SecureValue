@@ -1,0 +1,274 @@
+#nullable enable
+using System;
+using System.Globalization;
+using System.Runtime.CompilerServices;
+
+namespace SecureValue
+{
+	/// <summary>Memory-encrypted <see cref="DateTimeOffset"/> value (128-bit payload:
+	/// ticks + offset minutes).</summary>
+	[Serializable]
+	public partial struct SecureDateTimeOffset
+		: ISecureSerialization
+#if UNITY_5_3_OR_NEWER
+			,
+			UnityEngine.ISerializationCallbackReceiver
+#endif
+	{
+		private Cell128 _cell;
+
+		/// <summary>Secures a DateTimeOffset value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public SecureDateTimeOffset(DateTimeOffset value)
+		{
+#if UNITY_5_3_OR_NEWER
+			_serialized = default;
+#endif
+			_cell = default;
+			int offsetMinutes = (int)value.Offset.TotalMinutes;
+			_cell.Protect((ulong)value.Ticks, (ulong)(ushort)(offsetMinutes + 1024));
+		}
+
+		/// <summary>Gets the decrypted plain value.</summary>
+		public DateTimeOffset Decrypted
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get
+			{
+				(ulong ticks, ulong packedOffset) = _cell.Unprotect();
+				var offset = new TimeSpan(0, (int)(ushort)packedOffset - 1024, 0);
+				return new DateTimeOffset(Bits.ToLong(ticks), offset);
+			}
+		}
+
+		/// <summary>Tries to decrypt without throwing. Returns false when never assigned or tampered; tampering still raises <see cref="TamperingNotifier.TamperingDetected"/>.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool TryDecrypt(out DateTimeOffset value)
+		{
+			if (_cell.TryUnprotect(out ulong ticks, out ulong packedOffset))
+			{
+				var offset = new TimeSpan(0, (int)(ushort)packedOffset - 1024, 0);
+				value = new DateTimeOffset(Bits.ToLong(ticks), offset);
+				return true;
+			}
+			value = default;
+			return false;
+		}
+
+		/// <summary>True when never assigned.</summary>
+		public bool IsUnset
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => _cell.IsUnset;
+		}
+
+		/// <summary>Encrypts the type default when never initialized.</summary>
+		internal void EnsureInitialized()
+		{
+			if (_cell.IsUnset)
+			{
+				this = new SecureDateTimeOffset(default);
+			}
+		}
+
+		uint[] ISecureSerialization.SaveToSerialized()
+		{
+			Span<ulong> words = stackalloc ulong[12];
+			KeySet saveKey = Vault.NewStorageKey();
+			_cell.CopyStorageWords(words, saveKey);
+			saveKey.CopyTo(words.Slice(8));
+			return SerializationFormat.Pack(words);
+		}
+
+		void ISecureSerialization.LoadFromSerialized(uint[]? packed) => LoadFromSerialized(packed);
+
+		private void LoadFromSerialized(uint[]? packed)
+		{
+			if (packed == null)
+			{
+				// Never serialized: materialize a default (bad lengths fail closed on read).
+				EnsureInitialized();
+				return;
+			}
+			Span<ulong> words = stackalloc ulong[12];
+			if (SerializationFormat.TryUnpack(packed, words))
+			{
+				KeySet saveKey = KeySet.FromWords(words.Slice(8));
+				_cell.RestoreStorageWords(words, saveKey);
+			}
+		}
+
+#if UNITY_5_3_OR_NEWER
+		[UnityEngine.SerializeField, UnityEngine.HideInInspector]
+		private uint[]? _serialized;
+
+		void UnityEngine.ISerializationCallbackReceiver.OnBeforeSerialize()
+		{
+			EnsureInitialized();
+			_serialized = ((ISecureSerialization)this).SaveToSerialized();
+		}
+
+		void UnityEngine.ISerializationCallbackReceiver.OnAfterDeserialize()
+		{
+			// Restores through a direct instance call: casting this to
+			// ISecureSerialization would box the struct and the restored
+			// cell would be lost with the box.
+			LoadFromSerialized(_serialized);
+		}
+#endif
+
+		/// <summary>Converts a plain DateTimeOffset value into its secured form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static implicit operator SecureDateTimeOffset(DateTimeOffset value) =>
+			new SecureDateTimeOffset(value);
+
+		/// <summary>Converts back to the plain DateTimeOffset value (decrypts on read).</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static implicit operator DateTimeOffset(SecureDateTimeOffset value) =>
+			value.Decrypted;
+
+		/// <summary>Compares this value with another secured DateTimeOffset for equality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool Equals(SecureDateTimeOffset other) => Decrypted == other.Decrypted;
+
+		/// <summary>Compares this value with another object for equality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public override bool Equals(object? obj) =>
+			obj is SecureDateTimeOffset other && Equals(other);
+
+		/// <summary>Returns the hash code of the decrypted value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public override int GetHashCode() => Decrypted.GetHashCode();
+
+		/// <summary>Returns the decrypted value as a string.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public override string ToString() => Decrypted.ToString();
+
+		/// <summary>Returns the decrypted value formatted with the specified format.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public string ToString(string? format) => Decrypted.ToString(format);
+
+		/// <summary>Returns the decrypted value formatted with the specified format and provider.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public string ToString(string? format, IFormatProvider? formatProvider) =>
+			Decrypted.ToString(format, formatProvider);
+
+		/// <summary>Compares this value with another secured DateTimeOffset.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public int CompareTo(SecureDateTimeOffset other) => Decrypted.CompareTo(other.Decrypted);
+
+		/// <summary>Compares this value with another object.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public int CompareTo(object? obj) =>
+			obj is SecureDateTimeOffset other
+				? CompareTo(other)
+				: throw new ArgumentException(
+					"Object must be of type SecureDateTimeOffset.",
+					nameof(obj)
+				);
+
+		/// <summary>Tests two secured DateTimeOffset values for equality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator ==(SecureDateTimeOffset left, SecureDateTimeOffset right) =>
+			left.Equals(right);
+
+		/// <summary>Tests two secured DateTimeOffset values for inequality.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator !=(SecureDateTimeOffset left, SecureDateTimeOffset right) =>
+			!left.Equals(right);
+
+		/// <summary>Compares two secured DateTimeOffset values.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator <(SecureDateTimeOffset left, SecureDateTimeOffset right) =>
+			left.Decrypted < right.Decrypted;
+
+		/// <summary>Compares two secured DateTimeOffset values.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator <=(SecureDateTimeOffset left, SecureDateTimeOffset right) =>
+			left.Decrypted <= right.Decrypted;
+
+		/// <summary>Compares two secured DateTimeOffset values.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator >(SecureDateTimeOffset left, SecureDateTimeOffset right) =>
+			left.Decrypted > right.Decrypted;
+
+		/// <summary>Compares two secured DateTimeOffset values.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator >=(SecureDateTimeOffset left, SecureDateTimeOffset right) =>
+			left.Decrypted >= right.Decrypted;
+
+		/// <summary>Adds a secured time span to a secured date and time offset.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureDateTimeOffset operator +(SecureDateTimeOffset a, SecureTimeSpan b) =>
+			new SecureDateTimeOffset(a.Decrypted + b.Decrypted);
+
+		/// <summary>Subtracts a secured time span from a secured date and time offset.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureDateTimeOffset operator -(SecureDateTimeOffset a, SecureTimeSpan b) =>
+			new SecureDateTimeOffset(a.Decrypted - b.Decrypted);
+
+		/// <summary>Subtracts two secured date and time offset values.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureTimeSpan operator -(SecureDateTimeOffset a, SecureDateTimeOffset b) =>
+			new SecureTimeSpan(a.Decrypted - b.Decrypted);
+
+		/// <summary>Converts a secured date and time into its secured date and time offset form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static implicit operator SecureDateTimeOffset(SecureDateTime value) =>
+			new SecureDateTimeOffset((DateTimeOffset)value.Decrypted);
+
+		/// <summary>Converts a plain date and time into its secured date and time offset form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static implicit operator SecureDateTimeOffset(DateTime value) =>
+			new SecureDateTimeOffset(value);
+
+		/// <summary>Parses a string into its secured form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureDateTimeOffset Parse(string value) =>
+			new SecureDateTimeOffset(DateTimeOffset.Parse(value));
+
+		/// <summary>Parses a string into its secured form with the specified provider.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureDateTimeOffset Parse(string value, IFormatProvider? provider) =>
+			new SecureDateTimeOffset(DateTimeOffset.Parse(value, provider));
+
+		/// <summary>Parses a string into its secured form with the specified provider and style.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureDateTimeOffset Parse(
+			string value,
+			IFormatProvider? provider,
+			DateTimeStyles style
+		) => new SecureDateTimeOffset(DateTimeOffset.Parse(value, provider, style));
+
+		/// <summary>Tries to parse a string into its secured form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool TryParse(string? value, out SecureDateTimeOffset result)
+		{
+			if (DateTimeOffset.TryParse(value, out DateTimeOffset plain))
+			{
+				result = new SecureDateTimeOffset(plain);
+				return true;
+			}
+			result = default;
+			return false;
+		}
+
+		/// <summary>Tries to parse a string into its secured form with the specified provider and style.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool TryParse(
+			string? value,
+			IFormatProvider? provider,
+			DateTimeStyles style,
+			out SecureDateTimeOffset result
+		)
+		{
+			if (DateTimeOffset.TryParse(value, provider, style, out DateTimeOffset plain))
+			{
+				result = new SecureDateTimeOffset(plain);
+				return true;
+			}
+			result = default;
+			return false;
+		}
+	}
+}

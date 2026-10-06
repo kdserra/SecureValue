@@ -1,0 +1,23 @@
+{
+  "name": "com.kdserra.securevalue",
+  "version": "0.1.0",
+  "displayName": "SecureValue",
+  "description": "Memory-encrypted values for .NET",
+  "unity": "2021.3",
+  "keywords": [
+    "anticheat",
+    "memory",
+    "encryption",
+    "security",
+    "cheat-protection",
+    "memory-protection",
+    "tamper-detection",
+    "unity",
+    "gamedev"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Kevin Serra",
+    "url": "https://github.com/kdserra/SecureValue"
+  }
+}

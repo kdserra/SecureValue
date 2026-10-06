@@ -1,0 +1,119 @@
+name: Build, test, release
+
+# Single workflow, single job, single runner per event.
+# - pull_request and master push: auto-format, re-stage Unity Generated
+#   sources, build, test.
+# - master push only: push back format drift (chore, [skip ci]), then staging
+#   drift (chore, [skip ci]), then semantic-release (feat: -> minor,
+#   fix:/perf: -> patch, BREAKING CHANGE -> major; chore:/docs:/ci: and any
+#   other non-qualifying message -> quiet green no-op: "no relevant changes,
+#   no new version published").
+# Non-conventional messages NEVER fail this workflow: there is no lint gate;
+# semantic-release simply skips the release and exits 0.
+# NOTE: chore: alone does NOT skip CI — the [skip ci] trailer in the bot
+# commit messages is what suppresses retriggering (no loop).
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+# Serialize runs on the same ref so two rapid master pushes cannot race the
+# staging push-back against each other (second run queues behind the first).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write # tags, releases, format/staging + CHANGELOG push-back
+  issues: write # release comments on related issues
+  pull-requests: write # release comments on related PRs
+
+jobs:
+  build-test-release:
+    name: Build, test, release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history for semantic-release)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Auto-format (CSharpier, .csharpierrc.json)
+        run: |
+          dotnet tool restore
+          dotnet csharpier format .
+
+      - name: Commit format drift back (push only)
+        if: github.event_name == 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          if git diff --cached --quiet; then
+            echo "Formatting clean — nothing to commit."
+          else
+            git commit -m "chore(format): csharpier auto-format [skip ci]"
+            git push || echo "::warning::Format push-back failed; will retry on the next push."
+          fi
+
+      - name: Sync Unity Generated staging
+        run: dotnet run Tools/build-unity-package.cs
+
+      - name: Commit Unity staging drift back (push only)
+        if: github.event_name == 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Whole package dir: Generated sources + synced README + .meta files
+          # anywhere in the package (the staging script manages those too).
+          git add SecureValue.Unity
+          if git diff --cached --quiet; then
+            echo "Unity staging in sync — nothing to commit."
+          else
+            git commit -m "chore(unity): sync Unity package staging [skip ci]"
+            git push || echo "::warning::Unity staging push-back failed; will retry on the next push."
+          fi
+
+      - name: Restore
+        run: dotnet restore SecureValue.slnx
+
+      - name: Build (Release)
+        run: dotnet build SecureValue.slnx -c Release --no-restore --nologo -v minimal
+
+      - name: Test (release gate — failures stop the release below)
+        run: dotnet test SecureValue.slnx -c Release --no-build --nologo -v minimal
+
+      - name: Persistence validate run (fresh process reloads the payload file)
+        # The full run above wrote the payload file (a first run in a fresh state
+        # only initializes); this second invocation runs in a NEW process — fresh
+        # static keys, like a Unity restart — and validates the stored uint[]
+        # payloads against the original constants. Only the persistence tests run
+        # here; everything else ran in the step above.
+        run: dotnet test SecureValue.slnx -c Release --no-build --nologo -v minimal --filter "FullyQualifiedName~PersistenceTests"
+
+      - name: Setup Node (push only)
+        if: github.event_name == 'push'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install release tooling (push only)
+        if: github.event_name == 'push'
+        run: npm ci
+
+      - name: Semantic release (push only; quiet no-op without qualifying commits)
+        if: github.event_name == 'push'
+        run: npx semantic-release
+        env:
+          # Automatic per-run token — no secret to create. Requires the repo's
+          # Settings > Actions > General > Workflow permissions to allow write
+          # ("Read and write permissions"); the permissions: block above then
+          # scopes it to the minimum this workflow needs.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

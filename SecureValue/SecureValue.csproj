@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.1;net5.0;net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+		<!-- Per-TFM language version (exhaustive: every TFM above appears in
+		exactly one Condition). C# 9 stays the baseline: newer syntax appears
+		only inside #if NET7_0_OR_GREATER / NET8_0_OR_GREATER regions
+		(static-abstract interface implementations need C# 11), which Unity's
+		C# 9 compiler skips (it never defines those symbols). The ns2.1–net6
+		public API is unchanged by this. -->
+		<LangVersion
+			Condition="'$(TargetFramework)' == 'netstandard2.1' or '$(TargetFramework)' == 'net5.0' or '$(TargetFramework)' == 'net6.0'"
+			>9.0</LangVersion>
+		<LangVersion
+			Condition="'$(TargetFramework)' == 'net7.0' or '$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net9.0' or '$(TargetFramework)' == 'net10.0'"
+			>12.0</LangVersion>
+		<ImplicitUsings>false</ImplicitUsings>
+		<Nullable>disable</Nullable>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	</PropertyGroup>
+	<PropertyGroup>
+		<PackageId>SecureValue</PackageId>
+		<Product>SecureValue</Product>
+		<Version>0.1.0</Version>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageIcon>icon.png</PackageIcon>
+		<Authors>Kevin Serra</Authors>
+		<Description>Memory-encrypted values for .NET</Description>
+		<PackageTags>anticheat;memory;encryption;security;cheat-protection;memory-protection;tamper-detection;unity;gamedev</PackageTags>
+		<PackageProjectUrl>https://github.com/kdserra/SecureValue</PackageProjectUrl>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>https://github.com/kdserra/SecureValue.git</RepositoryUrl>
+		<PackageReleaseNotes>View the release notes here: https://github.com/kdserra/SecureValue/releases</PackageReleaseNotes>
+		<Copyright>Copyright © Kevin Serra</Copyright>
+	</PropertyGroup>
+	<ItemGroup>
+		<None Include="..\README.md" Pack="true" PackagePath="\" />
+		<None Include="..\icon.png" Pack="true" PackagePath="\" />
+	</ItemGroup>
+</Project>
