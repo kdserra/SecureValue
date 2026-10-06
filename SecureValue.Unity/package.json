@@ -1,6 +1,6 @@
 {
   "name": "com.kdserra.securevalue",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "displayName": "SecureValue",
   "description": "Memory-encrypted values for .NET",
   "unity": "2021.3",
