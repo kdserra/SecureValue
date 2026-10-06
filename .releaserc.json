@@ -13,7 +13,7 @@
     [
       "@semantic-release/github",
       {
-        "assets": ["dist/*.nupkg", "dist/*.zip", "dist/*.unitypackage"]
+        "assets": ["dist/*.{nupkg,zip,unitypackage}"]
       }
     ],
     [
