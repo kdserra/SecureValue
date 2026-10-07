@@ -426,7 +426,7 @@ Span API keeps your game loop allocation-free.
 
 - **Do not convert the span, ex; `.ToString()`/`.ToArray()`.** A heap object will materialize,
   causing heap allocations, and GC spikes.  Be careful of third party APIs who convert
-  `ReadOnlySpan<char>` recklessly.
+  `ReadOnlySpan<char>` to heap objects.
 
 - **Never `stackalloc` In a Loop:** `stackalloc` memory is retained until the outer method returns,
   causing stack overflows.  Hoist your manual buffer outside the loop using `CopyTo`, or let
@@ -512,8 +512,10 @@ weaponId.StackDecrypt(static id =>
 });
 ```
 
-`static` lambdas cannot capture local variables from the surrounding scope, stateful overloads allow
-you to pass local values directly through the method signature.
+Using static lambdas ensures the delegate is cached, avoiding repeated heap allocations.
+
+Since static lambdas cannot capture local scope, stateful overloads let you pass local variables
+directly into the signature.
 
 The state is passed as a value parameter: `expected`, so the callback doesn't need to capture a
 closure, preserving zero heap-allocation execution.
