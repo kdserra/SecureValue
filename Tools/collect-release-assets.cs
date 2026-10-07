@@ -156,16 +156,17 @@ static List<string> DiscoverProjects(string repoRoot)
 		{
 			continue;
 		}
-		if (
-			parts.Any(p =>
-				p.Contains("Tests", StringComparison.OrdinalIgnoreCase)
-				|| p.Equals("SecureValue.Unity", StringComparison.OrdinalIgnoreCase)
-				|| p.Equals("bin", StringComparison.OrdinalIgnoreCase)
-				|| p.Equals("obj", StringComparison.OrdinalIgnoreCase)
-				|| p.Equals("node_modules", StringComparison.OrdinalIgnoreCase)
-				|| p.Equals(".git", StringComparison.OrdinalIgnoreCase)
-			)
-		)
+ 		if (
+ 			parts.Any(p =>
+ 				p.Contains("Tests", StringComparison.OrdinalIgnoreCase)
+ 				|| p.Equals("SecureValue.Unity", StringComparison.OrdinalIgnoreCase)
+ 				|| p.Equals("SecureValue.CodeGen", StringComparison.OrdinalIgnoreCase)
+ 				|| p.Equals("bin", StringComparison.OrdinalIgnoreCase)
+ 				|| p.Equals("obj", StringComparison.OrdinalIgnoreCase)
+ 				|| p.Equals("node_modules", StringComparison.OrdinalIgnoreCase)
+ 				|| p.Equals(".git", StringComparison.OrdinalIgnoreCase)
+ 			)
+ 		)
 		{
 			continue;
 		}
