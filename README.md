@@ -505,14 +505,14 @@ try/finally blocks, and clear plaintext data.
 decrypts into it, passes the span to your callback, and guarantees memory zeroing before
 returning.
 
+Using static lambdas ensures the delegate is cached, avoiding repeated heap allocations.
+
 ```csharp
 weaponId.StackDecrypt(static id =>
 {
     if (id.SequenceEqual("wpn_excalibur_01")) ExecuteAttack();
 });
 ```
-
-Using static lambdas ensures the delegate is cached, avoiding repeated heap allocations.
 
 Since static lambdas cannot capture local scope, stateful overloads let you pass local variables
 directly into the signature.
