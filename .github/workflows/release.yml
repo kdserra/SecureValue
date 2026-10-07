@@ -27,6 +27,7 @@ permissions:
   contents: write # tags, releases, format/staging + CHANGELOG push-back
   issues: write # release comments on related issues
   pull-requests: write # release comments on related PRs
+  id-token: write # NuGet Trusted Publishing (GitHub OIDC)
 
 jobs:
   build-test-release:
@@ -117,3 +118,21 @@ jobs:
           # ("Read and write permissions"); the permissions: block above then
           # scopes it to the minimum this workflow needs.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # This runs after semantic-release has uploaded dist/*.nupkg to the
+      # GitHub release. NuGet/login exchanges this run's OIDC identity for a
+      # short-lived NuGet key; no long-lived NuGet API key is stored.
+      - name: NuGet login (Trusted Publishing)
+        if: github.event_name == 'push' && hashFiles('dist/*.nupkg') != ''
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Publish NuGet package
+        if: github.event_name == 'push' && hashFiles('dist/*.nupkg') != ''
+        shell: bash
+        run: |
+          dotnet nuget push dist/*.nupkg \
+            --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" \
+            --source https://api.nuget.org/v3/index.json
