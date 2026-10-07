@@ -112,8 +112,9 @@ int currentHealth = health; // Decrypt `SecureInt` to `int`
 
 - **Strings without GC via Span API.**
 
-  You can read via `CopyTo(Span<char>)`, and write via assignment from `ReadOnlySpan<char>`.
-  With no intermediate `string`, and zero heap allocations upto 16 characters.
+  You can read via `CopyTo(Span<char>)`, or `StackDecrypt`, and write via assignment from
+  `ReadOnlySpan<char>`.  With no intermediate `string`, and zero heap allocations upto 16
+  characters.
 
   See [Zero heap-allocation `SecureString`](#string-span) section to learn more.
 
