@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/kdserra/SecureValue/compare/v1.0.2...v1.1.0) (2026-10-08)
+
+
+### Features
+
+* run & add benchmark artifacts per release ([85972fa](https://github.com/kdserra/SecureValue/commit/85972fad5ef037d3b78f418e21e5292e7ac9385b))
+
 ## [1.0.2](https://github.com/kdserra/SecureValue/compare/v1.0.1...v1.0.2) (2026-10-08)
 
 
