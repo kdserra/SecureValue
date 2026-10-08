@@ -4,6 +4,14 @@
 ### Bug Fixes
 
 * double initialization ([db82625](https://github.com/kdserra/SecureValue/commit/db8262539a8027bbf4829c09b7c7c5978a3b02c6))
+* listing formatting ([4077de0](https://github.com/kdserra/SecureValue/commit/4077de0f6019b957c10fd13fd598086aec4596b2))
+
+## [1.0.1](https://github.com/kdserra/SecureValue/compare/v1.0.0...v1.0.1) (2026-10-08)
+
+
+### Bug Fixes
+
+* double initialization ([db82625](https://github.com/kdserra/SecureValue/commit/db8262539a8027bbf4829c09b7c7c5978a3b02c6))
 
 # 1.0.0 (2026-10-06)
 
