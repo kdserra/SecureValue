@@ -1,0 +1,83 @@
+name: Benchmarks (release assets)
+
+# Runs AFTER the main workflow publishes a GitHub Release: the `published`
+# trigger fires only then, so this job can never race the release — the tag
+# and the Release always exist by the time it starts. It is a separate
+# workflow (own concurrency group) so the long benchmark runs never slow down
+# build/test/release.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to (re)build benchmark assets for (e.g. v1.2.3)
+        required: true
+
+# Serialize per tag so two deliveries for the same release (redelivered
+# `published` event + manual dispatch) cannot upload over each other. The
+# already-benchmarked gate below makes the second run a no-op anyway.
+concurrency:
+  group: benchmarks-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write # read release assets + upload benchmark files
+
+jobs:
+  benchmarks:
+    name: Run benchmarks, attach results
+    runs-on: ubuntu-latest
+    timeout-minutes: 360 # the All suite is a full default-job run; it takes a while
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Already-benchmarked gate
+        # A release is benchmarked iff both files are attached to it. Missing
+        # files (never run, or a previous run died halfway) run below; a
+        # re-run with both present exits having done nothing (all later steps
+        # skip, job stays green).
+        id: gate
+        run: |
+          ASSETS=$(gh release view "$TAG" --json assets --jq '.assets[].name')
+          echo "Existing assets for $TAG:"
+          echo "$ASSETS"
+          HAS_INT=false
+          HAS_ALL=false
+          if echo "$ASSETS" | grep -qx 'Benchmark-IntFloatString.md'; then HAS_INT=true; fi
+          if echo "$ASSETS" | grep -qx 'Benchmark-All.md'; then HAS_ALL=true; fi
+          echo "has-int=$HAS_INT" >> "$GITHUB_OUTPUT"
+          echo "has-all=$HAS_ALL" >> "$GITHUB_OUTPUT"
+          if [ "$HAS_INT" = "true" ] && [ "$HAS_ALL" = "true" ]; then
+            echo "Both benchmark files already attached to $TAG — nothing to do."
+          fi
+
+      - name: Run IntFloatString benchmarks
+        if: steps.gate.outputs.has-int == 'false'
+        run: dotnet run Tools/collect-benchmark-results.cs -- "${TAG#v}" IntFloatString
+
+      - name: Upload Benchmark-IntFloatString.md
+        # Uploaded BEFORE the slow suite starts, so the fast results survive
+        # even if the All run below fails or times out.
+        if: steps.gate.outputs.has-int == 'false'
+        run: gh release upload "$TAG" dist/Benchmark-IntFloatString.md --clobber
+
+      - name: Run All benchmarks
+        if: steps.gate.outputs.has-all == 'false'
+        run: dotnet run Tools/collect-benchmark-results.cs -- "${TAG#v}" All
+
+      - name: Upload Benchmark-All.md
+        if: steps.gate.outputs.has-all == 'false'
+        run: gh release upload "$TAG" dist/Benchmark-All.md --clobber
