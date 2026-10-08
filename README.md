@@ -595,7 +595,7 @@ Benchmark sources:
 - [Unity benchmark code](https://github.com/kdserra/SecureValue/tree/master/SecureValue.Unity/Runtime/Samples/Benchmark)
 - [.NET BenchmarkDotNet code](https://github.com/kdserra/SecureValue/tree/master/SecureValue.Benchmarks)
 
-Per-release .NET results (`Benchmark-IntFloatString.md`) are attached to each [GitHub Release](https://github.com/kdserra/SecureValue/releases).
+Per-release .NET results (`Benchmark-IntFloatString.md`, `Benchmark-All.md`) are attached to each [GitHub Release](https://github.com/kdserra/SecureValue/releases).
 
 ### Unity Editor
 

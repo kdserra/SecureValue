@@ -1,13 +1,15 @@
 //:property TargetFramework=net10.0
 
-// Runs the curated BenchmarkDotNet int+float+string suite and assembles the
-// per-class GitHub reports into ONE markdown file for the GitHub Release:
-//   dist/Benchmark-IntFloatString.md
-// (The full all-classes suite was dropped: it takes far too long on CI.)
-// Filenames carry no version — the Release they attach to IS the version.
+// Runs a BenchmarkDotNet suite and assembles the per-class GitHub reports
+// into ONE markdown file for the GitHub Release:
+//   dist/Benchmark-IntFloatString.md  (curated int+float+string trio — fast)
+//   dist/Benchmark-All.md             (every benchmark class — slow)
+// The .benchmarks.yml workflow uploads each file the moment it is assembled,
+// so the fast file is attached before the slow run even starts. Filenames
+// carry no version — the Release they attach to IS the version.
 //
 // Run: dotnet run Tools/collect-benchmark-results.cs -- <version> <suite>
-//   <suite>: IntFloatString (only)
+//   <suite>: IntFloatString | All
 //   Optional 3rd arg "short": append --job short (local smoke tests only;
 //   CI runs the default job so published numbers stay full-quality).
 //   (Called by .github/workflows/benchmarks.yml, NOT by semantic-release.)
@@ -40,14 +42,14 @@ if (args.Length == 3 && !shortJob)
 	return 2;
 }
 
-if (!suite.Equals("IntFloatString", StringComparison.Ordinal))
+(string Filter, string FileName) = suite switch
 {
-	Console.Error.WriteLine($"Unknown suite '{suite}'. Only IntFloatString is supported.");
-	return 2;
-}
-
-const string Filter = "*IntFloatStringBenchmarks*";
-const string FileName = "Benchmark-IntFloatString.md";
+	"IntFloatString" => ("*IntFloatStringBenchmarks*", "Benchmark-IntFloatString.md"),
+	"All" => ("*Benchmarks*", "Benchmark-All.md"),
+	_ => throw new InvalidOperationException(
+		$"Unknown suite '{suite}'. Expected IntFloatString or All."
+	),
+};
 
 string repoRoot = FindRepoRoot(Environment.CurrentDirectory);
 string distDir = Path.Combine(repoRoot, "dist");
