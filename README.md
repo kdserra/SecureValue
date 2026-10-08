@@ -110,7 +110,7 @@ int currentHealth = health; // Decrypt `SecureInt` to `int`
   SecureValue's Unity editor integration supports its full Unity-compatible wrapper set, including
   .NET numerics that Unity does not normally serialize.
 
-- **Strings without GC via Span API.**
+- **SecureString without GC via Span API.**
 
   You can read via `CopyTo(Span<char>)`, or `StackDecrypt`, and write via assignment from
   `ReadOnlySpan<char>`.  With no intermediate `string`, and zero heap allocations upto 16
