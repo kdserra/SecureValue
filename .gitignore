@@ -372,6 +372,11 @@ FodyWeavers.xsd
 # Release asset staging (semantic-release collector + local runs)
 dist/
 
+# Generated NuGet package readme (pure-markdown conversion of the root
+# README.md, produced by Tools/fix-readme-formatting.cs during CI/release;
+# the Unity copy SecureValue.Unity/README.md stays committed for UPM).
+SecureValue/README.md
+
 # Unity package .meta files ARE tracked: they are Unity's guid registry for
 # SecureValue.Unity (script references + package-update change detection).
 # This negation must stay AFTER the stock `*.meta` ignore above: later rules win.

@@ -4,8 +4,9 @@
 // Stages the Unity package Runtime sources:
 // copies the single SecureValue project sources into
 // SecureValue.Unity/Runtime/Generated/ so the package folder is self-contained.
-// Also copies the root README.md over SecureValue.Unity/README.md verbatim
-// (the root README is the single source of truth).
+// Also copies the root README.md over SecureValue.Unity/README.md and converts
+// the copy to pure markdown (the root README is the single source of truth;
+// Unity cannot render its centered-HTML header).
 // CI can then feed this folder to Unity's -batchmode exporter to produce a .unitypackage.
 //
 // Layout mapping (kept stable so Unity .meta files survive):
@@ -30,6 +31,7 @@
 //
 // Run: dotnet run Tools/build-unity-package.cs   (from anywhere in the repo)
 
+using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -95,10 +97,23 @@ SyncMetaTree(unityPkg);
 
 Console.WriteLine($"Runtime sources staged to {outDir}");
 
-// Single-source the Unity readme: verbatim copy of the root README.md.
+// Single-source the Unity readme: copy of the root README.md converted to
+// pure markdown (Unity cannot render the centered-HTML header). The root file
+// is never modified — the conversion runs on the staged copy only.
 string unityReadme = Path.Combine(unityPkg, "README.md");
 File.Copy(Path.Combine(repoRoot, "README.md"), unityReadme, overwrite: true);
-Console.WriteLine("staged README.md (unity readme, verbatim from root)");
+if (
+	Run(
+		"dotnet",
+		$"run \"{Path.Combine(repoRoot, "Tools", "fix-readme-formatting.cs")}\" -- \"{unityReadme}\" \"{unityReadme}\"",
+		repoRoot
+	) != 0
+)
+{
+	Console.Error.WriteLine("README conversion failed; refusing to stage.");
+	Environment.Exit(1);
+}
+Console.WriteLine("staged README.md (unity readme, pure-markdown conversion of root)");
 
 return;
 
@@ -290,6 +305,18 @@ string FolderMetaText(string guid) =>
 	+ "  userData: \n"
 	+ "  assetBundleName: \n"
 	+ "  assetBundleVariant: \n";
+
+static int Run(string cmd, string arguments, string workDir)
+{
+	var psi = new ProcessStartInfo(cmd, arguments)
+	{
+		UseShellExecute = false,
+		WorkingDirectory = workDir,
+	};
+	using var proc = Process.Start(psi)!;
+	proc.WaitForExit();
+	return proc.ExitCode;
+}
 
 static string FindRepoRoot(string start)
 {

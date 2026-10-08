@@ -81,6 +81,16 @@ jobs:
             git push || echo "::warning::Unity staging push-back failed; will retry on the next push."
           fi
 
+      - name: Prepare NuGet README (pure-markdown copy for pack)
+        # SecureValue/SecureValue.csproj embeds README.md from its own
+        # directory (gitignored build artifact). The root README is the
+        # source of truth — copy it over, then convert the copy (NuGet
+        # cannot render the centered-HTML header). collect-release-assets
+        # re-ensures this before pack, so releases never embed a stale copy.
+        run: |
+          cp README.md SecureValue/README.md
+          dotnet run Tools/fix-readme-formatting.cs -- SecureValue/README.md SecureValue/README.md
+
       - name: Restore
         run: dotnet restore SecureValue.slnx
 

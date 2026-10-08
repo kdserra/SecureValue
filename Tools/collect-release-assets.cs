@@ -32,6 +32,25 @@ string repoRoot = FindRepoRoot(Environment.CurrentDirectory);
 string distDir = Path.Combine(repoRoot, "dist");
 Directory.CreateDirectory(distDir);
 
+// The NuGet package embeds SecureValue/README.md (gitignored build artifact):
+// a pure-markdown conversion of the root README.md (NuGet cannot render its
+// centered-HTML header). Ensured here — before build/pack — so `dotnet pack`
+// never fails on a fresh clone and releases always embed a fresh conversion.
+// The root README is never modified; the conversion runs on the copy only.
+string packageReadme = Path.Combine(repoRoot, "SecureValue", "README.md");
+File.Copy(Path.Combine(repoRoot, "README.md"), packageReadme, overwrite: true);
+if (
+	Run(
+		"dotnet",
+		$"run \"{Path.Combine(repoRoot, "Tools", "fix-readme-formatting.cs")}\" -- \"{packageReadme}\" \"{packageReadme}\"",
+		repoRoot
+	) != 0
+)
+{
+	Console.Error.WriteLine("README conversion failed; refusing to pack.");
+	return 1;
+}
+
 // Release assets are regenerated on every prepare step. Remove artifacts from
 // an earlier attempt first so semantic-release can never upload a stale copy
 // alongside the assets produced by this run. Keep unrelated files in dist/ so
