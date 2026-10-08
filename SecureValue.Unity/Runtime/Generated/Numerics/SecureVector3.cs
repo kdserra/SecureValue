@@ -30,7 +30,6 @@ namespace SecureValue.Numerics
 			_serialized = default;
 #endif
 			_cell = default;
-			_cell = default;
 			_cell.Protect(EncLo(value), EncHi(value));
 		}
 

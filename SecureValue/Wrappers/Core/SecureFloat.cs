@@ -24,7 +24,6 @@ namespace SecureValue
 			_serialized = default;
 #endif
 			_cell = default;
-			_cell = default;
 			_cell.Protect(Bits.From(value));
 		}
 
