@@ -1,24 +1,28 @@
 name: Benchmarks (release assets)
 
-# Runs AFTER the main workflow publishes a GitHub Release: the `published`
-# trigger fires only then, so this job can never race the release — the tag
-# and the Release always exist by the time it starts. It is a separate
-# workflow (own concurrency group) so the long benchmark runs never slow down
-# build/test/release.
+# Chained off the main workflow's completion, NOT on `release: published`:
+# semantic-release publishes via GITHUB_TOKEN, and GitHub suppresses
+# downstream events for GITHUB_TOKEN actions — a `release` trigger would never
+# fire (verified: v1.1.0 published cleanly with this file on master and no run
+# started). Run-completion events are NOT suppressed, so `workflow_run` fires
+# reliably. The resolve step below then finds the newest release still missing
+# benchmark assets; fully-benchmarked states (e.g. plain push/PR completions)
+# exit in seconds. Separate workflow (own concurrency group) so the long runs
+# never slow down build/test/release.
 on:
-  release:
-    types: [published]
+  workflow_run:
+    workflows: ["Build, test, release"]
+    types: [completed]
   workflow_dispatch:
     inputs:
       tag:
         description: Existing release tag to (re)build benchmark assets for (e.g. v1.2.3)
         required: true
 
-# Serialize per tag so two deliveries for the same release (redelivered
-# `published` event + manual dispatch) cannot upload over each other. The
-# already-benchmarked gate below makes the second run a no-op anyway.
+# The tag is only known at runtime (resolve step), so the group is static:
+# runs serialize, never overlap uploads. Fully-benchmarked runs no-op fast.
 concurrency:
-  group: benchmarks-${{ github.event.release.tag_name || inputs.tag }}
+  group: benchmarks
   cancel-in-progress: false
 
 permissions:
@@ -28,56 +32,76 @@ jobs:
   benchmarks:
     name: Run benchmarks, attach results
     runs-on: ubuntu-latest
-    timeout-minutes: 360 # the All suite is a full default-job run; it takes a while
+    timeout-minutes: 180 # IntFloatString default-job run with headroom
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      TAG: ${{ github.event.release.tag_name || inputs.tag }}
     steps:
+      - name: Resolve target tag
+        # workflow_dispatch: the given tag. workflow_run: the newest release
+        # still missing a benchmark file (usually the just-published one).
+        # Empty output = nothing to benchmark; every later step skips.
+        id: resolve
+        run: |
+          if [ -n "${{ inputs.tag }}" ]; then
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+            echo "Manual dispatch for ${{ inputs.tag }}."
+            exit 0
+          fi
+          TAG=""
+          for t in $(gh release list --limit 10 --json tagName --jq '.[].tagName'); do
+            ASSETS=$(gh release view "$t" --json assets --jq '.assets[].name')
+            if ! echo "$ASSETS" | grep -qx 'Benchmark-IntFloatString.md'; then
+              TAG="$t"
+              break
+            fi
+          done
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          if [ -z "$TAG" ]; then
+            echo "No release is missing benchmark files — nothing to do."
+          else
+            echo "Benchmarking $TAG."
+          fi
+
       - name: Checkout release tag
+        if: steps.resolve.outputs.tag != ''
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name || inputs.tag }}
+          ref: ${{ steps.resolve.outputs.tag }}
           fetch-depth: 0
 
       - name: Setup .NET
+        if: steps.resolve.outputs.tag != ''
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
 
       - name: Already-benchmarked gate
-        # A release is benchmarked iff both files are attached to it. Missing
-        # files (never run, or a previous run died halfway) run below; a
-        # re-run with both present exits having done nothing (all later steps
-        # skip, job stays green).
+        # A release is benchmarked iff Benchmark-IntFloatString.md is attached
+        # to it. A re-run with it present exits having done nothing (all later
+        # steps skip, job stays green).
         id: gate
+        if: steps.resolve.outputs.tag != ''
+        env:
+          TAG: ${{ steps.resolve.outputs.tag }}
         run: |
           ASSETS=$(gh release view "$TAG" --json assets --jq '.assets[].name')
           echo "Existing assets for $TAG:"
           echo "$ASSETS"
           HAS_INT=false
-          HAS_ALL=false
           if echo "$ASSETS" | grep -qx 'Benchmark-IntFloatString.md'; then HAS_INT=true; fi
-          if echo "$ASSETS" | grep -qx 'Benchmark-All.md'; then HAS_ALL=true; fi
           echo "has-int=$HAS_INT" >> "$GITHUB_OUTPUT"
-          echo "has-all=$HAS_ALL" >> "$GITHUB_OUTPUT"
-          if [ "$HAS_INT" = "true" ] && [ "$HAS_ALL" = "true" ]; then
-            echo "Both benchmark files already attached to $TAG — nothing to do."
+          if [ "$HAS_INT" = "true" ]; then
+            echo "Benchmark file already attached to $TAG — nothing to do."
           fi
 
       - name: Run IntFloatString benchmarks
-        if: steps.gate.outputs.has-int == 'false'
+        if: steps.resolve.outputs.tag != '' && steps.gate.outputs.has-int == 'false'
+        env:
+          TAG: ${{ steps.resolve.outputs.tag }}
         run: dotnet run Tools/collect-benchmark-results.cs -- "${TAG#v}" IntFloatString
 
       - name: Upload Benchmark-IntFloatString.md
-        # Uploaded BEFORE the slow suite starts, so the fast results survive
-        # even if the All run below fails or times out.
-        if: steps.gate.outputs.has-int == 'false'
+        if: steps.resolve.outputs.tag != '' && steps.gate.outputs.has-int == 'false'
+        env:
+          TAG: ${{ steps.resolve.outputs.tag }}
         run: gh release upload "$TAG" dist/Benchmark-IntFloatString.md --clobber
-
-      - name: Run All benchmarks
-        if: steps.gate.outputs.has-all == 'false'
-        run: dotnet run Tools/collect-benchmark-results.cs -- "${TAG#v}" All
-
-      - name: Upload Benchmark-All.md
-        if: steps.gate.outputs.has-all == 'false'
-        run: gh release upload "$TAG" dist/Benchmark-All.md --clobber
