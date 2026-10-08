@@ -47,9 +47,15 @@ jobs:
             echo "Manual dispatch for ${{ inputs.tag }}."
             exit 0
           fi
+          # NOTE: every gh call pins -R explicitly: this step runs BEFORE
+          # actions/checkout, so there is no local .git for gh to infer the
+          # repo from (without -R it dies with "not a git repository" and the
+          # loop below would silently conclude there is nothing to do).
+          LIST=$(gh -R "$GITHUB_REPOSITORY" release list --limit 10 --json tagName --jq '.[].tagName') \
+            || { echo "::error::gh release list failed; refusing to no-op silently."; exit 1; }
           TAG=""
-          for t in $(gh release list --limit 10 --json tagName --jq '.[].tagName'); do
-            ASSETS=$(gh release view "$t" --json assets --jq '.assets[].name')
+          for t in $LIST; do
+            ASSETS=$(gh -R "$GITHUB_REPOSITORY" release view "$t" --json assets --jq '.assets[].name')
             if ! echo "$ASSETS" | grep -qx 'Benchmark-IntFloatString.md' \
               || ! echo "$ASSETS" | grep -qx 'Benchmark-All.md'; then
               TAG="$t"
@@ -86,7 +92,7 @@ jobs:
         env:
           TAG: ${{ steps.resolve.outputs.tag }}
         run: |
-          ASSETS=$(gh release view "$TAG" --json assets --jq '.assets[].name')
+          ASSETS=$(gh -R "$GITHUB_REPOSITORY" release view "$TAG" --json assets --jq '.assets[].name')
           echo "Existing assets for $TAG:"
           echo "$ASSETS"
           HAS_INT=false
@@ -111,7 +117,7 @@ jobs:
         if: steps.resolve.outputs.tag != '' && steps.gate.outputs.has-int == 'false'
         env:
           TAG: ${{ steps.resolve.outputs.tag }}
-        run: gh release upload "$TAG" dist/Benchmark-IntFloatString.md --clobber
+        run: gh -R "$GITHUB_REPOSITORY" release upload "$TAG" dist/Benchmark-IntFloatString.md --clobber
 
       - name: Run All benchmarks
         if: steps.resolve.outputs.tag != '' && steps.gate.outputs.has-all == 'false'
@@ -123,4 +129,4 @@ jobs:
         if: steps.resolve.outputs.tag != '' && steps.gate.outputs.has-all == 'false'
         env:
           TAG: ${{ steps.resolve.outputs.tag }}
-        run: gh release upload "$TAG" dist/Benchmark-All.md --clobber
+        run: gh -R "$GITHUB_REPOSITORY" release upload "$TAG" dist/Benchmark-All.md --clobber
