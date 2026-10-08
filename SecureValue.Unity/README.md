@@ -110,7 +110,7 @@ int currentHealth = health; // Decrypt `SecureInt` to `int`
   SecureValue's Unity editor integration supports its full Unity-compatible wrapper set, including
   .NET numerics that Unity does not normally serialize.
 
-- **Strings without GC via Span API.**
+- **SecureString without GC via Span API.**
 
   You can read via `CopyTo(Span<char>)`, or `StackDecrypt`, and write via assignment from
   `ReadOnlySpan<char>`.  With no intermediate `string`, and zero heap allocations upto 16
@@ -426,7 +426,7 @@ Span API keeps your game loop allocation-free.
 
 - **Do not convert the span, ex; `.ToString()`/`.ToArray()`.** A heap object will materialize,
   causing heap allocations, and GC spikes.  Be careful of third party APIs who convert
-  `ReadOnlySpan<char>` recklessly.
+  `ReadOnlySpan<char>` to heap objects.
 
 - **Never `stackalloc` In a Loop:** `stackalloc` memory is retained until the outer method returns,
   causing stack overflows.  Hoist your manual buffer outside the loop using `CopyTo`, or let
@@ -505,6 +505,8 @@ try/finally blocks, and clear plaintext data.
 decrypts into it, passes the span to your callback, and guarantees memory zeroing before
 returning.
 
+Using static lambdas ensures the delegate is cached, avoiding repeated heap allocations.
+
 ```csharp
 weaponId.StackDecrypt(static id =>
 {
@@ -512,8 +514,8 @@ weaponId.StackDecrypt(static id =>
 });
 ```
 
-`static` lambdas cannot capture local variables from the surrounding scope, stateful overloads allow
-you to pass local values directly through the method signature.
+Since static lambdas cannot capture local scope, stateful overloads let you pass local variables
+directly into the signature.
 
 The state is passed as a value parameter: `expected`, so the callback doesn't need to capture a
 closure, preserving zero heap-allocation execution.
