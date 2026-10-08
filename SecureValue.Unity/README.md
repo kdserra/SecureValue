@@ -1,35 +1,24 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/kdserra/SecureValue/master/icon.png" width="128" alt="SecureValue icon" />
-</p>
 
-<h1 align="center">🛡️ SecureValue</h1>
+# 🛡️ SecureValue
 
-<p align="center">
-  Memory-encrypted values for .NET
-</p>
+Memory-encrypted values for .NET
 
-<p align="center">
-  <a href="https://github.com/kdserra/SecureValue/actions/workflows/release.yml"><img src="https://github.com/kdserra/SecureValue/actions/workflows/release.yml/badge.svg" alt="Build status" /></a>
-  <a href="https://www.nuget.org/packages/SecureValue/"><img src="https://img.shields.io/nuget/v/SecureValue.svg" alt="NuGet version" /></a>
-  <a href="https://github.com/kdserra/SecureValue/blob/master/LICENSE.md"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT license" /></a>
-  <a href="#compatibility"><img src="https://img.shields.io/badge/.NET-net5.0--10.0_%7C_netstandard2.1-512BD4" alt=".NET targets" /></a>
-  <a href="#installation"><img src="https://img.shields.io/badge/Unity-2021.3%2B-222222?logo=unity" alt="Unity 2021.3+" /></a>
-</p>
+[![Build status](https://github.com/kdserra/SecureValue/actions/workflows/release.yml/badge.svg)](https://github.com/kdserra/SecureValue/actions/workflows/release.yml)
+[![NuGet version](https://img.shields.io/nuget/v/SecureValue.svg)](https://www.nuget.org/packages/SecureValue/)
+[![MIT license](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/kdserra/SecureValue/blob/master/LICENSE.md)
+[![.NET targets](https://img.shields.io/badge/.NET-net5.0--10.0_%7C_netstandard2.1-512BD4)](#compatibility)
+[![Unity 2021.3+](https://img.shields.io/badge/Unity-2021.3%2B-222222?logo=unity)](#installation)
 
-<p align="center">
-  <a href="#features">Features</a> •
-  <a href="#installation">Installation</a> •
-  <a href="#getting-started">Getting Started</a> •
-  <a href="#supported-types">Supported Types</a> •
-  <a href="#compatibility">Compatibility</a> •
-  <a href="#best-practices">Best Practices</a> •
-  <a href="#samples">Samples</a> •
-  <a href="#benchmark-results">Benchmarks</a> •
-  <a href="#security-recommendations">Security Recommendations</a> •
-  <a href="#license">License</a>
-</p>
-
-<a id="what-is-securevalue"></a>
+[Features](#features) •
+[Installation](#installation) •
+[Getting Started](#getting-started) •
+[Supported Types](#supported-types) •
+[Compatibility](#compatibility) •
+[Best Practices](#best-practices) •
+[Samples](#samples) •
+[Benchmarks](#benchmark-results) •
+[Security Recommendations](#security-recommendations) •
+[License](#license)
 
 ## 🧭 What is SecureValue?
 
@@ -46,8 +35,6 @@ using SecureValue;
 SecureInt health = 100;     // Encrypt `int` to `SecureInt`
 int currentHealth = health; // Decrypt `SecureInt` to `int`
 ```
-
-<a id="features"></a>
 
 ## ✨ Features
 
@@ -147,8 +134,6 @@ int currentHealth = health; // Decrypt `SecureInt` to `int`
 
 - **No dependencies.**
 
-<a id="installation"></a>
-
 ## 📦 Installation
 
 ### .NET with NuGet
@@ -177,8 +162,6 @@ Requires Unity **2021.3 or later**.
 1. Download the `.unitypackage` from the [GitHub Releases page](https://github.com/kdserra/SecureValue/releases), 
 2. Import it with **Assets → Import Package → Custom Package**.
 
-<a id="getting-started"></a>
-
 ## 🚀 Getting started
 
 ### 🧊.NET
@@ -201,8 +184,6 @@ TamperingNotifier.TamperingDetected += () => Console.WriteLine("Tampering detect
 
 Each wrapper converts implicitly to and from its underlying type. The wrapper stays encrypted
 while stored; a plain local such as `currentScore` is available to your code while you use it.
-
-<a id="unity"></a>
 
 ## 🎮 Unity
 
@@ -270,8 +251,6 @@ These files show the pattern as implemented for Unity:
 **Note:** `uint[]` is only used for saving/loading encrypted data from the editor integration,
 the actual secure values do not rely on arrays *(except for reference types like `string` and
 `BigInteger`)*.
-
-<a id="supported-types"></a>
 
 ## 🧩 Supported Types
 
@@ -353,8 +332,6 @@ NumericsSV.SecureVector3 simulationPosition;
 UnitySV.SecureVector3 worldPosition;
 ```
 
-<a id="compatibility"></a>
-
 ## 🔗 Compatibility
 
 | Platform | Support |
@@ -362,8 +339,6 @@ UnitySV.SecureVector3 worldPosition;
 | .NET 5.0–10.0 | Full support; the package supplies target-specific builds and all types available on each target. |
 | .NET Standard 2.1 | Core and .NET numerics wrappers; excludes `SecureRune`, `SecureDateOnly`, and `SecureTimeOnly`. |
 | Unity 2021.3+ | UPM package with core, numerics, Unity value wrappers, serialization, and inspector drawers. `Rune`, `DateOnly`, and `TimeOnly` are unavailable. |
-
-<a id="best-practices"></a>
 
 ## ✅ Best practices
 
@@ -399,8 +374,6 @@ They should generally be avoided in favor of the other types offered by
 SecureValue, as they are faster, and non-allocating, but these are provided as
 there are genuine scenarios where they might be necessary, such as a save-file
 encryption key.
-
-<a id="string-span"></a>
 
 ### 🚀 Zero heap-allocation `SecureString` - Span API (Advanced)
 
@@ -560,8 +533,6 @@ else
 There is also a performance reason to prefer this over **manually wrapping** `.Decrypted` in a try/catch block: 
 `TryDecrypt` verifies, and returns `false` **directly**, so the tampered path doesn't pay the cost of exception unwinding.
 
-<a id="samples"></a>
-
 ## 🧪 Samples
 
 - [`SecureValue.Sample`](https://github.com/kdserra/SecureValue/tree/master/SecureValue.Sample) —
@@ -577,8 +548,6 @@ There is also a performance reason to prefer this over **manually wrapping** `.D
   — demonstrates the core, numerics, Unity wrapper families, and provides menu-item utilities for manual testing.
   
 The pre-compiled sample binaries are available in the [GitHub Releases](https://github.com/kdserra/SecureValue/releases).
-
-<a id="benchmark-results"></a>
 
 ## 📊 Benchmark Results
 
@@ -667,8 +636,6 @@ Benchmark sources:
 | String_Write_Span_Long  | 382.18 ns | 0.753 ns | 0.705 ns | 0.0429 |     272 B |
 ```
 
-<a id="security-recommendations"></a>
-
 ## 🔐 Security Recommendations
 
 No client-side protection is perfect. SecureValue is one layer in a defense-in-depth approach, and
@@ -695,8 +662,6 @@ values may make one harder to build or help detect its use.
 - **Source obfuscation** — [Obfuscar](https://github.com/obfuscar/obfuscar)
   is a free, open-source option offers symbol renaming, string encryption, and control-flow obfuscation for .NET projects.
 - **VMProtect** — [VMProtect](https://vmprotect.com/) provides code virtualization and mutation to increase resistance to decompilation and static analysis.
-
-<a id="license"></a>
 
 ## 📄 License
 
