@@ -88,9 +88,17 @@ namespace SecureValue
 			{
 				StorageMode.Unassigned => false,
 				StorageMode.Inline => _length >= 0 && _length <= InlineCapacity,
-				StorageMode.Heap => _ciphers != null && _ciphersB != null,
+				StorageMode.Heap => _length > InlineCapacity
+					&& _ciphers != null
+					&& _ciphersB != null
+					&& _ciphers.Length == WordCountForLength(_length)
+					&& _ciphersB.Length == WordCountForLength(_length),
 				_ => false,
 			};
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static int WordCountForLength(int length) =>
+			length <= 0 ? 0 : ((length - 1) / 4) + 1;
 
 		uint[] ISecureSerialization.SaveToSerialized()
 		{
@@ -131,8 +139,8 @@ namespace SecureValue
 		{
 			if (_length != 0)
 			{
-				bool okA = Verify(aCiphers, aSalt, aTag, out _);
-				bool okB = Verify(bCiphers, bSalt, bTag, out _);
+				bool okA = Verify(aCiphers, _length, aSalt, aTag, out _);
+				bool okB = Verify(bCiphers, _length, bSalt, bTag, out _);
 				if (!okA && !okB)
 				{
 					Vault.ThrowTampered();
@@ -244,6 +252,7 @@ namespace SecureValue
 				packed,
 				1,
 				cipherCount,
+				_length,
 				out ulong saltA,
 				out ulong[] cA,
 				out uint tagA
@@ -252,6 +261,7 @@ namespace SecureValue
 				packed,
 				1 + halfUints,
 				cipherCount,
+				_length,
 				out ulong saltB,
 				out ulong[] cB,
 				out uint tagB
@@ -386,6 +396,7 @@ namespace SecureValue
 			uint[] packed,
 			int offset,
 			int cipherCount,
+			int length,
 			out ulong salt,
 			out ulong[] ciphers,
 			out uint tag
@@ -417,7 +428,7 @@ namespace SecureValue
 			{
 				ciphers[i] = Vault.SealWord(Vault.OpenWord(words[1 + i], rkS), rkP);
 			}
-			tag = Vault.ComputeTag(ciphers, rkP);
+			tag = HeapTag(length, ciphers, rkP);
 			return true;
 		}
 
@@ -632,16 +643,26 @@ namespace SecureValue
 			int cellCount = (length + 3) / 4;
 			ulong[] ciphers = new ulong[cellCount];
 			SealInto(value, length, salt, rk, ciphers);
-			return (ciphers, Vault.ComputeTag(ciphers, rk));
+			return (ciphers, HeapTag(length, ciphers, rk));
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private static bool Verify(ReadOnlySpan<ulong> ciphers, ulong salt, uint tag, out KeySet rk)
+		private static uint HeapTag(int length, ReadOnlySpan<ulong> ciphers, in KeySet rk) =>
+			Vault.ComputeTag(unchecked((ulong)(uint)length), ciphers, rk);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static bool Verify(
+			ReadOnlySpan<ulong> ciphers,
+			int length,
+			ulong salt,
+			uint tag,
+			out KeySet rk
+		)
 		{
 			// The derived keys are handed to the winning decode, so a read pays
 			// one derivation per copy instead of two.
 			rk = Vault.DeriveProcessKeys(salt);
-			return Vault.ComputeTag(ciphers, rk) == tag;
+			return HeapTag(length, ciphers, rk) == tag;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -681,10 +702,14 @@ namespace SecureValue
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			get
 			{
-				if (_mode == StorageMode.Unassigned || !StoreIsCoherent())
+				if (_mode == StorageMode.Unassigned)
 				{
 					// Never assigned (an explicit "" is materialized by the constructor).
 					return null;
+				}
+				if (!StoreIsCoherent())
+				{
+					Vault.ThrowTampered();
 				}
 				if (_length == 0)
 				{
@@ -694,8 +719,8 @@ namespace SecureValue
 				{
 					return DecryptedInline();
 				}
-				bool okA = Verify(_ciphers!, _salt, _tag, out KeySet rkA);
-				bool okB = Verify(_ciphersB!, _saltB, _tagB, out KeySet rkB);
+				bool okA = Verify(_ciphers!, _length, _salt, _tag, out KeySet rkA);
+				bool okB = Verify(_ciphersB!, _length, _saltB, _tagB, out KeySet rkB);
 				if (okA && okB)
 				{
 					return Decode(_salt, _ciphers!, rkA);
@@ -773,8 +798,14 @@ namespace SecureValue
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool TryDecrypt([NotNullWhen(true)] out string value)
 		{
-			if (_mode == StorageMode.Unassigned || !StoreIsCoherent())
+			if (_mode == StorageMode.Unassigned)
 			{
+				value = default!;
+				return false;
+			}
+			if (!StoreIsCoherent())
+			{
+				TamperingNotifier.Raise();
 				value = default!;
 				return false;
 			}
@@ -787,8 +818,8 @@ namespace SecureValue
 			{
 				return TryDecryptInline(out value);
 			}
-			bool okA = Verify(_ciphers!, _salt, _tag, out KeySet rkA);
-			bool okB = Verify(_ciphersB!, _saltB, _tagB, out KeySet rkB);
+			bool okA = Verify(_ciphers!, _length, _salt, _tag, out KeySet rkA);
+			bool okB = Verify(_ciphersB!, _length, _saltB, _tagB, out KeySet rkB);
 			if (okA && okB)
 			{
 				value = Decode(_salt, _ciphers!, rkA);
@@ -877,8 +908,8 @@ namespace SecureValue
 				CopyToInline(destination);
 				return;
 			}
-			bool okA = Verify(_ciphers!, _salt, _tag, out KeySet rkA);
-			bool okB = Verify(_ciphersB!, _saltB, _tagB, out KeySet rkB);
+			bool okA = Verify(_ciphers!, _length, _salt, _tag, out KeySet rkA);
+			bool okB = Verify(_ciphersB!, _length, _saltB, _tagB, out KeySet rkB);
 			if (okA && okB)
 			{
 				DecodeInto(rkA, _salt, _ciphers!, destination);
@@ -953,8 +984,14 @@ namespace SecureValue
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool TryCopyTo(Span<char> destination, out int charsWritten)
 		{
-			if (_mode == StorageMode.Unassigned || !StoreIsCoherent())
+			if (_mode == StorageMode.Unassigned)
 			{
+				charsWritten = 0;
+				return false;
+			}
+			if (!StoreIsCoherent())
+			{
+				TamperingNotifier.Raise();
 				charsWritten = 0;
 				return false;
 			}
@@ -975,8 +1012,8 @@ namespace SecureValue
 
 		private bool TryCopyToHeap(Span<char> destination, out int charsWritten)
 		{
-			bool okA = Verify(_ciphers!, _salt, _tag, out KeySet rkA);
-			bool okB = Verify(_ciphersB!, _saltB, _tagB, out KeySet rkB);
+			bool okA = Verify(_ciphers!, _length, _salt, _tag, out KeySet rkA);
+			bool okB = Verify(_ciphersB!, _length, _saltB, _tagB, out KeySet rkB);
 			if (okA && okB)
 			{
 				DecodeInto(rkA, _salt, _ciphers!, destination);
@@ -1356,6 +1393,15 @@ namespace SecureValue
 			{
 				throw new ArgumentNullException(nameof(action));
 			}
+			if (_mode == StorageMode.Unassigned)
+			{
+				return false;
+			}
+			if (!StoreIsCoherent())
+			{
+				TamperingNotifier.Raise();
+				return false;
+			}
 			Span<char> buffer = stackalloc char[_length];
 			if (!TryCopyTo(buffer, out _))
 			{
@@ -1388,6 +1434,17 @@ namespace SecureValue
 			if (func is null)
 			{
 				throw new ArgumentNullException(nameof(func));
+			}
+			if (_mode == StorageMode.Unassigned)
+			{
+				result = default!;
+				return false;
+			}
+			if (!StoreIsCoherent())
+			{
+				TamperingNotifier.Raise();
+				result = default!;
+				return false;
 			}
 			Span<char> buffer = stackalloc char[_length];
 			if (!TryCopyTo(buffer, out _))
@@ -1426,6 +1483,17 @@ namespace SecureValue
 			{
 				throw new ArgumentNullException(nameof(func));
 			}
+			if (_mode == StorageMode.Unassigned)
+			{
+				result = default!;
+				return false;
+			}
+			if (!StoreIsCoherent())
+			{
+				TamperingNotifier.Raise();
+				result = default!;
+				return false;
+			}
 			Span<char> buffer = stackalloc char[_length];
 			if (!TryCopyTo(buffer, out _))
 			{
@@ -1458,6 +1526,15 @@ namespace SecureValue
 			if (action is null)
 			{
 				throw new ArgumentNullException(nameof(action));
+			}
+			if (_mode == StorageMode.Unassigned)
+			{
+				return false;
+			}
+			if (!StoreIsCoherent())
+			{
+				TamperingNotifier.Raise();
+				return false;
 			}
 			Span<char> buffer = stackalloc char[_length];
 			if (!TryCopyTo(buffer, out _))

@@ -43,5 +43,16 @@ namespace SecureValue
 			}
 			return (uint)(TagMix(acc, rk.K3) >> 24);
 		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static uint ComputeTag(ulong prefix, ReadOnlySpan<ulong> ciphers, in KeySet rk)
+		{
+			ulong acc = TagMix(rk.K0 ^ prefix, rk.K3);
+			for (int i = 0; i < ciphers.Length; i++)
+			{
+				acc = TagMix(acc ^ ciphers[i] ^ ((ulong)i * 0x9E3779B97F4A7C15UL), rk.K3);
+			}
+			return (uint)(TagMix(acc, rk.K3) >> 24);
+		}
 	}
 }

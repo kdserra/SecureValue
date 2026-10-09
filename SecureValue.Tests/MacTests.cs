@@ -609,6 +609,33 @@ namespace SecureValue.Tests
 		}
 
 		[Fact]
+		public void String_HeapLengthSmuggle_ThrowsAndTryDecryptFails()
+		{
+			const string plain = "heap string with authenticated length metadata";
+			int fired = 0;
+			TamperingNotifier.TamperingDetected += () => fired++;
+
+			object boxed = HeapString(plain);
+			SetField(boxed, "_length", plain.Length - 1);
+			SecureString value = (SecureString)boxed;
+			Assert.Throws<TamperedException>(() => _ = value.Decrypted);
+			Assert.Equal(1, fired);
+
+			TamperingNotifier.ResetThrottleForTesting();
+			object boxedTry = HeapString(plain);
+			SetField(boxedTry, "_length", plain.Length + 1);
+			SecureString tryValue = (SecureString)boxedTry;
+			Assert.False(tryValue.TryDecrypt(out _));
+			Assert.True(TamperingNotifier.HasDetectedTampering);
+
+			TamperingNotifier.ResetThrottleForTesting();
+			object boxedStack = HeapString(plain);
+			SetField(boxedStack, "_length", int.MaxValue);
+			SecureString stackValue = (SecureString)boxedStack;
+			Assert.False(stackValue.TryStackDecrypt(static _ => { }));
+		}
+
+		[Fact]
 		public void String_HeapSaltFaults_HealSingle_ThrowBoth()
 		{
 			const string plain = "salty heap string, long enough to live off-inline!!";
@@ -1196,6 +1223,23 @@ namespace SecureValue.Tests
 					Assert.Equal(Mac.ComputeTag(c0, c1, rk.K3), Mac.ComputeTag(c0, c1, rk));
 				}
 			}
+		}
+
+		[Fact]
+		public void ComputeTag_PrefixedPayload_IsDeterministicSensitiveAndFacadeEquivalent()
+		{
+			KeySet rk = Vault.DeriveProcessKeys(0x13579BDF2468ACE0UL);
+			ulong prefix = 37UL;
+			ulong[] words = { 0x0123456789ABCDEFUL, 0xFEDCBA9876543210UL, 0xA5A5A5A5A5A5A5A5UL };
+
+			uint tag = Mac.ComputeTag(prefix, words, rk);
+			Assert.Equal(tag, Mac.ComputeTag(prefix, words, rk));
+			Assert.Equal(tag, Vault.ComputeTag(prefix, words, rk));
+			Assert.NotEqual(tag, Mac.ComputeTag(prefix + 1UL, words, rk));
+
+			words[1] ^= 1UL;
+			Assert.NotEqual(tag, Mac.ComputeTag(prefix, words, rk));
+			Assert.NotEqual(tag, Vault.ComputeTag(prefix, words, rk));
 		}
 
 		[Fact]
