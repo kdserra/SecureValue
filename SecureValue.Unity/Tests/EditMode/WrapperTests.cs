@@ -9,7 +9,7 @@ namespace SecureValue.Unity.Tests
 {
 	/// <summary>
 	/// EditMode mirror of the xUnit WrapperTests for the 16 Unity-native wrappers:
-	/// round-trips, conversions, operators, default-throws-uninitialized, tamper
+	/// round-trips, conversions, operators, default-reads-default, tamper
 	/// detection and allocation-freedom. Fully-qualified wrapper names throughout
 	/// (Unity/ Numerics families share simple names). No dynamic (no DLR under IL2CPP).
 	/// </summary>
@@ -257,87 +257,58 @@ namespace SecureValue.Unity.Tests
 		}
 
 		[Test]
-		public void Default_Read_ThrowsUninitialized()
+		public void Default_Read_ReturnsDefault()
 		{
-			Assert.Throws<UninitializedException>(() =>
-			{
-				Vector2 x = default(SecureValue.Unity.SecureVector2);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				Vector2Int x = default(SecureValue.Unity.SecureVector2Int);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				Vector3 x = default(SecureValue.Unity.SecureVector3);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				Vector3Int x = default(SecureValue.Unity.SecureVector3Int);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				Vector4 x = default(SecureValue.Unity.SecureVector4);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				Rect x = default(SecureValue.Unity.SecureRect);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				RectInt x = default(SecureValue.Unity.SecureRectInt);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				Bounds x = default(SecureValue.Unity.SecureBounds);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				BoundsInt x = default(SecureValue.Unity.SecureBoundsInt);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				Color x = default(SecureValue.Unity.SecureColor);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				Color32 x = default(SecureValue.Unity.SecureColor32);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				Quaternion x = default(SecureValue.Unity.SecureQuaternion);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				Matrix4x4 x = default(SecureValue.Unity.SecureMatrix4x4);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				Plane x = default(SecureValue.Unity.SecurePlane);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				Ray x = default(SecureValue.Unity.SecureRay);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				LayerMask x = default(SecureValue.Unity.SecureLayerMask);
-			});
+			Assert.AreEqual(default(Vector2), (Vector2)default(SecureValue.Unity.SecureVector2));
+			Assert.AreEqual(
+				default(Vector2Int),
+				(Vector2Int)default(SecureValue.Unity.SecureVector2Int)
+			);
+			Assert.AreEqual(default(Vector3), (Vector3)default(SecureValue.Unity.SecureVector3));
+			Assert.AreEqual(
+				default(Vector3Int),
+				(Vector3Int)default(SecureValue.Unity.SecureVector3Int)
+			);
+			Assert.AreEqual(default(Vector4), (Vector4)default(SecureValue.Unity.SecureVector4));
+			Assert.AreEqual(default(Rect), (Rect)default(SecureValue.Unity.SecureRect));
+			Assert.AreEqual(default(RectInt), (RectInt)default(SecureValue.Unity.SecureRectInt));
+			Assert.AreEqual(default(Bounds), (Bounds)default(SecureValue.Unity.SecureBounds));
+			Assert.AreEqual(
+				default(BoundsInt),
+				(BoundsInt)default(SecureValue.Unity.SecureBoundsInt)
+			);
+			Assert.AreEqual(default(Color), (Color)default(SecureValue.Unity.SecureColor));
+			Assert.AreEqual(default(Color32), (Color32)default(SecureValue.Unity.SecureColor32));
+			Assert.AreEqual(
+				default(Quaternion),
+				(Quaternion)default(SecureValue.Unity.SecureQuaternion)
+			);
+			Assert.AreEqual(
+				default(Matrix4x4),
+				(Matrix4x4)default(SecureValue.Unity.SecureMatrix4x4)
+			);
+			Assert.AreEqual(default(Plane), (Plane)default(SecureValue.Unity.SecurePlane));
+			Assert.AreEqual(default(Ray), (Ray)default(SecureValue.Unity.SecureRay));
+			Assert.AreEqual(0, ((LayerMask)default(SecureValue.Unity.SecureLayerMask)).value);
 		}
 
 		[Test]
-		public void Default_Members_ThrowUninitialized()
+		public void Default_Members_ReadDefault()
 		{
-			Assert.Throws<UninitializedException>(() =>
+			Assert.AreEqual(
+				default(Vector3).ToString(),
 				default(SecureValue.Unity.SecureVector3).ToString()
 			);
-			Assert.Throws<UninitializedException>(() =>
+			Assert.AreEqual(
+				default(Vector3).GetHashCode(),
 				default(SecureValue.Unity.SecureVector3).GetHashCode()
 			);
-			Assert.Throws<UninitializedException>(() =>
+			Assert.AreEqual(
+				default(Bounds).ToString(),
 				default(SecureValue.Unity.SecureBounds).ToString()
 			);
-			Assert.Throws<UninitializedException>(() =>
+			Assert.AreEqual(
+				default(Matrix4x4).ToString(),
 				default(SecureValue.Unity.SecureMatrix4x4).ToString()
 			);
 		}

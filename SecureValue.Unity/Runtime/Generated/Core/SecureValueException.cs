@@ -10,7 +10,7 @@ namespace SecureValue
 {
 	/// <summary>
 	/// Base class for all SecureValue errors. Catch this type to handle
-	/// tampered and uninitialized reads together.
+	/// tampered reads (unset values read as default instead of throwing).
 	/// </summary>
 	public class SecureValueException : Exception
 	{

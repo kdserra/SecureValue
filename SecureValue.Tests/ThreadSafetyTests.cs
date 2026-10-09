@@ -42,7 +42,7 @@ namespace SecureValue.Tests
 					SecureDouble d = i * 0.5;
 					Assert.Equal(i * 0.5, (double)d);
 					SecureString s = "t" + i;
-					Assert.Equal("t" + i, (string)s);
+					Assert.Equal("t" + i, (string?)s);
 				}
 			);
 		}

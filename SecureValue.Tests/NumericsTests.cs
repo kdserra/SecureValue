@@ -191,7 +191,7 @@ namespace SecureValue.Tests
 				y = m;
 			Assert.Equal(m, (Matrix4x4)(x + y - y));
 			Assert.True(x == y);
-			Assert.True(x != (x + y)); // never compare against default: it throws
+			Assert.True(x != (x + y)); // default reads as default; compare live values here
 
 			var m2 = new Matrix3x2(1f, 2f, 3f, 4f, 5f, 6f);
 			SecureMatrix3x2 u = m2,
@@ -204,7 +204,7 @@ namespace SecureValue.Tests
 				p2 = pl;
 			SecurePlane p3 = new Plane(new Vector3(0f, 1f, 0f), 4.5f);
 			Assert.True(p1 == p2);
-			Assert.True(p1 != p3); // never compare against default: it throws
+			Assert.True(p1 != p3); // default reads as default; compare live values here
 
 			SecureComplex c1 = new Complex(1.5, -2.5);
 			SecureComplex c2 = new Complex(0.5, 0.5);
@@ -215,37 +215,20 @@ namespace SecureValue.Tests
 		}
 
 		[Fact]
-		public void Default_Read_ThrowsUninitialized()
+		public void Default_Read_ReturnsDefault()
 		{
-			// All-default backing fields fail closed (see WrapperTests).
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (BigInteger)default(SecureBigInteger);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (Vector2)default(SecureVector2);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (Matrix4x4)default(SecureMatrix4x4);
-			});
+			// All-default backing fields read as default (see WrapperTests).
+			Assert.Equal(default(BigInteger), (BigInteger)default(SecureBigInteger));
+			Assert.Equal(default(Vector2), (Vector2)default(SecureVector2));
+			Assert.Equal(default(Matrix4x4), (Matrix4x4)default(SecureMatrix4x4));
 		}
 
 		[Fact]
-		public void EnsureInitialized_MaterializesReadableDefault()
+		public void Unset_ReadsDefaultWithoutMaterialization()
 		{
-			var b = default(SecureBigInteger);
-			b.EnsureInitialized();
-			Assert.Equal(BigInteger.Zero, (BigInteger)b);
-
-			var v = default(SecureVector2);
-			v.EnsureInitialized();
-			Assert.Equal(default(Vector2), (Vector2)v);
-
-			var m = default(SecureMatrix4x4);
-			m.EnsureInitialized();
-			Assert.Equal(default(Matrix4x4), (Matrix4x4)m);
+			Assert.Equal(BigInteger.Zero, (BigInteger)default(SecureBigInteger));
+			Assert.Equal(default(Vector2), (Vector2)default(SecureVector2));
+			Assert.Equal(default(Matrix4x4), (Matrix4x4)default(SecureMatrix4x4));
 		}
 	}
 }

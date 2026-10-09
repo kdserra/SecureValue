@@ -32,13 +32,27 @@ internal static class Interfaces
 		);
 		sb.Append(Inline);
 		sb.Append($"\t\tbool IEquatable<{primitive}>.Equals({primitive} other) =>\n");
-		sb.Append("\t\t\tDecrypted.Equals(other);\n");
+		if (primitive == "string")
+		{
+			sb.Append("\t\t\tstring.Equals(Decrypted, other, System.StringComparison.Ordinal);\n");
+		}
+		else
+		{
+			sb.Append("\t\t\tDecrypted.Equals(other);\n");
+		}
 		if (comparable)
 		{
 			sb.Append(Doc($"Compares the decrypted value with a plain {primitive} value."));
 			sb.Append(Inline);
 			sb.Append($"\t\tint IComparable<{primitive}>.CompareTo({primitive} other) =>\n");
-			sb.Append("\t\t\tDecrypted.CompareTo(other);\n");
+			if (primitive == "string")
+			{
+				sb.Append("\t\t\t(Decrypted ?? string.Empty).CompareTo(other ?? string.Empty);\n");
+			}
+			else
+			{
+				sb.Append("\t\t\tDecrypted.CompareTo(other);\n");
+			}
 		}
 	}
 
@@ -58,7 +72,18 @@ internal static class Interfaces
 	{
 		sb.Append(Doc("Returns the type code of the wrapped primitive type."));
 		sb.Append(Inline);
-		sb.Append("\t\tTypeCode IConvertible.GetTypeCode() => Convert.GetTypeCode(Decrypted);\n");
+		if (primitive == "string")
+		{
+			sb.Append(
+				"\t\tTypeCode IConvertible.GetTypeCode() => Convert.GetTypeCode(Decrypted ?? string.Empty);\n"
+			);
+		}
+		else
+		{
+			sb.Append(
+				"\t\tTypeCode IConvertible.GetTypeCode() => Convert.GetTypeCode(Decrypted);\n"
+			);
+		}
 		foreach (
 			string target in new[]
 			{
@@ -97,19 +122,44 @@ internal static class Interfaces
 			sb.Append(Doc($"Converts the decrypted value to {target} (explicit)."));
 			sb.Append(Inline);
 			sb.Append($"\t\t{target} IConvertible.To{method}(IFormatProvider provider) =>\n");
-			sb.Append($"\t\t\t((IConvertible)Decrypted).To{method}(provider);\n");
+			if (primitive == "string")
+			{
+				sb.Append(
+					$"\t\t\t((IConvertible)(Decrypted ?? string.Empty)).To{method}(provider);\n"
+				);
+			}
+			else
+			{
+				sb.Append($"\t\t\t((IConvertible)Decrypted).To{method}(provider);\n");
+			}
 		}
 
 		sb.Append(Doc("Converts the decrypted value to a string (explicit)."));
 		sb.Append(Inline);
 		sb.Append("\t\tstring IConvertible.ToString(IFormatProvider provider) =>\n");
-		sb.Append("\t\t\t((IConvertible)Decrypted).ToString(provider);\n");
+		if (primitive == "string")
+		{
+			sb.Append("\t\t\t((IConvertible)(Decrypted ?? string.Empty)).ToString(provider);\n");
+		}
+		else
+		{
+			sb.Append("\t\t\t((IConvertible)Decrypted).ToString(provider);\n");
+		}
 		sb.Append(Doc("Converts the decrypted value to the specified type (explicit)."));
 		sb.Append(Inline);
 		sb.Append(
 			"\t\tobject IConvertible.ToType(Type conversionType, IFormatProvider provider) =>\n"
 		);
-		sb.Append("\t\t\t((IConvertible)Decrypted).ToType(conversionType, provider);\n");
+		if (primitive == "string")
+		{
+			sb.Append(
+				"\t\t\t((IConvertible)(Decrypted ?? string.Empty)).ToType(conversionType, provider);\n"
+			);
+		}
+		else
+		{
+			sb.Append("\t\t\t((IConvertible)Decrypted).ToType(conversionType, provider);\n");
+		}
 	}
 
 	/// <summary>ISpanFormattable.TryFormat forwarded to the decrypted value.</summary>
@@ -140,6 +190,12 @@ internal static class Interfaces
 	public static string[] InterfacesFor(WrapperSpec spec)
 	{
 		List<string> list = new();
+		// First-party contract: every wrapper exposes IsUnset/Decrypted/
+		// TryDecrypt through ISecureValue{T}, satisfied implicitly by the
+		// existing public members (no emitted members, no boxing on direct
+		// or constrained-generic calls). The primitive name resolves via the
+		// per-family usings GenWriter already emits.
+		list.Add($"ISecureValue<{spec.Primitive}>");
 		// Generator-owned: Secure-typed equality/comparison, moved from the
 		// hand-written base lists (members stay hand-written; either partial
 		// may declare the interface). Ordering mirrors EmitFor's split.

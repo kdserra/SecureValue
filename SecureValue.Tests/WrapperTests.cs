@@ -229,7 +229,7 @@ namespace SecureValue.Tests
 		public void String_RoundTrip()
 		{
 			SecureString p = "Hello, secured world!";
-			string back = p;
+			string? back = p;
 			Assert.Equal("Hello, secured world!", back);
 		}
 
@@ -237,14 +237,14 @@ namespace SecureValue.Tests
 		public void String_EmptyRoundTrip()
 		{
 			SecureString p = "";
-			Assert.Equal("", (string)p);
+			Assert.Equal("", (string?)p);
 		}
 
 		[Fact]
 		public void String_NullBecomesEmpty()
 		{
 			SecureString p = new SecureString(null!);
-			Assert.Equal("", (string)p);
+			Assert.Equal("", (string?)p);
 		}
 
 		[Fact]
@@ -253,7 +253,7 @@ namespace SecureValue.Tests
 			// surrogate pairs must survive word packing (4 UTF-16 units per word)
 			const string value = "A😀🎉Z";
 			SecureString p = value;
-			Assert.Equal(value, (string)p);
+			Assert.Equal(value, (string?)p);
 		}
 
 		[Theory]
@@ -270,7 +270,7 @@ namespace SecureValue.Tests
 		{
 			string value = new string('x', length);
 			SecureString p = value;
-			Assert.Equal(value, (string)p);
+			Assert.Equal(value, (string?)p);
 		}
 
 		[Fact]
@@ -279,7 +279,7 @@ namespace SecureValue.Tests
 			// multi-word value matching the benchmark corpus
 			const string value = "The quick brown fox jumps over the lazy dog";
 			SecureString p = value;
-			Assert.Equal(value, (string)p);
+			Assert.Equal(value, (string?)p);
 		}
 
 		private static void AssertRoundTrip<T>(object wrapper, T expected)
@@ -292,141 +292,63 @@ namespace SecureValue.Tests
 
 		// ---------- all-default backing fields ----------
 
-		// Reading a never-assigned value throws UninitializedException (a
-		// default reaching Decrypted is never legitimate: the Unity layer
-		// materializes every field into a genuine encrypted value).
+		// Reading a never-assigned value returns default(T) (null for
+		// SecureString.Decrypted).
 
 		[Fact]
-		public void Default_Read_ThrowsUninitialized()
+		public void Default_Read_ReturnsDefault()
 		{
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (bool)default(SecureBool);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (byte)default(SecureByte);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (sbyte)default(SecureSByte);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (char)default(SecureChar);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (short)default(SecureShort);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (ushort)default(SecureUShort);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (int)default(SecureInt);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (uint)default(SecureUInt);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (long)default(SecureLong);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (ulong)default(SecureULong);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (float)default(SecureFloat);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (double)default(SecureDouble);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (decimal)default(SecureDecimal);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (Guid)default(SecureGuid);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (DateTime)default(SecureDateTime);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (DateTimeOffset)default(SecureDateTimeOffset);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (TimeSpan)default(SecureTimeSpan);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (string)default(SecureString);
-			});
+			Assert.False((bool)default(SecureBool));
+			Assert.Equal((byte)0, (byte)default(SecureByte));
+			Assert.Equal((sbyte)0, (sbyte)default(SecureSByte));
+			Assert.Equal('\0', (char)default(SecureChar));
+			Assert.Equal((short)0, (short)default(SecureShort));
+			Assert.Equal((ushort)0, (ushort)default(SecureUShort));
+			Assert.Equal(0, (int)default(SecureInt));
+			Assert.Equal(0u, (uint)default(SecureUInt));
+			Assert.Equal(0L, (long)default(SecureLong));
+			Assert.Equal(0UL, (ulong)default(SecureULong));
+			Assert.Equal(0f, (float)default(SecureFloat));
+			Assert.Equal(0.0, (double)default(SecureDouble));
+			Assert.Equal(0m, (decimal)default(SecureDecimal));
+			Assert.Equal(Guid.Empty, (Guid)default(SecureGuid));
+			Assert.Equal(default(DateTime), (DateTime)default(SecureDateTime));
+			Assert.Equal(default(DateTimeOffset), (DateTimeOffset)default(SecureDateTimeOffset));
+			Assert.Equal(default(TimeSpan), (TimeSpan)default(SecureTimeSpan));
+			Assert.Null((string?)default(SecureString));
 #if NET6_0_OR_GREATER
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (DateOnly)default(SecureDateOnly);
-			});
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (TimeOnly)default(SecureTimeOnly);
-			});
+			Assert.Equal(default(DateOnly), (DateOnly)default(SecureDateOnly));
+			Assert.Equal(default(TimeOnly), (TimeOnly)default(SecureTimeOnly));
 #endif
 #if NET
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (System.Text.Rune)default(SecureRune);
-			});
+			Assert.Equal(default(System.Text.Rune), (System.Text.Rune)default(SecureRune));
 #endif
 		}
 
 		[Fact]
-		public void Default_Members_ThrowUninitialized()
+		public void Default_Members_ReadDefault()
 		{
-			Assert.Throws<UninitializedException>(() => default(SecureInt).ToString());
-			Assert.Throws<UninitializedException>(() => default(SecureInt).GetHashCode());
-			Assert.Throws<UninitializedException>(() => default(SecureString).ToString());
-			Assert.Throws<UninitializedException>(() => default(SecureDateTimeOffset).ToString());
+			Assert.Equal("0", default(SecureInt).ToString());
+			Assert.Equal(0, default(SecureInt).GetHashCode());
+			Assert.Equal("", default(SecureString).ToString());
+			Assert.Equal(
+				default(DateTimeOffset).ToString(),
+				default(SecureDateTimeOffset).ToString()
+			);
 		}
 
 		[Fact]
-		public void EnsureInitialized_MaterializesReadableDefault()
+		public void Unset_ReadsDefaultWithoutMaterialization()
 		{
-			// The Unity serialization callbacks use this to turn legitimately
-			// fresh fields into genuine encrypted defaults.
-			var i = default(SecureInt);
-			i.EnsureInitialized();
-			Assert.Equal(0, (int)i);
-
-			var d = default(SecureDecimal);
-			d.EnsureInitialized();
-			Assert.Equal(0m, (decimal)d);
-
-			var g = default(SecureGuid);
-			g.EnsureInitialized();
-			Assert.Equal(Guid.Empty, (Guid)g);
-
-			var dto = default(SecureDateTimeOffset);
-			dto.EnsureInitialized();
-			Assert.Equal(default(DateTimeOffset), (DateTimeOffset)dto);
-
-			var s = default(SecureString);
-			s.EnsureInitialized();
-			Assert.Equal(string.Empty, (string)s);
+			// Unset now reads as default directly; no materialization call needed.
+			Assert.Equal(0, (int)default(SecureInt));
+			Assert.Equal(0m, (decimal)default(SecureDecimal));
+			Assert.Equal(Guid.Empty, (Guid)default(SecureGuid));
+			Assert.Equal(default(DateTimeOffset), (DateTimeOffset)default(SecureDateTimeOffset));
+			Assert.Null((string?)default(SecureString));
 
 			// live values are preserved untouched
-			var live = new SecureInt(42);
-			live.EnsureInitialized();
-			Assert.Equal(42, (int)live);
+			Assert.Equal(42, (int)new SecureInt(42));
 		}
 
 		// ---------- ciphertext randomization / non-identity ----------
@@ -472,7 +394,7 @@ namespace SecureValue.Tests
 		{
 			SecureString a = plain;
 			SecureString b = plain;
-			Assert.Equal(plain, (string)a);
+			Assert.Equal(plain, (string?)a);
 			ulong[] ca = GetCipherWords(a);
 			ulong[] cb = GetCipherWords(b);
 			Assert.Equal(ca.Length, cb.Length);
@@ -1069,7 +991,7 @@ namespace SecureValue.Tests
 			// string. Identical repeats must allocate identically (catches
 			// double-alloc regressions without hardcoding runtime constants).
 			SecureString warm = "Hello, secured world!";
-			_ = (string)warm;
+			_ = (string?)warm;
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 			GC.Collect();
@@ -1083,9 +1005,9 @@ namespace SecureValue.Tests
 			Assert.InRange(w1 - w0, 1, 256);
 
 			long r0 = GC.GetAllocatedBytesForCurrentThread();
-			_ = (string)p;
+			_ = (string?)p;
 			long r1 = GC.GetAllocatedBytesForCurrentThread();
-			_ = (string)p;
+			_ = (string?)p;
 			long r2 = GC.GetAllocatedBytesForCurrentThread();
 			Assert.Equal(r1 - r0, r2 - r1);
 			Assert.InRange(r1 - r0, 1, 256);

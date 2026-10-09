@@ -98,10 +98,10 @@ namespace SecureValue.Tests
 			Guid g = Guid.NewGuid();
 			Assert.Equal(g, (Guid)ParseIt<SecureGuid>(g.ToString("D"), null));
 			Assert.False(TryParseIt<SecureGuid>("not-a-guid", null, out _));
-			Assert.Equal("hello", (string)ParseIt<SecureString>("hello", null));
-			Assert.Equal(string.Empty, (string)ParseIt<SecureString>(null, null));
+			Assert.Equal("hello", (string?)ParseIt<SecureString>("hello", null));
+			Assert.Equal(string.Empty, (string?)ParseIt<SecureString>(null, null));
 			Assert.True(TryParseIt<SecureString>(null, null, out SecureString empty));
-			Assert.Equal(string.Empty, (string)empty);
+			Assert.Equal(string.Empty, (string?)empty);
 		}
 
 		[Fact]
@@ -207,13 +207,13 @@ namespace SecureValue.Tests
 		[Fact]
 		public void PublicParse_StringAndSpan()
 		{
-			Assert.Equal("hello", (string)SecureString.Parse("hello", null));
-			Assert.Equal(string.Empty, (string)SecureString.Parse(null, null));
+			Assert.Equal("hello", (string?)SecureString.Parse("hello", null));
+			Assert.Equal(string.Empty, (string?)SecureString.Parse(null, null));
 			Assert.True(SecureString.TryParse("hey", null, out SecureString s));
-			Assert.Equal("hey", (string)s);
-			Assert.Equal("span", (string)SecureString.Parse("span".AsSpan(), null));
+			Assert.Equal("hey", (string?)s);
+			Assert.Equal("span", (string?)SecureString.Parse("span".AsSpan(), null));
 			Assert.True(SecureString.TryParse("span".AsSpan(), null, out SecureString parsed));
-			Assert.Equal("span", (string)parsed);
+			Assert.Equal("span", (string?)parsed);
 		}
 
 		[Fact]
@@ -221,11 +221,11 @@ namespace SecureValue.Tests
 		{
 			string plain = "span-native sealing, no intermediate string object";
 			SecureString viaSpan = SpanParseIt<SecureString>(plain.AsSpan(), null);
-			Assert.Equal(plain, (string)viaSpan);
+			Assert.Equal(plain, (string?)viaSpan);
 			Assert.True(
 				SpanTryParseIt<SecureString>(plain.AsSpan(), null, out SecureString parsed)
 			);
-			Assert.Equal(plain, (string)parsed);
+			Assert.Equal(plain, (string?)parsed);
 		}
 
 		[Fact]
@@ -284,7 +284,7 @@ namespace SecureValue.Tests
 				(Complex)SpanParseIt<SecureComplex>(text.AsSpan(), CultureInfo.InvariantCulture)
 			);
 			Assert.False(SpanTryParseIt<SecureComplex>("nope".AsSpan(), null, out _));
-			Assert.Equal("hey", (string)SpanParseIt<SecureString>("hey".AsSpan(), null));
+			Assert.Equal("hey", (string?)SpanParseIt<SecureString>("hey".AsSpan(), null));
 		}
 
 		[Fact]
@@ -346,7 +346,7 @@ namespace SecureValue.Tests
 			Assert.Equal("hello", seen.ToString());
 			Assert.Equal("hello", string.Concat(s));
 			Assert.Equal(5, ((System.Collections.Generic.IEnumerable<char>)s).Count());
-			Assert.Empty((string)new SecureString(string.Empty));
+			Assert.Empty(((string?)new SecureString(string.Empty))!);
 		}
 
 		[Fact]

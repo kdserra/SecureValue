@@ -12,6 +12,8 @@ namespace SecureValue.Benchmarks
 		//   dotnet run -c Release -- --filter *StringBenchmarks*          curated: string only
 		//   dotnet run -c Release -- --filter *StringSpanBenchmarks*       curated: string span API vs baseline
 		//   dotnet run -c Release -- --filter *AllWrappersBenchmarks*     every supported wrapper type
+		//   dotnet run -c Release -- --filter *MacBenchmarks*              MAC tag layer in isolation
+		//   dotnet run -c Release -- --filter *ParameterPassingBenchmarks* by-value vs in vs ref vs ref readonly
 		//   dotnet run -c Release -- --filter *Benchmarks*                everything
 		// Append --job short for a quick run.
 		private static void Main(string[] args)

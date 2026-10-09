@@ -37,8 +37,8 @@ namespace SecureValue
 		/// Verifies both copies' tags and decrypts. A singly-tampered value restores
 		/// from the good copy (raising the tamper event) and re-seals the damaged
 		/// copy from the recovered plaintext; a doubly-tampered value throws
-		/// <see cref="TamperedException"/>, a never-assigned one
-		/// <see cref="UninitializedException"/>. The fast path (both copies valid)
+		/// <see cref="TamperedException"/>, a never-assigned one reads 0.
+		/// The fast path (both copies valid)
 		/// never mutates.
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -55,7 +55,8 @@ namespace SecureValue
 			}
 			if (!okA && !okB && IsUnset)
 			{
-				Vault.ThrowUninitialized();
+				// Never assigned: reads default.
+				return 0UL;
 			}
 			if (okA)
 			{

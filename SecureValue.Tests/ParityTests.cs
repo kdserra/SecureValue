@@ -119,7 +119,7 @@ namespace SecureValue.Tests
 		{
 			SecureString a = "foo";
 			SecureString b = "bar";
-			Assert.Equal("foobar", (string)(a + b));
+			Assert.Equal("foobar", (string?)(a + b));
 			Assert.True(a.CompareTo(b) > 0);
 			Assert.Equal(0, a.CompareTo((object)new SecureString("foo")));
 			Assert.True(((IComparable)new SecureString("a")).CompareTo(new SecureString("b")) < 0);

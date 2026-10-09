@@ -12,9 +12,8 @@ using UnityEngine;
 /// All fields below are [SerializeField]: editable in the Inspector in the
 /// editor (via custom PropertyDrawers that decrypt for display and
 /// re-encrypt on edit), stored in scenes/prefabs as encrypted words, and
-/// tamper-checked on every read at runtime. Fresh (never-set) fields are
-/// materialized into genuine encrypted defaults on load; only tampered or
-/// otherwise uninitialized memory throws.
+/// tamper-checked on every read at runtime. Fresh (never-set) fields read as
+/// the type default; only tampered memory throws.
 /// Note: SecureDateOnly / SecureTimeOnly / SecureRune are compiled
 /// out of Unity (#if NET) and are therefore not demonstrated here.
 /// The SecureValue.Numerics types are part of the core package and are

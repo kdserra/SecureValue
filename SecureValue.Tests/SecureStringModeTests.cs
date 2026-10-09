@@ -81,7 +81,7 @@ namespace SecureValue.Tests
 		{
 			SecureString a = plain;
 			SecureString b = plain;
-			Assert.Equal((string)a, (string)b);
+			Assert.Equal((string?)a, (string?)b);
 			Assert.Equal(a.ToString(), b.ToString());
 			Assert.True(a.Equals(b));
 			Assert.True(a == b);
@@ -146,20 +146,20 @@ namespace SecureValue.Tests
 		}
 
 		[Fact]
-		public void Tamper_ModeFlipToHeap_ThrowsUninitialized()
+		public void Tamper_ModeFlipToHeap_ReadsDefault()
 		{
 			object box = (SecureString)"small";
 			SetMode(box, "Heap");
-			Assert.Throws<UninitializedException>(() => ((SecureString)box).Decrypted);
-			Assert.Throws<UninitializedException>(() => ((SecureString)box).Length);
+			Assert.Null(((SecureString)box).Decrypted);
+			Assert.Throws<TamperedException>(() => ((SecureString)box).Length);
 		}
 
 		[Fact]
-		public void Tamper_ModeFlipToInlineLong_ThrowsUninitialized()
+		public void Tamper_ModeFlipToInlineLong_ReadsDefault()
 		{
 			object box = (SecureString)new string('x', 100);
 			SetMode(box, "Inline");
-			Assert.Throws<UninitializedException>(() => ((SecureString)box).Decrypted);
+			Assert.Null(((SecureString)box).Decrypted);
 		}
 
 		[Fact]
@@ -172,19 +172,19 @@ namespace SecureValue.Tests
 		}
 
 		[Fact]
-		public void Tamper_InlineLengthOutOfRange_ThrowsUninitialized()
+		public void Tamper_InlineLengthOutOfRange_ReadsDefault()
 		{
 			object box = (SecureString)"hello";
 			SetLength(box, 99);
-			Assert.Throws<UninitializedException>(() => ((SecureString)box).Decrypted);
+			Assert.Null(((SecureString)box).Decrypted);
 		}
 
 		[Fact]
-		public void Tamper_HeapNullArrays_ThrowsUninitialized()
+		public void Tamper_HeapNullArrays_ReadsDefault()
 		{
 			object box = (SecureString)new string('x', 100);
 			box.GetType().GetField("_ciphers", Flags)!.SetValue(box, null);
-			Assert.Throws<UninitializedException>(() => ((SecureString)box).Decrypted);
+			Assert.Null(((SecureString)box).Decrypted);
 		}
 
 		[Theory]
@@ -217,7 +217,7 @@ namespace SecureValue.Tests
 			uint[] packed = ((ISecureSerialization)box).SaveToSerialized();
 			object fresh = default(SecureString);
 			((ISecureSerialization)fresh).LoadFromSerialized(packed);
-			Assert.Equal(plain, (string)(SecureString)fresh);
+			Assert.Equal(plain, (string?)(SecureString)fresh);
 			Assert.Equal(mode, ModeOf(fresh));
 		}
 
@@ -228,7 +228,7 @@ namespace SecureValue.Tests
 			uint[] packed = ((ISecureSerialization)box).SaveToSerialized();
 			object fresh = default(SecureString);
 			((ISecureSerialization)fresh).LoadFromSerialized(packed);
-			Assert.Equal(string.Empty, (string)(SecureString)fresh);
+			Assert.Equal(string.Empty, (string?)(SecureString)fresh);
 			Assert.Equal("Inline", ModeOf(fresh));
 		}
 
@@ -272,7 +272,7 @@ namespace SecureValue.Tests
 			uint[] packed = ((ISecureSerialization)box).SaveToSerialized();
 			object fresh = default(SecureString);
 			((ISecureSerialization)fresh).LoadFromSerialized(packed);
-			Assert.Equal("hello", (string)(SecureString)fresh);
+			Assert.Equal("hello", (string?)(SecureString)fresh);
 			Assert.Equal("Inline", ModeOf(fresh));
 		}
 

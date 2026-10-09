@@ -10,7 +10,7 @@ namespace SecureValue.Tests
 {
 	/// <summary>
 	/// TryDecrypt: success round-trips, uninitialized-false (no event),
-	/// tampered-false (exactly one event), and the throwing Decrypted staying intact.
+	/// tampered-false (exactly one event), and the tampered-throwing Decrypted staying intact.
 	/// Shares the isolated TamperNotifier collection so exact event counts hold.
 	/// </summary>
 	[Collection("TamperNotifier")]
@@ -344,7 +344,7 @@ namespace SecureValue.Tests
 			Assert.False(p.TryDecrypt(out int value));
 			Assert.Equal(default, value);
 			Assert.Equal(baseline, fired);
-			Assert.Throws<UninitializedException>(() => _ = p.Decrypted);
+			Assert.Equal(default, p.Decrypted);
 		}
 
 		[Fact]
@@ -358,7 +358,7 @@ namespace SecureValue.Tests
 			Assert.False(p.TryDecrypt(out Guid value));
 			Assert.Equal(default, value);
 			Assert.Equal(baseline, fired);
-			Assert.Throws<UninitializedException>(() => _ = p.Decrypted);
+			Assert.Equal(default, p.Decrypted);
 		}
 
 		[Fact]
@@ -372,7 +372,7 @@ namespace SecureValue.Tests
 			Assert.False(p.TryDecrypt(out Matrix4x4 value));
 			Assert.Equal(default, value);
 			Assert.Equal(baseline, fired);
-			Assert.Throws<UninitializedException>(() => _ = p.Decrypted);
+			Assert.Equal(default, p.Decrypted);
 		}
 
 		[Fact]
@@ -386,7 +386,7 @@ namespace SecureValue.Tests
 			Assert.False(p.TryDecrypt(out string value));
 			Assert.Null(value);
 			Assert.Equal(baseline, fired);
-			Assert.Throws<UninitializedException>(() => _ = p.Decrypted);
+			Assert.Null(p.Decrypted);
 		}
 
 		[Fact]
@@ -400,7 +400,7 @@ namespace SecureValue.Tests
 			Assert.False(p.TryDecrypt(out BigInteger value));
 			Assert.Equal(default, value);
 			Assert.Equal(baseline, fired);
-			Assert.Throws<UninitializedException>(() => _ = p.Decrypted);
+			Assert.Equal(default, p.Decrypted);
 		}
 
 		// ---------- tampered: false, default out, exactly ONE event ----------

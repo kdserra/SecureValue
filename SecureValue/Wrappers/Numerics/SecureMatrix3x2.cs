@@ -37,7 +37,7 @@ namespace SecureValue.Numerics
 			(ulong)(uint)BitConverter.SingleToInt32Bits(x)
 			| ((ulong)(uint)BitConverter.SingleToInt32Bits(y) << 32);
 
-		/// <summary>Gets the decrypted plain value.</summary>
+		/// <summary>Gets the decrypted plain value (default when never assigned).</summary>
 		public Matrix3x2 Decrypted
 		{
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -88,17 +88,12 @@ namespace SecureValue.Numerics
 			get => _cellA.IsUnset && _cellB.IsUnset;
 		}
 
-		/// <summary>Encrypts the type default when never initialized.</summary>
-		internal void EnsureInitialized()
-		{
-			if (_cellA.IsUnset && _cellB.IsUnset)
-			{
-				this = new SecureMatrix3x2(default);
-			}
-		}
-
 		uint[] ISecureSerialization.SaveToSerialized()
 		{
+			if (IsUnset)
+			{
+				return Array.Empty<uint>();
+			}
 			Span<ulong> words = stackalloc ulong[18];
 			KeySet saveKey = Vault.NewStorageKey();
 			_cellA.CopyStorageWords(words, saveKey);
@@ -111,10 +106,9 @@ namespace SecureValue.Numerics
 
 		private void LoadFromSerialized(uint[]? packed)
 		{
-			if (packed == null)
+			if (packed == null || packed.Length == 0)
 			{
-				// Never serialized: materialize a default (bad lengths fail closed on read).
-				EnsureInitialized();
+				// Never serialized: stay unset (reads return default).
 				return;
 			}
 			Span<ulong> words = stackalloc ulong[18];
@@ -132,7 +126,6 @@ namespace SecureValue.Numerics
 
 		void UnityEngine.ISerializationCallbackReceiver.OnBeforeSerialize()
 		{
-			EnsureInitialized();
 			_serialized = ((ISecureSerialization)this).SaveToSerialized();
 		}
 

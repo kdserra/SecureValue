@@ -334,7 +334,7 @@ internal static class Parsable
 		sb.Append(Doc("Returns an enumerator over the decrypted characters."));
 		sb.Append(Inline);
 		sb.Append(
-			"\t\tpublic System.CharEnumerator GetEnumerator() => Decrypted.GetEnumerator();\n"
+			"\t\tpublic System.CharEnumerator GetEnumerator() => (Decrypted ?? string.Empty).GetEnumerator();\n"
 		);
 		sb.Append(Doc("Returns an enumerator over the decrypted characters."));
 		sb.Append(Inline);

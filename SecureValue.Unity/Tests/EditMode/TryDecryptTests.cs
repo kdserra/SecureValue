@@ -11,7 +11,7 @@ namespace SecureValue.Unity.Tests
 	/// EditMode mirror of the xUnit TryDecryptTests for all 43 Unity-compilable
 	/// types (18 core + 9 numerics + 16 Unity): success round-trips,
 	/// uninitialized-false (no event), tampered-false (exactly one event), and
-	/// the throwing Decrypted staying intact. Fully-qualified wrappers, no dynamic.
+	/// the tampered-throwing Decrypted staying intact. Fully-qualified wrappers, no dynamic.
 	/// </summary>
 	public class TryDecryptTests
 	{
@@ -276,10 +276,7 @@ namespace SecureValue.Unity.Tests
 			Assert.IsNull(sv);
 
 			Assert.AreEqual(baseline, fired);
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = i.Decrypted;
-			});
+			Assert.AreEqual(0, i.Decrypted);
 		}
 
 		[Test]

@@ -11,8 +11,8 @@ namespace SecureValue
 {
 	/// <summary>
 	/// Global notification for detected memory tampering. Raised just before
-	/// a read throws <see cref="TamperedException"/>. Uninitialized reads throw
-	/// <see cref="UninitializedException"/> instead and never raise this.
+	/// a read throws <see cref="TamperedException"/>. Unset reads return
+	/// default instead and never raise this.
 	/// </summary>
 	public static class TamperingNotifier
 	{

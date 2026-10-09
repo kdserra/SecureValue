@@ -24,7 +24,7 @@ namespace SecureValue
 		/// <summary>
 		/// Restores storage-form words from <see cref="SaveToSerialized"/> (verifying the
 		/// storage MAC and re-encrypting with the process key). A null or wrong-length
-		/// payload leaves the value uninitialized; tampered saves throw on next read.
+		/// payload leaves the value unset (reads return default); tampered saves throw on next read.
 		/// </summary>
 		/// <param name="packed">Storage-form words, or null when never serialized.</param>
 		void LoadFromSerialized(uint[]? packed);

@@ -49,7 +49,7 @@ namespace SecureValue.Unity.Tests
 		{
 			SecureString s = "item name";
 			Assert.AreEqual(9, s.Length);
-			Assert.AreEqual("item name", (string)s);
+			Assert.AreEqual("item name", (string?)s);
 			char[] buffer = new char[s.Length];
 			s.CopyTo(buffer);
 			Assert.AreEqual("item name", new string(buffer));
@@ -68,16 +68,13 @@ namespace SecureValue.Unity.Tests
 		}
 
 		[Test]
-		public void Tamper_ModeFlip_ThrowsUninitialized()
+		public void Tamper_ModeFlip_ReadsDefault()
 		{
 			object box = (SecureString)"small";
 			Type modeType = box.GetType().GetNestedType("StorageMode", Flags);
 			Assert.NotNull(modeType);
 			box.GetType().GetField("_mode", Flags).SetValue(box, Enum.Parse(modeType, "Heap"));
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = ((SecureString)box).Decrypted;
-			});
+			Assert.IsNull(((SecureString)box).Decrypted);
 		}
 
 		[Test]
@@ -119,7 +116,7 @@ namespace SecureValue.Unity.Tests
 			((ISerializationCallbackReceiver)box).OnBeforeSerialize();
 			((ISerializationCallbackReceiver)box).OnAfterDeserialize();
 			SecureString restored = (SecureString)box;
-			Assert.AreEqual(plain, (string)restored);
+			Assert.AreEqual(plain, (string?)restored);
 			Assert.AreEqual(expectedMode, ModeOf(restored));
 		}
 	}

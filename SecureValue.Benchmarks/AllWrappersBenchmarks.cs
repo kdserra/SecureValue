@@ -141,7 +141,7 @@ namespace SecureValue.Benchmarks
 		}
 
 		[Benchmark(Description = "SecureString")]
-		public string SecureString_WriteRead()
+		public string? SecureString_WriteRead()
 		{
 			SecureString v = "benchmark secret";
 			return v;

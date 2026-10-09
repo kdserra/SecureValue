@@ -187,12 +187,12 @@ namespace SecureValue.Unity.Tests
 		public void String_Extremes_RoundTrip()
 		{
 			SecureString empty = "";
-			Assert.AreEqual("", (string)empty);
+			Assert.AreEqual("", (string?)empty);
 			SecureString nil = new SecureString(null!);
-			Assert.AreEqual("", (string)nil);
+			Assert.AreEqual("", (string?)nil);
 			string longValue = new string('z', 1000);
 			SecureString p = longValue;
-			Assert.AreEqual(longValue, (string)p);
+			Assert.AreEqual(longValue, (string?)p);
 		}
 
 		[Test]

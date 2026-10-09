@@ -72,8 +72,8 @@ namespace SecureValue.Tests
 			SecureString a = "AAAA";
 			SecureString b = "AAAB";
 			// decrypted values stay correct
-			Assert.Equal("AAAA", (string)a);
-			Assert.Equal("AAAB", (string)b);
+			Assert.Equal("AAAA", (string?)a);
+			Assert.Equal("AAAB", (string?)b);
 			// but the raw encrypted words must be totally different
 			Assert.NotEqual(GetFirstCipher(a), GetFirstCipher(b));
 		}
@@ -215,12 +215,12 @@ namespace SecureValue.Tests
 		// ---------- zero-out attacks ----------
 
 		[Fact]
-		public void ZeroedLiveCell_ThrowsUninitializedWithoutNotifying()
+		public void ZeroedLiveCell_ReadsDefaultWithoutNotifying()
 		{
 			// Simulates the attacker's low-skill move: zero every backing field
 			// of a live value (e.g. resetting a "spent upgrades" counter to 0).
-			// All-default backing fields fail closed as uninitialized (never a
-			// tamper event: nothing was modified into a plausible forgery).
+			// All-default backing fields read as default (never a tamper event:
+			// nothing was modified into a plausible forgery).
 			int fired = 0;
 			TamperingNotifier.TamperingDetected += () => fired++;
 			int baseline = fired;
@@ -254,10 +254,7 @@ namespace SecureValue.Tests
 			cellField.SetValue(boxed, cell);
 			SecureInt zeroed = (SecureInt)boxed;
 
-			Assert.Throws<UninitializedException>(() =>
-			{
-				_ = (int)zeroed;
-			});
+			Assert.Equal(0, (int)zeroed);
 			Assert.Equal(baseline, fired);
 		}
 

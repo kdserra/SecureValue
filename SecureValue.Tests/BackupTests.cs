@@ -171,7 +171,7 @@ namespace SecureValue.Tests
 
 			int fired = 0;
 			TamperingNotifier.TamperingDetected += () => fired++;
-			Assert.Equal(plain, (string)p);
+			Assert.Equal(plain, (string?)p);
 			Assert.Equal(1, fired);
 		}
 
@@ -202,7 +202,7 @@ namespace SecureValue.Tests
 			int fired = 0;
 			TamperingNotifier.TamperingDetected += () => fired++;
 
-			Assert.Throws<TamperedException>(() => _ = (string)p);
+			Assert.Throws<TamperedException>(() => _ = (string?)p);
 			Assert.Equal(1, fired);
 		}
 

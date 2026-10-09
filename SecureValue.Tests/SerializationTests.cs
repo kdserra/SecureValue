@@ -236,11 +236,11 @@ namespace SecureValue.Tests
 		}
 
 		[Fact]
-		public void Cell_DefaultUnprotect_ThrowsUninitialized()
+		public void Cell_DefaultUnprotect_ReturnsDefault()
 		{
-			// All-zero backing fields fail closed as uninitialized instead of yielding 0.
-			Assert.Throws<UninitializedException>(() => default(Cell).Unprotect());
-			Assert.Throws<UninitializedException>(() => default(Cell128).Unprotect());
+			// All-zero backing fields read as default.
+			Assert.Equal(0UL, default(Cell).Unprotect());
+			Assert.Equal((0UL, 0UL), default(Cell128).Unprotect());
 		}
 
 		[Fact]

@@ -68,15 +68,19 @@ namespace SecureValue
 			get => _mode == StorageMode.Inline;
 		}
 
-		/// <summary>Gets the number of characters in the decrypted value. Throws when never assigned.</summary>
+		/// <summary>Gets the number of characters in the decrypted value. Returns 0 when never assigned.</summary>
 		public int Length
 		{
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			get
 			{
-				if (_mode == StorageMode.Unassigned || !StoreIsCoherent())
+				if (_mode == StorageMode.Unassigned)
 				{
-					Vault.ThrowUninitialized();
+					return 0;
+				}
+				if (!StoreIsCoherent())
+				{
+					Vault.ThrowTampered();
 				}
 				return _length;
 			}
@@ -93,24 +97,18 @@ namespace SecureValue
 				_ => false,
 			};
 
-		/// <summary>Encrypts the type default when never initialized.</summary>
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal void EnsureInitialized()
-		{
-			if (_mode == StorageMode.Unassigned)
-			{
-				this = new SecureString(string.Empty);
-			}
-		}
-
 		uint[] ISecureSerialization.SaveToSerialized()
 		{
 			// Fail closed on doubly-corrupted values; a singly-corrupted value
 			// exports as-is (raising) and heals on load. Saves never re-seal:
 			// interface dispatch boxes the struct, so live healing would be lost.
-			if (_mode == StorageMode.Unassigned || !StoreIsCoherent())
+			if (_mode == StorageMode.Unassigned)
 			{
-				Vault.ThrowUninitialized();
+				return Array.Empty<uint>();
+			}
+			if (!StoreIsCoherent())
+			{
+				Vault.ThrowTampered();
 			}
 			if (_mode == StorageMode.Heap)
 			{
@@ -224,10 +222,9 @@ namespace SecureValue
 
 		private void LoadFromSerialized(uint[]? packed)
 		{
-			if (packed == null)
+			if (packed == null || packed.Length == 0)
 			{
-				// Never serialized: materialize a default (bad lengths fail closed on read).
-				EnsureInitialized();
+				// Never serialized: stay unset (unset reads as default).
 				return;
 			}
 			// Dual halves, each [salt, ciphers, tag, key] + the length prefix.
@@ -435,7 +432,6 @@ namespace SecureValue
 
 		void UnityEngine.ISerializationCallbackReceiver.OnBeforeSerialize()
 		{
-			EnsureInitialized();
 			_serialized = ((ISecureSerialization)this).SaveToSerialized();
 		}
 
@@ -684,8 +680,8 @@ namespace SecureValue
 			);
 		}
 
-		/// <summary>Gets the decrypted plain value.</summary>
-		public string Decrypted
+		/// <summary>Gets the decrypted plain value. Null when never assigned (an explicit "" is materialized by the constructor).</summary>
+		public string? Decrypted
 		{
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			get
@@ -693,7 +689,7 @@ namespace SecureValue
 				if (_mode == StorageMode.Unassigned || !StoreIsCoherent())
 				{
 					// Never assigned (an explicit "" is materialized by the constructor).
-					Vault.ThrowUninitialized();
+					return null;
 				}
 				if (_length == 0)
 				{
@@ -861,13 +857,17 @@ namespace SecureValue
 			return false;
 		}
 
-		/// <summary>Copies the decrypted characters into the destination span without allocating. The destination must hold at least <see cref="Length"/> characters. Throws when never assigned or tampered, with the same semantics as <see cref="Decrypted"/>.</summary>
+		/// <summary>Copies the decrypted characters into the destination span without allocating. The destination must hold at least <see cref="Length"/> characters. No-op when never assigned; throws when tampered, with the same semantics as <see cref="Decrypted"/>.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void CopyTo(Span<char> destination)
 		{
-			if (_mode == StorageMode.Unassigned || !StoreIsCoherent())
+			if (_mode == StorageMode.Unassigned)
 			{
-				Vault.ThrowUninitialized();
+				return;
+			}
+			if (!StoreIsCoherent())
+			{
+				Vault.ThrowTampered();
 			}
 			if (destination.Length < _length)
 			{
@@ -1142,22 +1142,27 @@ namespace SecureValue
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool Equals(SecureString other)
 		{
-			string a = Decrypted;
-			string b = other.Decrypted;
+			string? a = Decrypted;
+			string? b = other.Decrypted;
 			return string.Equals(a, b, StringComparison.Ordinal);
 		}
 
 		/// <summary>
 		/// Compares the decrypted value with the given characters without allocating:
-		/// decrypts into a stack buffer and compares spans. Same tamper/uninitialized
-		/// semantics as <see cref="Decrypted"/>.
+		/// decrypts into a stack buffer and compares spans. Empty when never assigned
+		/// (compares empty against input); throws when tampered, with the same semantics
+		/// as <see cref="Decrypted"/>.
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool SequenceEqual(ReadOnlySpan<char> value)
 		{
-			if (_mode == StorageMode.Unassigned || !StoreIsCoherent())
+			if (_mode == StorageMode.Unassigned)
 			{
-				Vault.ThrowUninitialized();
+				return value.IsEmpty;
+			}
+			if (!StoreIsCoherent())
+			{
+				Vault.ThrowTampered();
 			}
 			Span<char> plain = stackalloc char[_length];
 			CopyTo(plain);
@@ -1167,12 +1172,10 @@ namespace SecureValue
 		/// <summary>
 		/// Decrypts onto the stack and invokes the action with the decrypted characters.
 		/// The buffer is stack-allocated, sized from <see cref="Length"/>, and zeroed
-		/// before this method returns — even when the action throws. Same
-		/// tamper/uninitialized semantics as <see cref="Decrypted"/> (throws
-		/// <see cref="UninitializedException"/> when never assigned,
-		/// <see cref="TamperedException"/> when both copies are tampered; a
-		/// singly-tampered value recovers, heals, and raises
-		/// <see cref="TamperingNotifier.TamperingDetected"/> before the action runs).
+		/// before this method returns — even when the action throws. Invokes the action
+		/// with empty when never assigned; throws <see cref="TamperedException"/> when
+		/// both copies are tampered; a singly-tampered value recovers, heals, and raises
+		/// <see cref="TamperingNotifier.TamperingDetected"/> before the action runs.
 		/// Very long strings stack-allocate the full length: prefer
 		/// <see cref="CopyTo(Span{char})"/> with a pooled buffer for huge values.
 		/// The span must not be stored, captured, or used after the action returns.
@@ -1183,6 +1186,23 @@ namespace SecureValue
 			if (action is null)
 			{
 				throw new ArgumentNullException(nameof(action));
+			}
+			if (_mode == StorageMode.Unassigned)
+			{
+				Span<char> empty = Span<char>.Empty;
+				try
+				{
+					action(empty);
+				}
+				finally
+				{
+					CryptographicOperations.ZeroMemory(MemoryMarshal.AsBytes(empty));
+				}
+				return;
+			}
+			if (!StoreIsCoherent())
+			{
+				Vault.ThrowTampered();
 			}
 			Span<char> buffer = stackalloc char[_length];
 			try
@@ -1199,7 +1219,7 @@ namespace SecureValue
 		/// <summary>
 		/// Decrypts onto the stack and returns the function result. Throwing counterpart
 		/// of <see cref="TryStackDecrypt{TResult}(DecryptedSpanFunc{TResult}, out TResult)"/>:
-		/// tamper/uninitialized failures throw (see <see cref="StackDecrypt(DecryptedSpanAction)"/>).
+		/// tamper failures throw and never assigned invokes with empty (see <see cref="StackDecrypt(DecryptedSpanAction)"/>).
 		/// The buffer is zeroed before this method returns — even when the function throws.
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1208,6 +1228,22 @@ namespace SecureValue
 			if (func is null)
 			{
 				throw new ArgumentNullException(nameof(func));
+			}
+			if (_mode == StorageMode.Unassigned)
+			{
+				Span<char> empty = Span<char>.Empty;
+				try
+				{
+					return func(empty);
+				}
+				finally
+				{
+					CryptographicOperations.ZeroMemory(MemoryMarshal.AsBytes(empty));
+				}
+			}
+			if (!StoreIsCoherent())
+			{
+				Vault.ThrowTampered();
 			}
 			Span<char> buffer = stackalloc char[_length];
 			try
@@ -1225,7 +1261,7 @@ namespace SecureValue
 		/// Stateful decrypts onto the stack and returns the function result. Use a
 		/// <c>static</c> lambda with explicit <paramref name="state"/> to stay
 		/// allocation-free (a capturing lambda allocates a closure). Same
-		/// tamper/uninitialized semantics as <see cref="StackDecrypt(DecryptedSpanAction)"/>.
+		/// semantics as <see cref="StackDecrypt(DecryptedSpanAction)"/> (empty when never assigned).
 		/// The buffer is zeroed before this method returns — even when the function throws.
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1237,6 +1273,22 @@ namespace SecureValue
 			if (func is null)
 			{
 				throw new ArgumentNullException(nameof(func));
+			}
+			if (_mode == StorageMode.Unassigned)
+			{
+				Span<char> empty = Span<char>.Empty;
+				try
+				{
+					return func(empty, state);
+				}
+				finally
+				{
+					CryptographicOperations.ZeroMemory(MemoryMarshal.AsBytes(empty));
+				}
+			}
+			if (!StoreIsCoherent())
+			{
+				Vault.ThrowTampered();
 			}
 			Span<char> buffer = stackalloc char[_length];
 			try
@@ -1254,7 +1306,7 @@ namespace SecureValue
 		/// Stateful decrypts onto the stack and invokes the action with the decrypted
 		/// characters. Use a <c>static</c> lambda with explicit <paramref name="state"/>
 		/// to stay allocation-free (a capturing lambda allocates a closure). Same
-		/// tamper/uninitialized semantics as <see cref="StackDecrypt(DecryptedSpanAction)"/>.
+		/// semantics as <see cref="StackDecrypt(DecryptedSpanAction)"/> (empty when never assigned).
 		/// The buffer is zeroed before this method returns — even when the action throws.
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1263,6 +1315,23 @@ namespace SecureValue
 			if (action is null)
 			{
 				throw new ArgumentNullException(nameof(action));
+			}
+			if (_mode == StorageMode.Unassigned)
+			{
+				Span<char> empty = Span<char>.Empty;
+				try
+				{
+					action(empty, state);
+				}
+				finally
+				{
+					CryptographicOperations.ZeroMemory(MemoryMarshal.AsBytes(empty));
+				}
+				return;
+			}
+			if (!StoreIsCoherent())
+			{
+				Vault.ThrowTampered();
 			}
 			Span<char> buffer = stackalloc char[_length];
 			try
@@ -1416,9 +1485,10 @@ namespace SecureValue
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public override bool Equals(object? obj) => obj is SecureString other && Equals(other);
 
-		/// <summary>Compares this value with another secured string.</summary>
+		/// <summary>Compares this value with another secured string. Unset reads as empty.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public int CompareTo(SecureString other) => Decrypted.CompareTo(other.Decrypted);
+		public int CompareTo(SecureString other) =>
+			(Decrypted ?? string.Empty).CompareTo(other.Decrypted ?? string.Empty);
 
 		/// <summary>Compares this value with another object.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1431,7 +1501,7 @@ namespace SecureValue
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public override int GetHashCode()
 		{
-			string s = Decrypted;
+			string s = Decrypted ?? string.Empty;
 			unchecked
 			{
 				int hash = 17;
@@ -1443,9 +1513,9 @@ namespace SecureValue
 			}
 		}
 
-		/// <summary>Returns the decrypted value as a string.</summary>
+		/// <summary>Returns the decrypted value as a string. Empty when never assigned.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public override string ToString() => Decrypted;
+		public override string ToString() => Decrypted ?? string.Empty;
 
 		/// <summary>Tests two secured string values for equality.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1477,13 +1547,13 @@ namespace SecureValue
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static implicit operator SecureString(Span<char> value) => SealSpan(value);
 
-		/// <summary>Converts back to the plain string value (decrypts on read).</summary>
+		/// <summary>Converts back to the plain string value (decrypts on read). Null when never assigned.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static implicit operator string(SecureString value) => value.Decrypted;
+		public static implicit operator string?(SecureString value) => value.Decrypted;
 
-		/// <summary>Concatenates two secured string values.</summary>
+		/// <summary>Concatenates two secured string values. Unset reads as empty.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static SecureString operator +(SecureString a, SecureString b) =>
-			new SecureString(a.Decrypted + b.Decrypted);
+			new SecureString((a.Decrypted ?? string.Empty) + (b.Decrypted ?? string.Empty));
 	}
 }

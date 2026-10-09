@@ -37,16 +37,6 @@ namespace SecureValue.Numerics
 			get => _ciphers == null && _ciphersB == null;
 		}
 
-		/// <summary>Encrypts the type default when never initialized.</summary>
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal void EnsureInitialized()
-		{
-			if (_ciphers == null)
-			{
-				this = new SecureBigInteger(BigInteger.Zero);
-			}
-		}
-
 		uint[] ISecureSerialization.SaveToSerialized()
 		{
 			// Fail closed on doubly-corrupted values; a singly-corrupted value
@@ -54,7 +44,11 @@ namespace SecureValue.Numerics
 			// interface dispatch boxes the struct, so live healing would be lost.
 			if (_ciphers == null && _ciphersB == null)
 			{
-				Vault.ThrowUninitialized();
+				return Array.Empty<uint>();
+			}
+			if (_ciphers == null || _ciphersB == null)
+			{
+				Vault.ThrowTampered();
 			}
 			bool okA = Verify(_ciphers, _salt, _tag, out _);
 			bool okB = Verify(_ciphersB, _saltB, _tagB, out _);
@@ -105,10 +99,9 @@ namespace SecureValue.Numerics
 
 		private void LoadFromSerialized(uint[]? packed)
 		{
-			if (packed == null)
+			if (packed == null || packed.Length == 0)
 			{
-				// Never serialized: materialize a default (bad lengths fail closed on read).
-				EnsureInitialized();
+				// Never serialized: stay unset (unset reads as default).
 				return;
 			}
 			// Dual halves, each [salt, ciphers, tag, key].
@@ -126,7 +119,7 @@ namespace SecureValue.Numerics
 			if (cipherCount == 0)
 			{
 				// No words: mirrors the single-copy path (null ciphers read as
-				// uninitialized). Real saves always carry at least one word.
+				// default). Real saves always carry at least one word.
 				_ciphers = null!;
 				_tag = Vault.ComputeTag(Span<ulong>.Empty, Vault.DeriveProcessKeys(_salt));
 				_ciphersB = null!;
@@ -234,7 +227,6 @@ namespace SecureValue.Numerics
 
 		void UnityEngine.ISerializationCallbackReceiver.OnBeforeSerialize()
 		{
-			EnsureInitialized();
 			_serialized = ((ISecureSerialization)this).SaveToSerialized();
 		}
 
@@ -306,7 +298,7 @@ namespace SecureValue.Numerics
 			return new BigInteger(bytes);
 		}
 
-		/// <summary>Gets the decrypted plain value.</summary>
+		/// <summary>Gets the decrypted plain value. Zero when never assigned.</summary>
 		public BigInteger Decrypted
 		{
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -314,7 +306,7 @@ namespace SecureValue.Numerics
 			{
 				if (_ciphers == null && _ciphersB == null)
 				{
-					Vault.ThrowUninitialized();
+					return default;
 				}
 				bool okA = Verify(_ciphers, _salt, _tag, out KeySet rkA);
 				bool okB = Verify(_ciphersB, _saltB, _tagB, out KeySet rkB);

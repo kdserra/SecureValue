@@ -124,20 +124,19 @@ namespace SecureValue.Tests
 		}
 
 		[Fact]
-		public void StackDecrypt_DefaultThrows()
+		public void StackDecrypt_DefaultReadsEmpty()
 		{
-			Assert.Throws<UninitializedException>(() =>
-				default(SecureString).StackDecrypt(static _ => { })
+			string seen = "untouched";
+			default(SecureString).StackDecrypt(span => seen = span.ToString());
+			Assert.Equal("", seen);
+			Assert.Equal(0, default(SecureString).StackDecrypt(static span => span.Length));
+			Assert.Equal(
+				0,
+				default(SecureString).StackDecrypt("s", static (span, _) => span.Length)
 			);
-			Assert.Throws<UninitializedException>(() =>
-				default(SecureString).StackDecrypt(static _ => 0)
-			);
-			Assert.Throws<UninitializedException>(() =>
-				default(SecureString).StackDecrypt("s", static (_, __) => 0)
-			);
-			Assert.Throws<UninitializedException>(() =>
-				default(SecureString).StackDecrypt("s", static (_, __) => { })
-			);
+			var state = new string[1] { "untouched" };
+			default(SecureString).StackDecrypt(state, static (span, st) => st[0] = span.ToString());
+			Assert.Equal("", state[0]);
 		}
 
 		[Theory]

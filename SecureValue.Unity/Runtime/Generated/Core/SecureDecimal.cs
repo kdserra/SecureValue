@@ -61,7 +61,7 @@ namespace SecureValue
 			}
 		}
 
-		/// <summary>Gets the decrypted plain value.</summary>
+		/// <summary>Gets the decrypted plain value (default when never assigned).</summary>
 		public decimal Decrypted
 		{
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -104,17 +104,12 @@ namespace SecureValue
 			get => _cell.IsUnset;
 		}
 
-		/// <summary>Encrypts the type default when never initialized.</summary>
-		internal void EnsureInitialized()
-		{
-			if (_cell.IsUnset)
-			{
-				this = new SecureDecimal(default);
-			}
-		}
-
 		uint[] ISecureSerialization.SaveToSerialized()
 		{
+			if (IsUnset)
+			{
+				return Array.Empty<uint>();
+			}
 			Span<ulong> words = stackalloc ulong[12];
 			KeySet saveKey = Vault.NewStorageKey();
 			_cell.CopyStorageWords(words, saveKey);
@@ -126,10 +121,9 @@ namespace SecureValue
 
 		private void LoadFromSerialized(uint[]? packed)
 		{
-			if (packed == null)
+			if (packed == null || packed.Length == 0)
 			{
-				// Never serialized: materialize a default (bad lengths fail closed on read).
-				EnsureInitialized();
+				// Never serialized: stay unset (reads return default).
 				return;
 			}
 			Span<ulong> words = stackalloc ulong[12];
@@ -146,7 +140,6 @@ namespace SecureValue
 
 		void UnityEngine.ISerializationCallbackReceiver.OnBeforeSerialize()
 		{
-			EnsureInitialized();
 			_serialized = ((ISecureSerialization)this).SaveToSerialized();
 		}
 

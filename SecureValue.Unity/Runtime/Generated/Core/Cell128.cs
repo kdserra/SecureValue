@@ -44,8 +44,8 @@ namespace SecureValue
 		/// Verifies both copies' pair tags and decrypts. A singly-tampered value restores
 		/// from the good copy (raising the tamper event) and re-seals the damaged
 		/// copy from the recovered plaintext; a doubly-tampered value throws
-		/// <see cref="TamperedException"/>, a never-assigned one
-		/// <see cref="UninitializedException"/>. The fast path never mutates.
+		/// <see cref="TamperedException"/>, a never-assigned one reads 0.
+		/// The fast path never mutates.
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public (ulong Lo, ulong Hi) Unprotect()
@@ -59,7 +59,8 @@ namespace SecureValue
 			}
 			if (!okA && !okB && IsUnset)
 			{
-				Vault.ThrowUninitialized();
+				// Never assigned: reads default.
+				return (0UL, 0UL);
 			}
 			if (okA)
 			{

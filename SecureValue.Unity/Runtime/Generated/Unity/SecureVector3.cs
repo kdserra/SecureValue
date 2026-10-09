@@ -37,7 +37,7 @@ namespace SecureValue.Unity
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static ulong EncHi(Vector3 v) => (ulong)(uint)BitConverter.SingleToInt32Bits(v.z);
 
-		/// <summary>Gets the decrypted plain value.</summary>
+		/// <summary>Gets the decrypted plain value (default when never assigned).</summary>
 		public Vector3 Decrypted
 		{
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -76,21 +76,11 @@ namespace SecureValue.Unity
 			get => _cell.IsUnset;
 		}
 
-		/// <summary>Encrypts the type default when never initialized.</summary>
-		internal void EnsureInitialized()
-		{
-			if (_cell.IsUnset)
-			{
-				this = new SecureVector3(default);
-			}
-		}
-
 		[UnityEngine.SerializeField, UnityEngine.HideInInspector]
 		private uint[]? _serialized;
 
 		void UnityEngine.ISerializationCallbackReceiver.OnBeforeSerialize()
 		{
-			EnsureInitialized();
 			_serialized = ((ISecureSerialization)this).SaveToSerialized();
 		}
 
@@ -104,6 +94,10 @@ namespace SecureValue.Unity
 
 		uint[] ISecureSerialization.SaveToSerialized()
 		{
+			if (IsUnset)
+			{
+				return Array.Empty<uint>();
+			}
 			Span<ulong> words = stackalloc ulong[12];
 			KeySet saveKey = Vault.NewStorageKey();
 			_cell.CopyStorageWords(words, saveKey);
@@ -115,10 +109,9 @@ namespace SecureValue.Unity
 
 		private void LoadFromSerialized(uint[]? packed)
 		{
-			if (packed == null)
+			if (packed == null || packed.Length == 0)
 			{
-				// Never serialized: materialize a default (bad lengths fail closed on read).
-				EnsureInitialized();
+				// Never serialized: stay unset (reads return default).
 				return;
 			}
 			Span<ulong> words = stackalloc ulong[12];

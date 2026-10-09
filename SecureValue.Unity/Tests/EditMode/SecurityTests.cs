@@ -12,7 +12,7 @@ namespace SecureValue.Unity.Tests
 	/// EditMode mirror of the xUnit SecurityTests, executed under Unity's CLR to prove
 	/// the cipher, diffusion and tamper machinery behave identically there: avalanche
 	/// diffusion through the internal seal path, cross-word chaining, the tamper event
-	/// contract, fail-closed zeroed cells, and primitive interop. Fully-qualified wrapper
+	/// contract, default-reading zeroed cells, and primitive interop. Fully-qualified wrapper
 	/// names throughout. System.Numerics is deliberately NOT imported (its Vector types
 	/// collide with UnityEngine's); PopCount is reached by full qualification.
 	/// </summary>
@@ -178,10 +178,10 @@ namespace SecureValue.Unity.Tests
 		}
 
 		[Test]
-		public void ZeroedLiveCell_ThrowsUninitializedWithoutNotifying()
+		public void ZeroedLiveCell_ReadsDefaultWithoutNotifying()
 		{
-			// Zeroing every backing field of a live value fails closed as
-			// uninitialized — never a tamper event (nothing was forged into).
+			// Zeroing every backing field of a live value reads as default —
+			// never a tamper event (nothing was forged into).
 			int fired = 0;
 			TamperingNotifier.TamperingDetected += () => fired++;
 
@@ -207,10 +207,7 @@ namespace SecureValue.Unity.Tests
 				f.SetValue(box, cell);
 			}
 			SecureValue.Unity.SecureBounds zeroed = (SecureValue.Unity.SecureBounds)box;
-			Assert.Throws<UninitializedException>(() =>
-			{
-				Bounds x = zeroed;
-			});
+			Assert.AreEqual(default(Bounds), (Bounds)zeroed);
 			Assert.AreEqual(0, fired);
 		}
 

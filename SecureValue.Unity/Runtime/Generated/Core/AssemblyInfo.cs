@@ -12,3 +12,4 @@ using System.Runtime.CompilerServices;
 // test assembly gets the same visibility the .NET test assembly has.
 [assembly: InternalsVisibleTo("SecureValue.Tests")]
 [assembly: InternalsVisibleTo("SecureValue.Unity.Tests")]
+[assembly: InternalsVisibleTo("SecureValue.Benchmarks")]

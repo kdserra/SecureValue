@@ -6,7 +6,7 @@ namespace SecureValue.Tests
 	/// <summary>
 	/// SecureString span API: Length + CopyTo(Span&lt;char&gt;) decrypt words
 	/// straight into the caller's buffer — no intermediate string, no
-	/// collection allocations. Tamper/uninitialized semantics mirror Decrypted.
+	/// collection allocations. Tamper/unset semantics mirror Decrypted.
 	/// </summary>
 	[Collection("TamperNotifier")]
 	public class SecureStringSpanTests
@@ -30,9 +30,9 @@ namespace SecureValue.Tests
 		}
 
 		[Fact]
-		public void Length_DefaultThrows()
+		public void Length_DefaultIsZero()
 		{
-			Assert.Throws<UninitializedException>(() => default(SecureString).Length);
+			Assert.Equal(0, default(SecureString).Length);
 		}
 
 		[Theory]
@@ -74,12 +74,12 @@ namespace SecureValue.Tests
 		}
 
 		[Fact]
-		public void CopyTo_DefaultThrows()
+		public void CopyTo_DefaultWritesNothing()
 		{
-			Assert.Throws<UninitializedException>(() =>
-			{
-				default(SecureString).CopyTo(stackalloc char[4]);
-			});
+			Span<char> destination = stackalloc char[4];
+			destination.Fill('X');
+			default(SecureString).CopyTo(destination);
+			Assert.Equal("XXXX", destination.ToString());
 		}
 
 		[Theory]
@@ -139,11 +139,10 @@ namespace SecureValue.Tests
 		}
 
 		[Fact]
-		public void SequenceEqual_DefaultThrows()
+		public void SequenceEqual_DefaultMatchesEmpty()
 		{
-			Assert.Throws<UninitializedException>(() =>
-				default(SecureString).SequenceEqual("x".AsSpan())
-			);
+			Assert.False(default(SecureString).SequenceEqual("x".AsSpan()));
+			Assert.True(default(SecureString).SequenceEqual("".AsSpan()));
 		}
 
 		[Theory]

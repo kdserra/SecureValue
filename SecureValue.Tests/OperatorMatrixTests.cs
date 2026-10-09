@@ -186,8 +186,8 @@ namespace SecureValue.Tests
 		public void String_ConcatAndEqualityWithPrimitive()
 		{
 			SecureString s = "foo";
-			Assert.Equal("foobar", (string)(s + "bar"));
-			Assert.Equal("barfoo", (string)("bar" + s));
+			Assert.Equal("foobar", (string?)(s + "bar"));
+			Assert.Equal("barfoo", (string?)("bar" + s));
 			Assert.True(s == "foo");
 			Assert.True("foo" == s);
 			Assert.True(s != "bar");

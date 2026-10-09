@@ -229,18 +229,18 @@ namespace SecureValue.Unity.Tests
 		[Test]
 		public void String_Thoroughness()
 		{
-			Sweep("string.low", StringLow, i => "low-" + i, v => (string)(SecureString)v);
+			Sweep("string.low", StringLow, i => "low-" + i, v => ((string?)(SecureString)v)!);
 			Sweep(
 				"string.high",
 				StringHigh,
 				i => new string((char)('a' + (i % 26)), 200 + (int)(i % 100)),
-				v => (string)(SecureString)v
+				v => ((string?)(SecureString)v)!
 			);
 			Sweep(
 				"string.mid",
 				StringMid,
 				i => "mid-" + (i - StringMid / 2),
-				v => (string)(SecureString)v
+				v => ((string?)(SecureString)v)!
 			);
 		}
 

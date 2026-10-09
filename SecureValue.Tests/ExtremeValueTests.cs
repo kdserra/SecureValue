@@ -197,12 +197,12 @@ namespace SecureValue.Tests
 		public void String_Extremes_RoundTrip()
 		{
 			SecureString empty = "";
-			Assert.Equal("", (string)empty);
+			Assert.Equal("", (string?)empty);
 			SecureString nil = new SecureString(null!);
-			Assert.Equal("", (string)nil);
+			Assert.Equal("", (string?)nil);
 			string longValue = new string('z', 1000);
 			SecureString p = longValue;
-			Assert.Equal(longValue, (string)p);
+			Assert.Equal(longValue, (string?)p);
 		}
 
 		[Fact]

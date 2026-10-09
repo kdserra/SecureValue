@@ -158,7 +158,7 @@ namespace SecureValue.Unity.Tests
 			int fired = 0;
 			TamperingNotifier.TamperingDetected += () => fired++;
 
-			Assert.AreEqual("backup me, this is a longer string", (string)p);
+			Assert.AreEqual("backup me, this is a longer string", (string?)p);
 			Assert.AreEqual(1, fired);
 		}
 
@@ -178,7 +178,7 @@ namespace SecureValue.Unity.Tests
 			int fired = 0;
 			TamperingNotifier.TamperingDetected += () => fired++;
 
-			Assert.AreEqual("backup me", (string)p);
+			Assert.AreEqual("backup me", (string?)p);
 			Assert.AreEqual(1, fired);
 		}
 

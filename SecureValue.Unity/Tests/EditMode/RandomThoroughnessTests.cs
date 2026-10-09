@@ -295,7 +295,7 @@ namespace SecureValue.Unity.Tests
 			{
 				string value = RandomString(random);
 				SecureString p = value;
-				Sample(value, (string)p, "string", ref failures, samples);
+				Sample(value, (string?)p, "string", ref failures, samples);
 			}
 			Report("string", seed, count, failures, samples);
 		}

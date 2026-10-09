@@ -34,12 +34,16 @@ namespace SecureValue
 			_cell.Protect((ulong)value.Ticks, (ulong)(ushort)(offsetMinutes + 1024));
 		}
 
-		/// <summary>Gets the decrypted plain value.</summary>
+		/// <summary>Gets the decrypted plain value (default when never assigned).</summary>
 		public DateTimeOffset Decrypted
 		{
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			get
 			{
+				if (IsUnset)
+				{
+					return default;
+				}
 				(ulong ticks, ulong packedOffset) = _cell.Unprotect();
 				var offset = new TimeSpan(0, (int)(ushort)packedOffset - 1024, 0);
 				return new DateTimeOffset(Bits.ToLong(ticks), offset);
@@ -67,17 +71,12 @@ namespace SecureValue
 			get => _cell.IsUnset;
 		}
 
-		/// <summary>Encrypts the type default when never initialized.</summary>
-		internal void EnsureInitialized()
-		{
-			if (_cell.IsUnset)
-			{
-				this = new SecureDateTimeOffset(default);
-			}
-		}
-
 		uint[] ISecureSerialization.SaveToSerialized()
 		{
+			if (IsUnset)
+			{
+				return Array.Empty<uint>();
+			}
 			Span<ulong> words = stackalloc ulong[12];
 			KeySet saveKey = Vault.NewStorageKey();
 			_cell.CopyStorageWords(words, saveKey);
@@ -89,10 +88,9 @@ namespace SecureValue
 
 		private void LoadFromSerialized(uint[]? packed)
 		{
-			if (packed == null)
+			if (packed == null || packed.Length == 0)
 			{
-				// Never serialized: materialize a default (bad lengths fail closed on read).
-				EnsureInitialized();
+				// Never serialized: stay unset (reads return default).
 				return;
 			}
 			Span<ulong> words = stackalloc ulong[12];
@@ -109,7 +107,6 @@ namespace SecureValue
 
 		void UnityEngine.ISerializationCallbackReceiver.OnBeforeSerialize()
 		{
-			EnsureInitialized();
 			_serialized = ((ISecureSerialization)this).SaveToSerialized();
 		}
 

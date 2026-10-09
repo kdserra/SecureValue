@@ -124,12 +124,5 @@ namespace SecureValue
 			TamperingNotifier.Raise();
 			throw new TamperedException();
 		}
-
-		/// <summary>Throws for a read on a never-initialized value (no tamper event).</summary>
-		[DoesNotReturn]
-		internal static void ThrowUninitialized()
-		{
-			throw new UninitializedException();
-		}
 	}
 }
