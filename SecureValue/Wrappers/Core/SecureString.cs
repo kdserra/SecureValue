@@ -77,6 +77,10 @@ namespace SecureValue
 				{
 					Vault.ThrowTampered();
 				}
+				if (_mode == StorageMode.Heap && !HasValidHeapShape())
+				{
+					Vault.ThrowTampered();
+				}
 				return _length;
 			}
 		}
@@ -90,15 +94,26 @@ namespace SecureValue
 				StorageMode.Inline => _length >= 0 && _length <= InlineCapacity,
 				StorageMode.Heap => _length > InlineCapacity
 					&& _ciphers != null
-					&& _ciphersB != null
-					&& _ciphers.Length == WordCountForLength(_length)
-					&& _ciphersB.Length == WordCountForLength(_length),
+					&& _ciphersB != null,
 				_ => false,
 			};
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static int WordCountForLength(int length) =>
 			length <= 0 ? 0 : ((length - 1) / 4) + 1;
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private bool HasValidHeapShape() =>
+			_mode == StorageMode.Heap
+			&& _length > InlineCapacity
+			&& _ciphers != null
+			&& _ciphersB != null
+			&& _ciphers.Length == WordCountForLength(_length)
+			&& _ciphersB.Length == WordCountForLength(_length);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private bool CanStackDecrypt() =>
+			StoreIsCoherent() && (_mode != StorageMode.Heap || HasValidHeapShape());
 
 		uint[] ISecureSerialization.SaveToSerialized()
 		{
@@ -709,7 +724,9 @@ namespace SecureValue
 				}
 				if (!StoreIsCoherent())
 				{
-					Vault.ThrowTampered();
+					// Structural corruption (for example a mode flip or null backing
+					// array) retains the established unset/default read behavior.
+					return null;
 				}
 				if (_length == 0)
 				{
@@ -1397,7 +1414,7 @@ namespace SecureValue
 			{
 				return false;
 			}
-			if (!StoreIsCoherent())
+			if (!CanStackDecrypt())
 			{
 				TamperingNotifier.Raise();
 				return false;
@@ -1440,7 +1457,7 @@ namespace SecureValue
 				result = default!;
 				return false;
 			}
-			if (!StoreIsCoherent())
+			if (!CanStackDecrypt())
 			{
 				TamperingNotifier.Raise();
 				result = default!;
@@ -1488,7 +1505,7 @@ namespace SecureValue
 				result = default!;
 				return false;
 			}
-			if (!StoreIsCoherent())
+			if (!CanStackDecrypt())
 			{
 				TamperingNotifier.Raise();
 				result = default!;
@@ -1531,7 +1548,7 @@ namespace SecureValue
 			{
 				return false;
 			}
-			if (!StoreIsCoherent())
+			if (!CanStackDecrypt())
 			{
 				TamperingNotifier.Raise();
 				return false;

@@ -248,11 +248,12 @@ namespace SecureValue.Tests
 		}
 
 		[Fact]
-		public void Serialization_OldHeapShortSaveMigratesToInline()
+		public void Serialization_OldHeapShortSaveIsRejected()
 		{
-			// Forge exactly what the pre-inline code emitted for a short string:
-			// heap arrays with legacy (ciphers-only) tags, then load and confirm
-			// the value is equal and the store normalized to inline.
+			// Forge exactly what the pre-length-bound code emitted for a short
+			// string: heap arrays with legacy (ciphers-only) tags. The current
+			// format deliberately rejects this rather than providing a compatibility
+			// exemption that could weaken the integrity boundary.
 			SecureString src = "hello";
 			object box = src;
 			ulong[] words = new ulong[2];
@@ -269,11 +270,7 @@ namespace SecureValue.Tests
 			box.GetType()
 				.GetField("_tagB", Flags)!
 				.SetValue(box, Vault.ComputeTag(words, Vault.DeriveProcessKeys(saltB)));
-			uint[] packed = ((ISecureSerialization)box).SaveToSerialized();
-			object fresh = default(SecureString);
-			((ISecureSerialization)fresh).LoadFromSerialized(packed);
-			Assert.Equal("hello", (string?)(SecureString)fresh);
-			Assert.Equal("Inline", ModeOf(fresh));
+			Assert.Throws<TamperedException>(() => ((ISecureSerialization)box).SaveToSerialized());
 		}
 
 		private static ulong InlineWord(object box, string field) =>
