@@ -16,8 +16,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing release tag to (re)build benchmark assets for (e.g. v1.2.3)
+        description: Release tag to benchmark and attach missing results (e.g. v1.2.3), or auto to select the newest incomplete release
         required: true
+        default: auto
 
 # The tag is only known at runtime (resolve step), so the group is static:
 # runs serialize, never overlap uploads. Fully-benchmarked runs no-op fast.
@@ -41,10 +42,12 @@ jobs:
         # still missing a benchmark file (usually the just-published one).
         # Empty output = nothing to benchmark; every later step skips.
         id: resolve
+        env:
+          REQUESTED_TAG: ${{ inputs.tag }}
         run: |
-          if [ -n "${{ inputs.tag }}" ]; then
-            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
-            echo "Manual dispatch for ${{ inputs.tag }}."
+          if [ -n "$REQUESTED_TAG" ] && [ "$REQUESTED_TAG" != "auto" ]; then
+            echo "tag=$REQUESTED_TAG" >> "$GITHUB_OUTPUT"
+            echo "Manual dispatch for $REQUESTED_TAG."
             exit 0
           fi
           # NOTE: every gh call pins -R explicitly: this step runs BEFORE
