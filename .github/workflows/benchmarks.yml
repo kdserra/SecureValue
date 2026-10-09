@@ -76,6 +76,20 @@ jobs:
           ref: ${{ steps.resolve.outputs.tag }}
           fetch-depth: 0
 
+      - name: Checkout benchmark tooling
+        # Older release tags predate the benchmark collector itself. Keep the
+        # release checkout for the code being measured, but source the runner
+        # from the commit containing this workflow. This keeps the workflow
+        # and its collector versioned as one coherent unit.
+        if: steps.resolve.outputs.tag != ''
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .benchmark-tool-source
+          fetch-depth: 1
+          sparse-checkout: Tools/collect-benchmark-results.cs
+          sparse-checkout-cone-mode: false
+
       - name: Setup .NET
         if: steps.resolve.outputs.tag != ''
         uses: actions/setup-dotnet@v4
@@ -109,7 +123,7 @@ jobs:
         if: steps.resolve.outputs.tag != '' && steps.gate.outputs.has-int == 'false'
         env:
           TAG: ${{ steps.resolve.outputs.tag }}
-        run: dotnet run Tools/collect-benchmark-results.cs -- "${TAG#v}" IntFloatString
+        run: dotnet run .benchmark-tool-source/Tools/collect-benchmark-results.cs -- "${TAG#v}" IntFloatString
 
       - name: Upload Benchmark-IntFloatString.md
         # Uploaded BEFORE the slow suite starts, so the fast results survive
@@ -123,7 +137,7 @@ jobs:
         if: steps.resolve.outputs.tag != '' && steps.gate.outputs.has-all == 'false'
         env:
           TAG: ${{ steps.resolve.outputs.tag }}
-        run: dotnet run Tools/collect-benchmark-results.cs -- "${TAG#v}" All
+        run: dotnet run .benchmark-tool-source/Tools/collect-benchmark-results.cs -- "${TAG#v}" All
 
       - name: Upload Benchmark-All.md
         if: steps.resolve.outputs.tag != '' && steps.gate.outputs.has-all == 'false'
