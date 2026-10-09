@@ -3,6 +3,7 @@
 
 ### Features
 
+- add support for default init values ([06ab1a6](https://github.com/kdserra/SecureValue/commit/06ab1a645626892bd82a96eebe67be05db263298))
 * add ISecureValue<T> ([f1e8237](https://github.com/kdserra/SecureValue/commit/f1e82375de145759859e0b1358a1e38b8442197d))
 
 
