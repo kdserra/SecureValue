@@ -126,7 +126,7 @@ foreach (string report in reports)
 	body.AppendLine();
 	body.AppendLine($"## {className}");
 	body.AppendLine();
-	body.Append(File.ReadAllText(report).Trim());
+	body.Append(DecodeApostrophes(File.ReadAllText(report).Trim()));
 	body.AppendLine();
 }
 
@@ -184,6 +184,21 @@ static int Run(string cmd, string arguments, string workDir)
 	using var proc = Process.Start(psi)!;
 	proc.WaitForExit();
 	return proc.ExitCode;
+}
+
+static string DecodeApostrophes(string markdown)
+{
+	// BenchmarkDotNet's *-report-github.md HTML-encodes the single quotes it
+	// wraps around multi-word benchmark names (e.g. Descriptions with spaces)
+	// as &#39;, which then leaks verbatim into the assembled release asset
+	// (seen as &#39;SecureBool (wraps bool)&#39; in Benchmark-All.md v1.1.0).
+	// An apostrophe needs no escaping in a markdown table cell, so decode just
+	// that entity (decimal + hex + named forms). Other entities (e.g. &lt;)
+	// are left as BDN emitted so genuinely-sensitive names keep rendering.
+	return markdown
+		.Replace("&#39;", "'", StringComparison.Ordinal)
+		.Replace("&#x27;", "'", StringComparison.OrdinalIgnoreCase)
+		.Replace("&apos;", "'", StringComparison.Ordinal);
 }
 
 static string FindRepoRoot(string start)
