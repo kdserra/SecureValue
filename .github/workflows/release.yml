@@ -5,7 +5,9 @@ name: Build, test, release
 #   sources, build, test.
 # - master push only: push back format drift (chore, [skip ci]), then staging
 #   drift (chore, [skip ci]), then semantic-release (feat: -> minor,
-#   fix:/perf: -> patch, BREAKING CHANGE -> major; chore:/docs:/ci: and any
+#   fix:/perf: -> patch, BREAKING CHANGE or `!` -> major (the configured
+#   `conventionalcommits` preset honors both; the plugins' angular default
+#   cannot parse `!` — see TECHNICAL_INFO Session 230); chore:/docs:/ci: and
 #   other non-qualifying message -> quiet green no-op: "no relevant changes,
 #   no new version published").
 # Non-conventional messages NEVER fail this workflow: there is no lint gate;
