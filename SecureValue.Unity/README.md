@@ -449,29 +449,7 @@ void OnPlayerJoined(ReadOnlySpan<char> nameChars)
 }
 ```
 
-**3. Zero-Copy Passing (`in` / `ref readonly`)**
-
-To prevent copying the 112-byte struct across function calls or local assignments,
-use `in` or `ref readonly` to pass and reference instances via an 8-byte stack reference:
-
-```csharp
-SecureString equippedWeaponId = "wpn_excalibur_01";
-
-void ExecuteAttack()
-{
-    // Passes an 8-byte reference into the method instead of copying 112 bytes
-    enemy.Health -= GetItemDamage(in equippedWeaponId);
-}
-
-int GetItemDamage(in SecureString itemId)
-{
-    if (itemId.SequenceEqual("wpn_excalibur_01"))
-        return 50;
-    return 0;
-}
-```
-
-**4. Managed Stack Buffers (`StackDecrypt` / `TryStackDecrypt`)**
+**3. Managed Stack Buffers (`StackDecrypt` / `TryStackDecrypt`)**
 
 Manual stack decryption requires writing repetitive boilerplate to allocate memory, wrap calls in
 try/finally blocks, and clear plaintext data.
