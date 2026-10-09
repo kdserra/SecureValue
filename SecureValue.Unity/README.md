@@ -157,6 +157,8 @@ Requires Unity **2021.3 or later**.
 2. Select **+ → Add package from git URL**.
 3. Enter `https://github.com/kdserra/SecureValue.git?path=SecureValue.Unity`.
 
+To pin a version, append the version tag, ex: **`#v1.0.0`**
+
 ### Unity with a `.unitypackage`
 
 1. Download the `.unitypackage` from the [GitHub Releases page](https://github.com/kdserra/SecureValue/releases), 
@@ -364,34 +366,6 @@ _health = hp;
 _health -= damage;
 if (_health < 0) _health = 0;
 ```
-
-### ⚠ Always Initialize Before Reading
-
-Always assign an initial value when declaring a SecureValue.
-
-Attempting to read the decrypted value of an uninitialized instance will throw an
-`UninitializedException`, as there was no valid data to decrypt.
-
-```csharp
-// BAD: Default instance is uninitialized; calling StackDecrypt or .Value throws UninitializedException!
-SecureString token; 
-
-// GOOD: Always assign an initial value upon declaration or setup
-SecureString token = "init_token_val";
-```
-
-If you need to guard against unassigned fields before accessing them, check the `IsUnset` property:
-
-```csharp
-if (token.IsUnset)
-{
-    // Handle uninitialized state safely
-}
-```
-
-**Note:** Explicitly checking `IsUnset` is unnecessary in the vast majority of workflows if you
-properly initialize your fields, but it is available for edge cases where default struct
-initialization or unassigned field states cannot be avoided.
 
 ### ⚖ Use Strings and BigInteger Sparingly
 
