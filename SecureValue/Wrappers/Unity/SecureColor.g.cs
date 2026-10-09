@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue.Unity
 {
-	public partial struct SecureColor : IEquatable<Color>, IEquatable<SecureColor>
+	public partial struct SecureColor : IEquatable<Color>, IEquatable<SecureColor>, ISecureValue<Color>
 	{
 		/// <summary>Tests a secured Color value and a plain Color value for equality.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

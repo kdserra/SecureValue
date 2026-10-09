@@ -13,7 +13,7 @@ using System.Runtime.CompilerServices;
 namespace SecureValue
 {
 #if NET6_0_OR_GREATER
-	public partial struct SecureTimeOnly : IComparable, IComparable<SecureTimeOnly>, IComparable<TimeOnly>, IEquatable<SecureTimeOnly>, IEquatable<TimeOnly>, IFormattable
+	public partial struct SecureTimeOnly : IComparable, IComparable<SecureTimeOnly>, IComparable<TimeOnly>, IEquatable<SecureTimeOnly>, IEquatable<TimeOnly>, IFormattable, ISecureValue<TimeOnly>
 #if NET6_0_OR_GREATER
 			,
 			ISpanFormattable

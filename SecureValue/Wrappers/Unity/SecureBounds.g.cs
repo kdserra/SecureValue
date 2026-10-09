@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue.Unity
 {
-	public partial struct SecureBounds : IEquatable<Bounds>, IEquatable<SecureBounds>
+	public partial struct SecureBounds : IEquatable<Bounds>, IEquatable<SecureBounds>, ISecureValue<Bounds>
 	{
 		/// <summary>Tests a secured Bounds value and a plain Bounds value for equality.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

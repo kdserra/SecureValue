@@ -14,7 +14,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue.Unity
 {
-	public partial struct SecureColor32 : IEquatable<Color32>, IEquatable<SecureColor32>
+	public partial struct SecureColor32 : IEquatable<Color32>, IEquatable<SecureColor32>, ISecureValue<Color32>
 	{
 		/// <summary>Tests a secured Color32 value and a plain Color32 value for equality.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

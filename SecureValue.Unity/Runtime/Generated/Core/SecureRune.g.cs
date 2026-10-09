@@ -14,7 +14,7 @@ using System.Runtime.CompilerServices;
 namespace SecureValue
 {
 #if NET
-	public partial struct SecureRune : IComparable, IComparable<Rune>, IComparable<SecureRune>, IEquatable<Rune>, IEquatable<SecureRune>
+	public partial struct SecureRune : IComparable, IComparable<Rune>, IComparable<SecureRune>, IEquatable<Rune>, IEquatable<SecureRune>, ISecureValue<Rune>
 #if NET7_0_OR_GREATER
 			,
 			ISpanFormattable

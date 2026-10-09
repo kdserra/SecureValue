@@ -12,7 +12,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue
 {
-	public partial struct SecureDateTime : IComparable, IComparable<DateTime>, IComparable<SecureDateTime>, IConvertible, IEquatable<DateTime>, IEquatable<SecureDateTime>, IFormattable
+	public partial struct SecureDateTime : IComparable, IComparable<DateTime>, IComparable<SecureDateTime>, IConvertible, IEquatable<DateTime>, IEquatable<SecureDateTime>, IFormattable, ISecureValue<DateTime>
 #if NET6_0_OR_GREATER
 			,
 			ISpanFormattable

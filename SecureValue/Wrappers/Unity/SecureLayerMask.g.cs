@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue.Unity
 {
-	public partial struct SecureLayerMask : IEquatable<LayerMask>, IEquatable<SecureLayerMask>
+	public partial struct SecureLayerMask : IEquatable<LayerMask>, IEquatable<SecureLayerMask>, ISecureValue<LayerMask>
 	{
 		/// <summary>Tests a secured LayerMask value and a plain LayerMask value for equality.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

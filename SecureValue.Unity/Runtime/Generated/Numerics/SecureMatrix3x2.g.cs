@@ -13,7 +13,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue.Numerics
 {
-	public partial struct SecureMatrix3x2 : IEquatable<Matrix3x2>, IEquatable<SecureMatrix3x2>
+	public partial struct SecureMatrix3x2 : IEquatable<Matrix3x2>, IEquatable<SecureMatrix3x2>, ISecureValue<Matrix3x2>
 	{
 		/// <summary>Tests a secured Matrix3x2 value and a plain Matrix3x2 value.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

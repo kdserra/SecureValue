@@ -14,7 +14,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue.Unity
 {
-	public partial struct SecureVector3Int : IEquatable<SecureVector3Int>, IEquatable<Vector3Int>
+	public partial struct SecureVector3Int : IEquatable<SecureVector3Int>, IEquatable<Vector3Int>, ISecureValue<Vector3Int>
 	{
 		/// <summary>Tests a secured Vector3Int value and a plain Vector3Int value for equality.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

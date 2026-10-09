@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue
 {
-	public partial struct SecureTimeSpan : IComparable, IComparable<SecureTimeSpan>, IComparable<TimeSpan>, IEquatable<SecureTimeSpan>, IEquatable<TimeSpan>, IFormattable
+	public partial struct SecureTimeSpan : IComparable, IComparable<SecureTimeSpan>, IComparable<TimeSpan>, IEquatable<SecureTimeSpan>, IEquatable<TimeSpan>, IFormattable, ISecureValue<TimeSpan>
 #if NET6_0_OR_GREATER
 			,
 			ISpanFormattable

@@ -13,7 +13,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue
 {
-	public partial struct SecureString : IComparable, IComparable<SecureString>, IComparable<string>, IConvertible, IEnumerable<char>, IEquatable<SecureString>, IEquatable<string>
+	public partial struct SecureString : IComparable, IComparable<SecureString>, IComparable<string>, IConvertible, IEnumerable<char>, IEquatable<SecureString>, IEquatable<string>, ISecureValue<string>
 #if NET7_0_OR_GREATER
 			,
 			IParsable<SecureString>,
@@ -33,100 +33,100 @@ namespace SecureValue
 		/// <summary>Compares the decrypted value with a plain string value for equality.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		bool IEquatable<string>.Equals(string other) =>
-			Decrypted.Equals(other);
+			string.Equals(Decrypted, other, System.StringComparison.Ordinal);
 
 		/// <summary>Compares the decrypted value with a plain string value.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		int IComparable<string>.CompareTo(string other) =>
-			Decrypted.CompareTo(other);
+			(Decrypted ?? string.Empty).CompareTo(other ?? string.Empty);
 
 		/// <summary>Returns the type code of the wrapped primitive type.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		TypeCode IConvertible.GetTypeCode() => Convert.GetTypeCode(Decrypted);
+		TypeCode IConvertible.GetTypeCode() => Convert.GetTypeCode(Decrypted ?? string.Empty);
 
 		/// <summary>Converts the decrypted value to bool (explicit).</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		bool IConvertible.ToBoolean(IFormatProvider provider) =>
-			((IConvertible)Decrypted).ToBoolean(provider);
+			((IConvertible)(Decrypted ?? string.Empty)).ToBoolean(provider);
 
 		/// <summary>Converts the decrypted value to byte (explicit).</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		byte IConvertible.ToByte(IFormatProvider provider) =>
-			((IConvertible)Decrypted).ToByte(provider);
+			((IConvertible)(Decrypted ?? string.Empty)).ToByte(provider);
 
 		/// <summary>Converts the decrypted value to sbyte (explicit).</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		sbyte IConvertible.ToSByte(IFormatProvider provider) =>
-			((IConvertible)Decrypted).ToSByte(provider);
+			((IConvertible)(Decrypted ?? string.Empty)).ToSByte(provider);
 
 		/// <summary>Converts the decrypted value to short (explicit).</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		short IConvertible.ToInt16(IFormatProvider provider) =>
-			((IConvertible)Decrypted).ToInt16(provider);
+			((IConvertible)(Decrypted ?? string.Empty)).ToInt16(provider);
 
 		/// <summary>Converts the decrypted value to ushort (explicit).</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		ushort IConvertible.ToUInt16(IFormatProvider provider) =>
-			((IConvertible)Decrypted).ToUInt16(provider);
+			((IConvertible)(Decrypted ?? string.Empty)).ToUInt16(provider);
 
 		/// <summary>Converts the decrypted value to int (explicit).</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		int IConvertible.ToInt32(IFormatProvider provider) =>
-			((IConvertible)Decrypted).ToInt32(provider);
+			((IConvertible)(Decrypted ?? string.Empty)).ToInt32(provider);
 
 		/// <summary>Converts the decrypted value to uint (explicit).</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		uint IConvertible.ToUInt32(IFormatProvider provider) =>
-			((IConvertible)Decrypted).ToUInt32(provider);
+			((IConvertible)(Decrypted ?? string.Empty)).ToUInt32(provider);
 
 		/// <summary>Converts the decrypted value to long (explicit).</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		long IConvertible.ToInt64(IFormatProvider provider) =>
-			((IConvertible)Decrypted).ToInt64(provider);
+			((IConvertible)(Decrypted ?? string.Empty)).ToInt64(provider);
 
 		/// <summary>Converts the decrypted value to ulong (explicit).</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		ulong IConvertible.ToUInt64(IFormatProvider provider) =>
-			((IConvertible)Decrypted).ToUInt64(provider);
+			((IConvertible)(Decrypted ?? string.Empty)).ToUInt64(provider);
 
 		/// <summary>Converts the decrypted value to float (explicit).</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		float IConvertible.ToSingle(IFormatProvider provider) =>
-			((IConvertible)Decrypted).ToSingle(provider);
+			((IConvertible)(Decrypted ?? string.Empty)).ToSingle(provider);
 
 		/// <summary>Converts the decrypted value to double (explicit).</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		double IConvertible.ToDouble(IFormatProvider provider) =>
-			((IConvertible)Decrypted).ToDouble(provider);
+			((IConvertible)(Decrypted ?? string.Empty)).ToDouble(provider);
 
 		/// <summary>Converts the decrypted value to decimal (explicit).</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		decimal IConvertible.ToDecimal(IFormatProvider provider) =>
-			((IConvertible)Decrypted).ToDecimal(provider);
+			((IConvertible)(Decrypted ?? string.Empty)).ToDecimal(provider);
 
 		/// <summary>Converts the decrypted value to DateTime (explicit).</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		DateTime IConvertible.ToDateTime(IFormatProvider provider) =>
-			((IConvertible)Decrypted).ToDateTime(provider);
+			((IConvertible)(Decrypted ?? string.Empty)).ToDateTime(provider);
 
 		/// <summary>Converts the decrypted value to char (explicit).</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		char IConvertible.ToChar(IFormatProvider provider) =>
-			((IConvertible)Decrypted).ToChar(provider);
+			((IConvertible)(Decrypted ?? string.Empty)).ToChar(provider);
 
 		/// <summary>Converts the decrypted value to a string (explicit).</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		string IConvertible.ToString(IFormatProvider provider) =>
-			((IConvertible)Decrypted).ToString(provider);
+			((IConvertible)(Decrypted ?? string.Empty)).ToString(provider);
 
 		/// <summary>Converts the decrypted value to the specified type (explicit).</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		object IConvertible.ToType(Type conversionType, IFormatProvider provider) =>
-			((IConvertible)Decrypted).ToType(conversionType, provider);
+			((IConvertible)(Decrypted ?? string.Empty)).ToType(conversionType, provider);
 
 		/// <summary>Returns an enumerator over the decrypted characters.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public System.CharEnumerator GetEnumerator() => Decrypted.GetEnumerator();
+		public System.CharEnumerator GetEnumerator() => (Decrypted ?? string.Empty).GetEnumerator();
 
 		/// <summary>Returns an enumerator over the decrypted characters.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

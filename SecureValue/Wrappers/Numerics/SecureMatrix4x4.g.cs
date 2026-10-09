@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue.Numerics
 {
-	public partial struct SecureMatrix4x4 : IEquatable<Matrix4x4>, IEquatable<SecureMatrix4x4>
+	public partial struct SecureMatrix4x4 : IEquatable<Matrix4x4>, IEquatable<SecureMatrix4x4>, ISecureValue<Matrix4x4>
 	{
 		/// <summary>Tests a secured Matrix4x4 value and a plain Matrix4x4 value.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

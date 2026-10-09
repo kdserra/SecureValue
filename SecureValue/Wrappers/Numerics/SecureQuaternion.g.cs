@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue.Numerics
 {
-	public partial struct SecureQuaternion : IEquatable<Quaternion>, IEquatable<SecureQuaternion>
+	public partial struct SecureQuaternion : IEquatable<Quaternion>, IEquatable<SecureQuaternion>, ISecureValue<Quaternion>
 	{
 		/// <summary>Tests a secured Quaternion value and a plain Quaternion value.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

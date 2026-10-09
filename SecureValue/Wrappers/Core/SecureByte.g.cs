@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue
 {
-	public partial struct SecureByte : IComparable, IComparable<SecureByte>, IComparable<byte>, IConvertible, IEquatable<SecureByte>, IEquatable<byte>, IFormattable
+	public partial struct SecureByte : IComparable, IComparable<SecureByte>, IComparable<byte>, IConvertible, IEquatable<SecureByte>, IEquatable<byte>, IFormattable, ISecureValue<byte>
 #if NET6_0_OR_GREATER
 			,
 			ISpanFormattable

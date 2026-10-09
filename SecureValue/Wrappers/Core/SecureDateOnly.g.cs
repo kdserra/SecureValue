@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 namespace SecureValue
 {
 #if NET6_0_OR_GREATER
-	public partial struct SecureDateOnly : IComparable, IComparable<DateOnly>, IComparable<SecureDateOnly>, IEquatable<DateOnly>, IEquatable<SecureDateOnly>, IFormattable
+	public partial struct SecureDateOnly : IComparable, IComparable<DateOnly>, IComparable<SecureDateOnly>, IEquatable<DateOnly>, IEquatable<SecureDateOnly>, IFormattable, ISecureValue<DateOnly>
 #if NET6_0_OR_GREATER
 			,
 			ISpanFormattable

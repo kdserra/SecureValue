@@ -14,7 +14,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue.Unity
 {
-	public partial struct SecureVector2 : IEquatable<SecureVector2>, IEquatable<Vector2>, IFormattable
+	public partial struct SecureVector2 : IEquatable<SecureVector2>, IEquatable<Vector2>, IFormattable, ISecureValue<Vector2>
 	{
 		/// <summary>Tests a secured Vector2 value and a plain Vector2 value for equality.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

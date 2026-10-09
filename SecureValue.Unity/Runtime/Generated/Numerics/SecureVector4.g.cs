@@ -13,7 +13,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue.Numerics
 {
-	public partial struct SecureVector4 : IEquatable<SecureVector4>, IEquatable<Vector4>, IFormattable
+	public partial struct SecureVector4 : IEquatable<SecureVector4>, IEquatable<Vector4>, IFormattable, ISecureValue<Vector4>
 	{
 		/// <summary>Tests a secured Vector4 value and a plain Vector4 value.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

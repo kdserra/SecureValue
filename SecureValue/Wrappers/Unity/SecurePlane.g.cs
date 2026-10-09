@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue.Unity
 {
-	public partial struct SecurePlane : IEquatable<Plane>, IEquatable<SecurePlane>
+	public partial struct SecurePlane : IEquatable<Plane>, IEquatable<SecurePlane>, ISecureValue<Plane>
 	{
 		/// <summary>Tests a secured Plane value and a plain Plane value for equality.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

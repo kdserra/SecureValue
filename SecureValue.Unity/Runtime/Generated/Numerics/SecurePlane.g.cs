@@ -13,7 +13,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue.Numerics
 {
-	public partial struct SecurePlane : IEquatable<Plane>, IEquatable<SecurePlane>
+	public partial struct SecurePlane : IEquatable<Plane>, IEquatable<SecurePlane>, ISecureValue<Plane>
 	{
 		/// <summary>Tests a secured Plane value and a plain Plane value.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

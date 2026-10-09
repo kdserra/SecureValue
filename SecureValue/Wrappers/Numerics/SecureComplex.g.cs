@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue.Numerics
 {
-	public partial struct SecureComplex : IEquatable<Complex>, IEquatable<SecureComplex>, IFormattable
+	public partial struct SecureComplex : IEquatable<Complex>, IEquatable<SecureComplex>, IFormattable, ISecureValue<Complex>
 #if NET7_0_OR_GREATER
 			,
 			ISpanFormattable

@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue.Unity
 {
-	public partial struct SecureRectInt : IEquatable<RectInt>, IEquatable<SecureRectInt>
+	public partial struct SecureRectInt : IEquatable<RectInt>, IEquatable<SecureRectInt>, ISecureValue<RectInt>
 	{
 		/// <summary>Tests a secured RectInt value and a plain RectInt value for equality.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

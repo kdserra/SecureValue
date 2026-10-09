@@ -14,7 +14,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue.Unity
 {
-	public partial struct SecureRect : IEquatable<Rect>, IEquatable<SecureRect>
+	public partial struct SecureRect : IEquatable<Rect>, IEquatable<SecureRect>, ISecureValue<Rect>
 	{
 		/// <summary>Tests a secured Rect value and a plain Rect value for equality.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

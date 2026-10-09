@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue.Unity
 {
-	public partial struct SecureMatrix4x4 : IEquatable<Matrix4x4>, IEquatable<SecureMatrix4x4>
+	public partial struct SecureMatrix4x4 : IEquatable<Matrix4x4>, IEquatable<SecureMatrix4x4>, ISecureValue<Matrix4x4>
 	{
 		/// <summary>Tests a secured Matrix4x4 value and a plain Matrix4x4 value for equality.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

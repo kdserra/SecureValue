@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue.Unity
 {
-	public partial struct SecureRay : IEquatable<Ray>, IEquatable<SecureRay>
+	public partial struct SecureRay : IEquatable<Ray>, IEquatable<SecureRay>, ISecureValue<Ray>
 	{
 		/// <summary>Tests a secured Ray value and a plain Ray value for equality.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

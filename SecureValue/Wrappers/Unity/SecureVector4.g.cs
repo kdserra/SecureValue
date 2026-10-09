@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue.Unity
 {
-	public partial struct SecureVector4 : IEquatable<SecureVector4>, IEquatable<Vector4>, IFormattable
+	public partial struct SecureVector4 : IEquatable<SecureVector4>, IEquatable<Vector4>, IFormattable, ISecureValue<Vector4>
 	{
 		/// <summary>Tests a secured Vector4 value and a plain Vector4 value for equality.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

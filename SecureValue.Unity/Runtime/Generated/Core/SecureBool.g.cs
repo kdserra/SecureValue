@@ -12,7 +12,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue
 {
-	public partial struct SecureBool : IComparable, IComparable<SecureBool>, IComparable<bool>, IConvertible, IEquatable<SecureBool>, IEquatable<bool>
+	public partial struct SecureBool : IComparable, IComparable<SecureBool>, IComparable<bool>, IConvertible, IEquatable<SecureBool>, IEquatable<bool>, ISecureValue<bool>
 #if NET7_0_OR_GREATER
 			,
 			IParsable<SecureBool>,

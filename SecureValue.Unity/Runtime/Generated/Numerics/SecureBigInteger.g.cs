@@ -13,7 +13,7 @@ using System.Runtime.CompilerServices;
 
 namespace SecureValue.Numerics
 {
-	public partial struct SecureBigInteger : IComparable, IComparable<BigInteger>, IComparable<SecureBigInteger>, IEquatable<BigInteger>, IEquatable<SecureBigInteger>, IFormattable
+	public partial struct SecureBigInteger : IComparable, IComparable<BigInteger>, IComparable<SecureBigInteger>, IEquatable<BigInteger>, IEquatable<SecureBigInteger>, IFormattable, ISecureValue<BigInteger>
 #if NET6_0_OR_GREATER
 			,
 			ISpanFormattable
