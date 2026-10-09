@@ -48,6 +48,43 @@ namespace SecureValue.Tests
 		}
 
 		[Fact]
+		public void FirstWriteOnDifferentThreads_UsesDifferentSaltStreams()
+		{
+			var start = new ManualResetEventSlim(false);
+			ulong[] salts = new ulong[2];
+			Thread[] threads = new Thread[2];
+			for (int i = 0; i < threads.Length; i++)
+			{
+				int slot = i;
+				threads[i] = new Thread(() =>
+				{
+					start.Wait();
+					SecureInt value = 123;
+					object boxed = value;
+					var cellField = typeof(SecureInt).GetField(
+						"_cell",
+						System.Reflection.BindingFlags.Instance
+							| System.Reflection.BindingFlags.NonPublic
+					)!;
+					Cell cell = (Cell)cellField.GetValue(boxed)!;
+					Span<ulong> words = stackalloc ulong[Cell.WordCount];
+					cell.CopyWords(words);
+					salts[slot] = words[0];
+				});
+				threads[i].Start();
+			}
+			start.Set();
+			foreach (Thread thread in threads)
+			{
+				thread.Join();
+			}
+
+			Assert.NotEqual(0UL, salts[0]);
+			Assert.NotEqual(0UL, salts[1]);
+			Assert.NotEqual(salts[0], salts[1]);
+		}
+
+		[Fact]
 		public void ConcurrentReads_Agree()
 		{
 			// Reads are pure: any number of threads may read one live value.
