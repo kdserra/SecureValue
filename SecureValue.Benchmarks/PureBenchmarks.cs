@@ -8,11 +8,11 @@ namespace SecureValue.Benchmarks
 	/// Direct operation comparisons for plain values and SecureValue wrappers.
 	/// The benchmark methods return the actual value instead of hashing it, so
 	/// the result sink does not add unrelated hash-code work to the measurement.
-///
+	///
 	/// Primitive and SecureValue prefixes identify the storage/operation family.
 	/// Span, CopyTo, and StackDecrypt cases apply only to strings because those
-/// APIs do not exist for int or float.
-///
+	/// APIs do not exist for int or float.
+	///
 	/// Run with: --filter *PureBenchmarks*
 	/// </summary>
 	[MemoryDiagnoser]
@@ -68,8 +68,7 @@ namespace SecureValue.Benchmarks
 		public int Primitive_Int_In() => ReadPrimitiveIntIn(in _primitiveInt);
 
 		[Benchmark]
-		public int Primitive_Int_RefReadonly() =>
-			ReadPrimitiveIntRefReadonly(ref _primitiveInt);
+		public int Primitive_Int_RefReadonly() => ReadPrimitiveIntRefReadonly(ref _primitiveInt);
 
 		[Benchmark]
 		public int SecureValue_Int_Read() => _secureInt.Decrypted;
@@ -84,8 +83,7 @@ namespace SecureValue.Benchmarks
 		public int SecureValue_Int_In() => ReadSecureValueIntIn(in _secureInt);
 
 		[Benchmark]
-		public int SecureValue_Int_RefReadonly() =>
-			ReadSecureValueIntRefReadonly(ref _secureInt);
+		public int SecureValue_Int_RefReadonly() => ReadSecureValueIntRefReadonly(ref _secureInt);
 
 		// ---- float: direct read/write and parameter passing ----
 
@@ -181,8 +179,7 @@ namespace SecureValue.Benchmarks
 		public string? SecureValue_String_Read() => _secureString.Decrypted;
 
 		[Benchmark]
-		public SecureString SecureValue_String_Write() =>
-			new SecureString("The quick brown fox");
+		public SecureString SecureValue_String_Write() => new SecureString("The quick brown fox");
 
 		[Benchmark]
 		public string? SecureValue_String_Ref() => ReadSecureValueStringRef(ref _secureString);
