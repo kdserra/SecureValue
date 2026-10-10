@@ -14,6 +14,9 @@
 //     -> Runtime/Generated/Core/
 //   SecureValue/Wrappers/Numerics -> Runtime/Generated/Numerics/
 //   SecureValue/Wrappers/Unity/*    -> Runtime/Generated/Unity/
+//   SecureValue/Integrations/**/* -> Runtime/Generated/Integrations/ (whole tree,
+//     structure maintained: new engines are picked up with no script change;
+//     e.g. editor initializers such as the SECUREVALUE scripting-define registrar)
 //
 // Unity .meta automation (no manual Unity round-trip, no registry file):
 // the committed .meta files ARE the registry. Staging never wipes directories,
@@ -78,6 +81,14 @@ HashSet<string> stagedUnity = StageDir(
 
 // Copy Unity-specific runtime sources (kept outside Generated so they can be edited directly).
 HashSet<string> stagedRoot = new(StringComparer.Ordinal);
+// Stage the whole engine-integrations tree with its folder structure maintained,
+// as managed build output like the staged wrapper sources — new engines under
+// SecureValue/Integrations/ are picked up with no script change.
+HashSet<string> stagedIntegrations = StageTree(
+	Path.Combine(pkg, "Integrations"),
+	Path.Combine(outDir, "Integrations"),
+	"integration"
+);
 foreach (string file in Directory.EnumerateFiles(Path.Combine(unityPkg, "Runtime"), "*.cs"))
 {
 	string name = Path.GetFileName(file);
@@ -91,6 +102,7 @@ foreach (string file in Directory.EnumerateFiles(Path.Combine(unityPkg, "Runtime
 CleanStale(outDirCore, stagedCore);
 CleanStale(outDirNumerics, stagedNumerics);
 CleanStale(outDirUnity, stagedUnity);
+CleanStaleTree(Path.Combine(outDir, "Integrations"), stagedIntegrations);
 CleanStale(outDir, stagedRoot);
 
 SyncMetaTree(unityPkg);
@@ -138,6 +150,83 @@ HashSet<string> StageDir(string srcDir, string destDir, string label)
 	}
 
 	return staged;
+}
+
+// Recursive twin of StageDir for tree-staged outputs (Integrations): mirrors
+// every *.cs under srcRoot into destRoot preserving relative paths, so new
+// subfolders (new engines) are picked up with no script change. Returns the
+// staged relative paths for CleanStaleTree.
+HashSet<string> StageTree(string srcRoot, string destRoot, string label)
+{
+	HashSet<string> staged = new(StringComparer.Ordinal);
+	if (!Directory.Exists(srcRoot))
+	{
+		return staged;
+	}
+	var files = Directory
+		.EnumerateFiles(srcRoot, "*.cs", SearchOption.AllDirectories)
+		.OrderBy(p => p, StringComparer.Ordinal);
+
+	foreach (string file in files)
+	{
+		string rel = Path.GetRelativePath(srcRoot, file);
+		string dest = Path.Combine(destRoot, rel);
+		Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
+		File.WriteAllText(dest, Header + File.ReadAllText(file), utf8WithBom);
+		staged.Add(rel);
+		Console.WriteLine($"staged {rel} ({label})");
+	}
+
+	return staged;
+}
+
+// Recursive twin of CleanStale for tree-staged outputs (Integrations): deletes
+// staged *.cs outputs whose source is gone (plus their .metas), orphan *.cs.meta
+// files, and directories left empty by those deletions. Folder .metas of removed
+// directories become orphans and are collected by SyncMetaTree.
+void CleanStaleTree(string destRoot, HashSet<string> staged)
+{
+	if (!Directory.Exists(destRoot))
+	{
+		return;
+	}
+
+	foreach (string file in Directory.EnumerateFiles(destRoot, "*.cs", SearchOption.AllDirectories))
+	{
+		if (!staged.Contains(Path.GetRelativePath(destRoot, file)))
+		{
+			File.Delete(file);
+			string meta = file + ".meta";
+			if (File.Exists(meta))
+			{
+				File.Delete(meta);
+			}
+			Console.WriteLine($"removed stale {Path.GetRelativePath(destRoot, file)}");
+		}
+	}
+
+	foreach (string meta in Directory.EnumerateFiles(destRoot, "*.cs.meta", SearchOption.AllDirectories))
+	{
+		if (!File.Exists(meta[..^".meta".Length]))
+		{
+			File.Delete(meta);
+			Console.WriteLine($"removed orphan {Path.GetFileName(meta)}");
+		}
+	}
+
+	// Deepest first so parents become empty (and removable) after children go.
+	foreach (
+		string dir in Directory
+			.EnumerateDirectories(destRoot, "*", SearchOption.AllDirectories)
+			.OrderByDescending(d => d.Length)
+	)
+	{
+		if (!Directory.EnumerateFileSystemEntries(dir).Any())
+		{
+			Directory.Delete(dir);
+			Console.WriteLine($"removed empty {Path.GetRelativePath(destRoot, dir)}");
+		}
+	}
 }
 
 // Deletes staged outputs whose source file is gone (plus their .metas) and any
