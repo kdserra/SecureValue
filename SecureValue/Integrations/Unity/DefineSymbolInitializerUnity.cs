@@ -8,104 +8,97 @@ using UnityEditor.Build;
 
 namespace SecureValue.Unity
 {
-    [InitializeOnLoad]
-    internal static class DefineSymbolInitializerUnity
-    {
-        private static readonly string[] Symbols =
-        {
-            "SECUREVALUE"
-        };
+	[InitializeOnLoad]
+	internal static class DefineSymbolInitializerUnity
+	{
+		private static readonly string[] Symbols = { "SECUREVALUE" };
 
-        static DefineSymbolInitializerUnity()
-        {
+		static DefineSymbolInitializerUnity()
+		{
 #if UNITY_2021_2_OR_NEWER
-            AddDefines(NamedBuildTarget.Standalone);
-            AddDefines(NamedBuildTarget.Server);
-            AddDefines(NamedBuildTarget.Android);
-            AddDefines(NamedBuildTarget.iOS);
-            AddDefines(NamedBuildTarget.WebGL);
-            AddDefines(NamedBuildTarget.WindowsStoreApps);
+			AddDefines(NamedBuildTarget.Standalone);
+			AddDefines(NamedBuildTarget.Server);
+			AddDefines(NamedBuildTarget.Android);
+			AddDefines(NamedBuildTarget.iOS);
+			AddDefines(NamedBuildTarget.WebGL);
+			AddDefines(NamedBuildTarget.WindowsStoreApps);
 #else
-            foreach (BuildTargetGroup group in Enum.GetValues(typeof(BuildTargetGroup)))
-            {
-                if (group == BuildTargetGroup.Unknown)
-                    continue;
+			foreach (BuildTargetGroup group in Enum.GetValues(typeof(BuildTargetGroup)))
+			{
+				if (group == BuildTargetGroup.Unknown)
+					continue;
 
-                try
-                {
-                    AddDefines(group);
-                }
-                catch (ArgumentException)
-                {
-                    // Unsupported build target group.
-                }
-            }
+				try
+				{
+					AddDefines(group);
+				}
+				catch (ArgumentException)
+				{
+					// Unsupported build target group.
+				}
+			}
 #endif
-        }
+		}
 
 #if UNITY_2021_2_OR_NEWER
-        private static void AddDefines(NamedBuildTarget target)
-        {
-            var defines = GetDefines(target).Split(';');
-            var updated = false;
+		private static void AddDefines(NamedBuildTarget target)
+		{
+			var defines = GetDefines(target).Split(';');
+			var updated = false;
 
-            foreach (var symbol in Symbols)
-            {
-                if (Array.IndexOf(defines, symbol) >= 0)
-                    continue;
+			foreach (var symbol in Symbols)
+			{
+				if (Array.IndexOf(defines, symbol) >= 0)
+					continue;
 
-                Array.Resize(ref defines, defines.Length + 1);
-                defines[defines.Length - 1] = symbol;
-                updated = true;
-            }
+				Array.Resize(ref defines, defines.Length + 1);
+				defines[defines.Length - 1] = symbol;
+				updated = true;
+			}
 
-            if (updated)
-                SetDefines(target, string.Join(";", defines));
-        }
+			if (updated)
+				SetDefines(target, string.Join(";", defines));
+		}
 
-        private static string GetDefines(NamedBuildTarget target)
-        {
-            return PlayerSettings.GetScriptingDefineSymbols(target);
-        }
+		private static string GetDefines(NamedBuildTarget target)
+		{
+			return PlayerSettings.GetScriptingDefineSymbols(target);
+		}
 
-        private static void SetDefines(
-            NamedBuildTarget target,
-            string defines)
-        {
-            PlayerSettings.SetScriptingDefineSymbols(target, defines);
-        }
+		private static void SetDefines(NamedBuildTarget target, string defines)
+		{
+			PlayerSettings.SetScriptingDefineSymbols(target, defines);
+		}
 #else
-        private static void AddDefines(BuildTargetGroup group)
-        {
-            var defines = GetDefines(group).Split(';');
-            var updated = false;
+		private static void AddDefines(BuildTargetGroup group)
+		{
+			var defines = GetDefines(group).Split(';');
+			var updated = false;
 
-            foreach (var symbol in Symbols)
-            {
-                if (Array.IndexOf(defines, symbol) >= 0)
-                    continue;
+			foreach (var symbol in Symbols)
+			{
+				if (Array.IndexOf(defines, symbol) >= 0)
+					continue;
 
-                Array.Resize(ref defines, defines.Length + 1);
-                defines[defines.Length - 1] = symbol;
-                updated = true;
-            }
+				Array.Resize(ref defines, defines.Length + 1);
+				defines[defines.Length - 1] = symbol;
+				updated = true;
+			}
 
-            if (updated)
-                SetDefines(group, string.Join(";", defines));
-        }
+			if (updated)
+				SetDefines(group, string.Join(";", defines));
+		}
 
-        private static string GetDefines(BuildTargetGroup group)
-        {
-            return PlayerSettings.GetScriptingDefineSymbolsForGroup(group);
-        }
+		private static string GetDefines(BuildTargetGroup group)
+		{
+			return PlayerSettings.GetScriptingDefineSymbolsForGroup(group);
+		}
 
-        private static void SetDefines(
-            BuildTargetGroup group,
-            string defines)
-        {
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(group, defines);
-        }
+		private static void SetDefines(BuildTargetGroup group, string defines)
+		{
+			PlayerSettings.SetScriptingDefineSymbolsForGroup(group, defines);
+		}
 #endif
-    }
+	}
 }
 #endif

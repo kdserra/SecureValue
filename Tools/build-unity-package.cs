@@ -81,6 +81,7 @@ HashSet<string> stagedUnity = StageDir(
 
 // Copy Unity-specific runtime sources (kept outside Generated so they can be edited directly).
 HashSet<string> stagedRoot = new(StringComparer.Ordinal);
+
 // Stage the whole engine-integrations tree with its folder structure maintained,
 // as managed build output like the staged wrapper sources — new engines under
 // SecureValue/Integrations/ are picked up with no script change.
@@ -205,7 +206,9 @@ void CleanStaleTree(string destRoot, HashSet<string> staged)
 		}
 	}
 
-	foreach (string meta in Directory.EnumerateFiles(destRoot, "*.cs.meta", SearchOption.AllDirectories))
+	foreach (
+		string meta in Directory.EnumerateFiles(destRoot, "*.cs.meta", SearchOption.AllDirectories)
+	)
 	{
 		if (!File.Exists(meta[..^".meta".Length]))
 		{

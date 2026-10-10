@@ -20,7 +20,9 @@ if (
 	|| args[0] == "-h"
 )
 {
-	Console.Error.WriteLine("Usage: dotnet run Tools/build-unity-package-then-copy.cs -- <targetDir>");
+	Console.Error.WriteLine(
+		"Usage: dotnet run Tools/build-unity-package-then-copy.cs -- <targetDir>"
+	);
 	Console.Error.WriteLine("  <targetDir>  path of the outdated installed copy to replace.");
 	Console.Error.WriteLine("               It is deleted first, then the fresh SecureValue.Unity");
 	Console.Error.WriteLine("               package is copied in its place.");
@@ -29,7 +31,8 @@ if (
 
 string repoRoot = FindRepoRoot(Environment.CurrentDirectory);
 string source = Path.GetFullPath(Path.Combine(repoRoot, "SecureValue.Unity"));
-string target = Path.GetFullPath(args[0].Trim()).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+string target = Path.GetFullPath(args[0].Trim())
+	.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
 // Destructive-command guards: never delete a drive root, and never delete the
 // package source we are about to copy from (the target must be neither the
@@ -62,11 +65,8 @@ if (parent is null || !Directory.Exists(parent))
 
 // Stage first so a staging failure leaves the installed copy untouched.
 if (
-	Run(
-		"dotnet",
-		$"run \"{Path.Combine(repoRoot, "Tools", "build-unity-package.cs")}\"",
-		repoRoot
-	) != 0
+	Run("dotnet", $"run \"{Path.Combine(repoRoot, "Tools", "build-unity-package.cs")}\"", repoRoot)
+	!= 0
 )
 {
 	Console.Error.WriteLine("Unity package staging failed; target left untouched.");
