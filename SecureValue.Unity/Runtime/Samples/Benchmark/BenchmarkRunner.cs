@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Text;
 using UnityEngine;
 
 /// <summary>
@@ -29,37 +30,41 @@ public class BenchmarkRunner : MonoBehaviour
 
 	private IEnumerator RunAll()
 	{
+		StringBuilder results = new StringBuilder();
 		IBenchmark[] benchmarks = GetComponents<IBenchmark>();
 		if (benchmarks.Length == 0)
 		{
-			Debug.Log("[BenchmarkRunner] No IBenchmark components found on this GameObject.");
+			results.Append("[BenchmarkRunner] No IBenchmark components found on this GameObject.");
+			Debug.Log(results.ToString());
 			yield break;
 		}
 
-		Debug.Log(
-			$"[BenchmarkRunner] {benchmarks.Length} implementation(s) | {iterations:N0} iterations ({stringIterations:N0} for strings)."
-		);
 		yield return Cleanup();
 
 		foreach (IBenchmark benchmark in benchmarks)
 		{
-			yield return Run(benchmark);
+			if (results.Length > 0)
+				results.AppendLine();
+
+			yield return Run(benchmark, results);
 		}
 
-		Debug.Log("[BenchmarkRunner] All benchmarks complete.");
+		results.AppendLine();
+		results.AppendLine("[BenchmarkRunner] All benchmarks complete.");
+		Debug.Log(results.ToString());
 	}
 
-	private IEnumerator Run(IBenchmark benchmark)
+	private IEnumerator Run(IBenchmark benchmark, StringBuilder results)
 	{
-		Debug.Log($"[BenchmarkRunner] === {benchmark.DisplayName} ===");
+		results.AppendLine($"[BenchmarkRunner] === {benchmark.DisplayName} ===");
 		benchmark.Prepare();
 		yield return Cleanup();
 
 		// Warmup (JIT) for every phase, unmeasured.
-		Measure("Warmup", benchmark, warmupIterations);
+		Measure("Warmup", benchmark, warmupIterations, results);
 		yield return Cleanup();
 
-		Measure(benchmark.DisplayName, "WriteInt", iterations, i => benchmark.SetInt(i));
+		Measure(benchmark.DisplayName, "WriteInt", iterations, i => benchmark.SetInt(i), results);
 		yield return Cleanup();
 		Measure(
 			benchmark.DisplayName,
@@ -69,10 +74,11 @@ public class BenchmarkRunner : MonoBehaviour
 			{
 				if (benchmark.GetInt() == int.MinValue)
 					throw new InvalidOperationException();
-			}
+			},
+			results
 		);
 		yield return Cleanup();
-		Measure(benchmark.DisplayName, "WriteFloat", iterations, i => benchmark.SetFloat(i));
+		Measure(benchmark.DisplayName, "WriteFloat", iterations, i => benchmark.SetFloat(i), results);
 		yield return Cleanup();
 		Measure(
 			benchmark.DisplayName,
@@ -82,14 +88,16 @@ public class BenchmarkRunner : MonoBehaviour
 			{
 				if (benchmark.GetFloat() == float.MinValue)
 					throw new InvalidOperationException();
-			}
+			},
+			results
 		);
 		yield return Cleanup();
 		Measure(
 			benchmark.DisplayName,
 			"WriteString",
 			stringIterations,
-			i => benchmark.SetString("The quick brown fox jumps over the lazy dog")
+			i => benchmark.SetString("The quick brown fox jumps over the lazy dog"),
+			results
 		);
 		yield return Cleanup();
 		Measure(
@@ -100,17 +108,24 @@ public class BenchmarkRunner : MonoBehaviour
 			{
 				if (benchmark.GetString() == null)
 					throw new InvalidOperationException();
-			}
+			},
+			results
 		);
 		yield return Cleanup();
 	}
 
-	private static void Measure(string prefix, IBenchmark benchmark, int count)
+	private static void Measure(string prefix, IBenchmark benchmark, int count, StringBuilder results)
 	{
-		Measure(prefix, "Warmup", count, i => benchmark.SetInt(i));
+		Measure(prefix, "Warmup", count, i => benchmark.SetInt(i), results);
 	}
 
-	private static void Measure(string name, string phase, int count, Action<int> body)
+	private static void Measure(
+		string name,
+		string phase,
+		int count,
+		Action<int> body,
+		StringBuilder results
+	)
 	{
 		// JIT warmup, unmeasured.
 		for (int i = 0; i < 100 && i < count; i++)
@@ -133,7 +148,7 @@ public class BenchmarkRunner : MonoBehaviour
 
 		double nsPerOp = sw.Elapsed.TotalMilliseconds * 1_000_000.0 / count;
 		double bytesPerOp = (double)memoryDelta / count;
-		Debug.Log(
+		results.AppendLine(
 			$"[{name}] {phase}: {count:N0} ops in {sw.Elapsed.TotalMilliseconds:F2} ms | {nsPerOp:F1} ns/op | ~{bytesPerOp:F1} B/op"
 		);
 	}
