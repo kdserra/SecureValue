@@ -80,7 +80,13 @@ public class BenchmarkRunner : MonoBehaviour
 			results
 		);
 		yield return Cleanup();
-		Measure(benchmark.DisplayName, "WriteFloat", iterations, i => benchmark.SetFloat(i), results);
+		Measure(
+			benchmark.DisplayName,
+			"WriteFloat",
+			iterations,
+			i => benchmark.SetFloat(i),
+			results
+		);
 		yield return Cleanup();
 		Measure(
 			benchmark.DisplayName,
@@ -116,7 +122,12 @@ public class BenchmarkRunner : MonoBehaviour
 		yield return Cleanup();
 	}
 
-	private static void Measure(string prefix, IBenchmark benchmark, int count, StringBuilder results)
+	private static void Measure(
+		string prefix,
+		IBenchmark benchmark,
+		int count,
+		StringBuilder results
+	)
 	{
 		Measure(prefix, "Warmup", count, i => benchmark.SetInt(i), results);
 	}
