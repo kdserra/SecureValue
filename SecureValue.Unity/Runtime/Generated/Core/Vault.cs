@@ -118,6 +118,7 @@ namespace SecureValue
 			Mixing.SplitMix(salt ^ (index * 0x9E3779B97F4A7C15UL));
 
 		/// <summary>Raises the global tampering event, then throws.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		[DoesNotReturn]
 		internal static void ThrowTampered()
 		{

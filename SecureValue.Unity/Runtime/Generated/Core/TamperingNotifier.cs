@@ -5,6 +5,7 @@
 //------------------------------------------------------------------------------
 #nullable enable
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace SecureValue
@@ -24,7 +25,11 @@ namespace SecureValue
 		private const int MaxTamperDispatches = 1;
 
 		/// <summary>Gets whether tampering has been detected at any point during the process run.</summary>
-		public static bool HasDetectedTampering => Volatile.Read(ref _hasDetected);
+		public static bool HasDetectedTampering
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => Volatile.Read(ref _hasDetected);
+		}
 
 		/// <summary>
 		/// Raised when tampering is detected on any secured value.
@@ -72,6 +77,7 @@ namespace SecureValue
 		}
 #endif
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static void Raise()
 		{
 			Volatile.Write(ref _hasDetected, true);
