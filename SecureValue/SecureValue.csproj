@@ -16,7 +16,7 @@
 	<PropertyGroup>
 		<PackageId>SecureValue</PackageId>
 		<Product>SecureValue</Product>
-		<Version>2.1.0</Version>
+		<Version>2.2.0</Version>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageIcon>icon.png</PackageIcon>

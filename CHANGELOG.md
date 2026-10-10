@@ -1,3 +1,15 @@
+## [2.2.0](https://github.com/kdserra/SecureValue/compare/v2.1.0...v2.2.0) (2026-10-10)
+
+### Features
+
+* add `SECUREVALUE` preprocessor define ([516581e](https://github.com/kdserra/SecureValue/commit/516581e3e5775e5fd982ae3a1ed9577dd51b127e))
+* add more explicit conversions ([8cbc210](https://github.com/kdserra/SecureValue/commit/8cbc210f559f39998f39c54992bbec0cbcf35567))
+* explicit conversions for SecureBigInteger ([67b7fb8](https://github.com/kdserra/SecureValue/commit/67b7fb8dcdb774327d89ce26046a7e02e9175512))
+
+### Bug Fixes
+
+* nullability warning [skip ci] ([afe4dc1](https://github.com/kdserra/SecureValue/commit/afe4dc149eab8989cc2a16b49aeb90820fedd5f5))
+
 ## [2.1.0](https://github.com/kdserra/SecureValue/compare/v2.0.0...v2.1.0) (2026-10-10)
 
 ### Features
