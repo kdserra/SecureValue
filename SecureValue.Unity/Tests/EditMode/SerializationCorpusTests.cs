@@ -265,7 +265,7 @@ namespace SecureValue.Unity.Tests
 			string? thisDir = string.IsNullOrEmpty(callerFilePath)
 				? null
 				: Path.GetDirectoryName(callerFilePath);
-			if (!string.IsNullOrEmpty(thisDir))
+			if (thisDir != null && thisDir.Length != 0)
 			{
 				searched.Add(thisDir);
 				string[] sameDir = Directory.GetFiles(thisDir, fileName);
