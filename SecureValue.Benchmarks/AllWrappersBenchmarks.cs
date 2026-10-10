@@ -24,14 +24,14 @@ namespace SecureValue.Benchmarks
 		public byte SecureByte_WriteRead()
 		{
 			SecureByte v = 200;
-			return (byte)(v + 1);
+			return v;
 		}
 
 		[Benchmark(Description = "SecureSByte")]
 		public sbyte SecureSByte_WriteRead()
 		{
 			SecureSByte v = -100;
-			return (sbyte)(v - 1);
+			return v;
 		}
 
 		[Benchmark(Description = "SecureChar")]
@@ -45,69 +45,71 @@ namespace SecureValue.Benchmarks
 		public short SecureShort_WriteRead()
 		{
 			SecureShort v = -300;
-			return (short)(v + 1);
+			return v;
 		}
 
 		[Benchmark(Description = "SecureUShort")]
 		public ushort SecureUShort_WriteRead()
 		{
 			SecureUShort v = 60000;
-			return (ushort)(v + 1);
+			return v;
 		}
 
 		[Benchmark(Description = "SecureInt")]
 		public int SecureInt_WriteRead()
 		{
 			SecureInt v = 123456;
-			return v * 2;
+			return v;
 		}
 
 		[Benchmark(Description = "SecureUInt")]
 		public uint SecureUInt_WriteRead()
 		{
 			SecureUInt v = 4000000000;
-			return (uint)(long)(v - 1);
+			return v;
 		}
 
 		[Benchmark(Description = "SecureLong")]
 		public long SecureLong_WriteRead()
 		{
 			SecureLong v = long.MaxValue;
-			return v - 1;
+			return v;
 		}
 
 		[Benchmark(Description = "SecureULong")]
 		public ulong SecureULong_WriteRead()
 		{
 			SecureULong v = ulong.MaxValue;
-			return v - 1UL;
+			return v;
 		}
 
 		[Benchmark(Description = "SecureFloat")]
 		public float SecureFloat_WriteRead()
 		{
 			SecureFloat v = 3.14f;
-			return v * 2f;
+			return v;
 		}
 
 		[Benchmark(Description = "SecureDouble")]
 		public double SecureDouble_WriteRead()
 		{
 			SecureDouble v = 2.718281828;
-			return v * 2.0;
+			return v;
 		}
 
 		[Benchmark(Description = "SecureDecimal")]
 		public decimal SecureDecimal_WriteRead()
 		{
 			SecureDecimal v = 1234.56m;
-			return v + 1m;
+			return v;
 		}
+
+		private static Guid s_writeGuid = Guid.NewGuid();
 
 		[Benchmark(Description = "SecureGuid")]
 		public Guid SecureGuid_WriteRead()
 		{
-			SecureGuid v = new Guid("0123456789abcdef0123456789abcdef");
+			SecureGuid v = s_writeGuid;
 			return v;
 		}
 
@@ -140,15 +142,32 @@ namespace SecureValue.Benchmarks
 			return v;
 		}
 
-		[Benchmark(Description = "SecureString")]
-		public string? SecureString_WriteRead()
+        [Benchmark(Description = "SecureString")]
+        public string? SecureString_WriteRead()
+        {
+            SecureString v = "benchmark secret";
+            return v;
+        }
+
+        private char[] buffer = new char[16];
+
+		[Benchmark(Description = "SecureString_Span")]
+		public ReadOnlySpan<char> SecureString_Span_WriteRead()
 		{
 			SecureString v = "benchmark secret";
-			return v;
+			v.CopyTo(buffer);
+			return buffer;
 		}
 
+        [Benchmark(Description = "SecureBigInteger")]
+        public BigInteger SecureBigInteger_WriteRead()
+        {
+            Numerics.SecureBigInteger v = new BigInteger(4000000000000000000);
+            return v;
+        }
+
 #if NET6_0_OR_GREATER
-		[Benchmark(Description = "SecureDateOnly")]
+        [Benchmark(Description = "SecureDateOnly")]
 		public DateOnly SecureDateOnly_WriteRead()
 		{
 			SecureDateOnly v = new DateOnly(2026, 2, 28);
