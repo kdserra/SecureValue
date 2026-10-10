@@ -175,6 +175,63 @@ public class SecureValueDemo : MonoBehaviour
 	[SerializeField]
 	private SecureValue.Numerics.SecureBigInteger puzzleSolutionNumber;
 
+	/// <summary>
+	/// Unity component reset hook: restores every secured field to the default value
+	/// of its underlying primitive or Unity/BCL value type.
+	/// </summary>
+	private void Reset()
+	{
+#if UNITY_EDITOR
+		UnityEditor.Undo.RecordObject(this, "Reset SecureValue Demo");
+#endif
+		playerHealth = default(int);
+		totalScore = default(uint);
+		movementSpeed = default(float);
+		playerName = default(string);
+		playerRankInitial = default(char);
+		playerAccountId = default(Guid);
+		walletBalance = default(decimal);
+		lifetimeExperiencePoints = default(long);
+		globalLeaderboardScore = default(ulong);
+		enemyKillCount = default(ushort);
+		ammoInMagazine = default(short);
+		currentPlayerLevel = default(byte);
+		isGodModeEnabled = default(bool);
+		difficultyLevel = default(sbyte);
+		criticalHitDamageMultiplier = default(double);
+		eventActivationDate = default(DateTimeOffset);
+		lastLoginTimeUtc = default(DateTime);
+		activeBoostDuration = default(TimeSpan);
+		uiPosition = default(Vector2);
+		tileCoordinate = default(Vector2Int);
+		respawnPoint = default(Vector3);
+		gridCell = default(Vector3Int);
+		spellEffectParameters = default(Vector4);
+		minimapViewport = default(Rect);
+		inventorySlotArea = default(RectInt);
+		arenaBounds = default(Bounds);
+		buildZone = default(BoundsInt);
+		teamColor = default(Color);
+		minimapPixel = default(Color32);
+		doorRotation = default(Quaternion);
+		portalTransform = default(Matrix4x4);
+		waterPlaneHeight = default(Plane);
+		aimRay = default(Ray);
+		enemyCollisionLayers = default(LayerMask);
+		joystickInput = default(System.Numerics.Vector2);
+		spawnPointPosition = default(System.Numerics.Vector3);
+		shaderEffectParameters = default(System.Numerics.Vector4);
+		cameraRotation = default(System.Numerics.Quaternion);
+		groundCollisionPlane = default(System.Numerics.Plane);
+		uiTransformMatrix = default(System.Numerics.Matrix3x2);
+		characterRigTransformMatrix = default(System.Numerics.Matrix4x4);
+		signalProcessingValue = default(System.Numerics.Complex);
+		puzzleSolutionNumber = default(System.Numerics.BigInteger);
+#if UNITY_EDITOR
+		UnityEditor.EditorUtility.SetDirty(this);
+#endif
+	}
+
 	private void Start()
 	{
 		// Reads decrypt + tamper-check on every access.
