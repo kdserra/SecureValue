@@ -30,6 +30,8 @@ public class BenchmarkRunner : MonoBehaviour
 
 	private IEnumerator RunAll()
 	{
+		Debug.Log("[BenchmarkRunner] Starting benchmarks...");
+
 		StringBuilder results = new StringBuilder();
 		IBenchmark[] benchmarks = GetComponents<IBenchmark>();
 		if (benchmarks.Length == 0)
