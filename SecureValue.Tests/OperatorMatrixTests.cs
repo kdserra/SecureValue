@@ -1,5 +1,8 @@
 #nullable enable
+using System;
+using System.Numerics;
 using SecureValue;
+using SecureValue.Numerics;
 using Xunit;
 
 namespace SecureValue.Tests
@@ -249,6 +252,54 @@ namespace SecureValue.Tests
 			Assert.Equal(100, (int)(SecureInt)big);
 			SecureDouble dbl = 100.0;
 			Assert.Equal(100, (int)(SecureInt)dbl);
+		}
+
+		[Fact]
+		public void BigInteger_ExplicitTwinsMirrorBcl()
+		{
+			BigInteger plain = new BigInteger(100);
+			SecureBigInteger secured = plain;
+			Assert.Equal((sbyte)plain, (sbyte)(SecureSByte)secured);
+			Assert.Equal((byte)plain, (byte)(SecureByte)secured);
+			Assert.Equal((short)plain, (short)(SecureShort)secured);
+			Assert.Equal((ushort)plain, (ushort)(SecureUShort)secured);
+			Assert.Equal((int)plain, (int)(SecureInt)secured);
+			Assert.Equal((uint)plain, (uint)(SecureUInt)secured);
+			Assert.Equal((long)plain, (long)(SecureLong)secured);
+			Assert.Equal((ulong)plain, (ulong)(SecureULong)secured);
+			Assert.Equal((char)100, (char)(SecureChar)secured);
+			Assert.Equal((float)plain, (float)(SecureFloat)secured);
+			Assert.Equal((double)plain, (double)(SecureDouble)secured);
+			Assert.Equal((decimal)plain, (decimal)(SecureDecimal)secured);
+		}
+
+		[Fact]
+		public void BigInteger_ExplicitTwinsThrowOnOverflowLikeBcl()
+		{
+			SecureBigInteger huge = BigInteger.Pow(2, 100);
+			Assert.Throws<OverflowException>(() => (SecureSByte)huge);
+			Assert.Throws<OverflowException>(() => (SecureByte)huge);
+			Assert.Throws<OverflowException>(() => (SecureShort)huge);
+			Assert.Throws<OverflowException>(() => (SecureUShort)huge);
+			Assert.Throws<OverflowException>(() => (SecureInt)huge);
+			Assert.Throws<OverflowException>(() => (SecureUInt)huge);
+			Assert.Throws<OverflowException>(() => (SecureLong)huge);
+			Assert.Throws<OverflowException>(() => (SecureULong)huge);
+			Assert.Throws<OverflowException>(() => (SecureDecimal)huge);
+			SecureBigInteger negative = new BigInteger(-1);
+			Assert.Throws<OverflowException>(() => (SecureUInt)negative);
+			Assert.Throws<OverflowException>(() => (SecureULong)negative);
+		}
+
+		[Fact]
+		public void BigInteger_ExplicitFloatTwinsNeverThrowLikeBcl()
+		{
+			SecureBigInteger hugeFloat = BigInteger.Pow(2, 200);
+			Assert.Equal((float)(BigInteger)hugeFloat, (float)(SecureFloat)hugeFloat);
+			Assert.True(float.IsPositiveInfinity((float)(SecureFloat)hugeFloat));
+			SecureBigInteger hugeDouble = BigInteger.Pow(2, 1100);
+			Assert.Equal((double)(BigInteger)hugeDouble, (double)(SecureDouble)hugeDouble);
+			Assert.True(double.IsPositiveInfinity((double)(SecureDouble)hugeDouble));
 		}
 	}
 }
