@@ -1,5 +1,8 @@
 // System.Numerics-family twins: BigInteger owns O(P,P) + O(P,BigInteger) +
-// O(BigInteger,P) plus int-literal interop twins (BCL defines BigInteger+int);
+// O(BigInteger,P) plus int/uint/long/ulong interop twins (BCL defines
+// BigInteger arithmetic with all of these; sub-int types and char reach the
+// int twin via standard conversions, and int/uint/long/ulong assignment flows
+// via the matching implicit conversions in SecureBigInteger.cs);
 // Complex keeps its double pairs + self forms; vectors/matrices/quaternion/
 // plane keep self forms + forward-only float scalars. No cross-type matrix,
 // no cross-Secure pairs: cross-width mixes need an explicit cast.
@@ -108,7 +111,7 @@ internal static class Numerics
 		sb.Append($"\t\tpublic static {secure} operator ~({secure} a) =>\n");
 		sb.Append($"\t\t\tnew {secure}(~a.Decrypted);\n");
 
-		foreach (string x in new[] { "BigInteger", "int" })
+		foreach (string x in new[] { "BigInteger", "int", "uint", "long", "ulong" })
 		{
 			foreach ((string op, string verb) in BigIntArithmetic)
 			{

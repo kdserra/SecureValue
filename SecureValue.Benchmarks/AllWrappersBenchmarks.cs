@@ -162,7 +162,7 @@ namespace SecureValue.Benchmarks
         [Benchmark(Description = "SecureBigInteger")]
         public BigInteger SecureBigInteger_WriteRead()
         {
-            Numerics.SecureBigInteger v = new BigInteger(4000000000000000000);
+            Numerics.SecureBigInteger v = 4000000000000000000;
             return v;
         }
 

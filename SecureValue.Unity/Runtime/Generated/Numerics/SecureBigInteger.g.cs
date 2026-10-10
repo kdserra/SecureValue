@@ -404,6 +404,426 @@ namespace SecureValue.Numerics
 		public static SecureBigInteger operator ^(int a, SecureBigInteger b) =>
 			new SecureBigInteger(a ^ b.Decrypted);
 
+		/// <summary>Adds a secured big integer value and a uint.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator +(SecureBigInteger a, uint b) =>
+			new SecureBigInteger(a.Decrypted + b);
+
+		/// <summary>Adds a uint and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator +(uint a, SecureBigInteger b) =>
+			new SecureBigInteger(a + b.Decrypted);
+
+		/// <summary>Subtracts a secured big integer value and a uint.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator -(SecureBigInteger a, uint b) =>
+			new SecureBigInteger(a.Decrypted - b);
+
+		/// <summary>Subtracts a uint and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator -(uint a, SecureBigInteger b) =>
+			new SecureBigInteger(a - b.Decrypted);
+
+		/// <summary>Multiplies a secured big integer value and a uint.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator *(SecureBigInteger a, uint b) =>
+			new SecureBigInteger(a.Decrypted * b);
+
+		/// <summary>Multiplies a uint and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator *(uint a, SecureBigInteger b) =>
+			new SecureBigInteger(a * b.Decrypted);
+
+		/// <summary>Divides a secured big integer value and a uint.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator /(SecureBigInteger a, uint b) =>
+			new SecureBigInteger(a.Decrypted / b);
+
+		/// <summary>Divides a uint and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator /(uint a, SecureBigInteger b) =>
+			new SecureBigInteger(a / b.Decrypted);
+
+		/// <summary>Remainders a secured big integer value and a uint.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator %(SecureBigInteger a, uint b) =>
+			new SecureBigInteger(a.Decrypted % b);
+
+		/// <summary>Remainders a uint and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator %(uint a, SecureBigInteger b) =>
+			new SecureBigInteger(a % b.Decrypted);
+
+		/// <summary>Tests a secured big integer value and a uint.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator ==(SecureBigInteger a, uint b) =>
+			a.Decrypted == b;
+
+		/// <summary>Tests a uint and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator ==(uint a, SecureBigInteger b) =>
+			a == b.Decrypted;
+
+		/// <summary>Tests a secured big integer value and a uint.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator !=(SecureBigInteger a, uint b) =>
+			a.Decrypted != b;
+
+		/// <summary>Tests a uint and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator !=(uint a, SecureBigInteger b) =>
+			a != b.Decrypted;
+
+		/// <summary>Compares a secured big integer value and a uint.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator <(SecureBigInteger a, uint b) =>
+			a.Decrypted < b;
+
+		/// <summary>Compares a uint and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator <(uint a, SecureBigInteger b) =>
+			a < b.Decrypted;
+
+		/// <summary>Compares a secured big integer value and a uint.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator <=(SecureBigInteger a, uint b) =>
+			a.Decrypted <= b;
+
+		/// <summary>Compares a uint and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator <=(uint a, SecureBigInteger b) =>
+			a <= b.Decrypted;
+
+		/// <summary>Compares a secured big integer value and a uint.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator >(SecureBigInteger a, uint b) =>
+			a.Decrypted > b;
+
+		/// <summary>Compares a uint and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator >(uint a, SecureBigInteger b) =>
+			a > b.Decrypted;
+
+		/// <summary>Compares a secured big integer value and a uint.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator >=(SecureBigInteger a, uint b) =>
+			a.Decrypted >= b;
+
+		/// <summary>Compares a uint and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator >=(uint a, SecureBigInteger b) =>
+			a >= b.Decrypted;
+
+		/// <summary>ANDs a secured big integer value and a uint.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator &(SecureBigInteger a, uint b) =>
+			new SecureBigInteger(a.Decrypted & b);
+
+		/// <summary>ANDs a uint and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator &(uint a, SecureBigInteger b) =>
+			new SecureBigInteger(a & b.Decrypted);
+
+		/// <summary>ORs a secured big integer value and a uint.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator |(SecureBigInteger a, uint b) =>
+			new SecureBigInteger(a.Decrypted | b);
+
+		/// <summary>ORs a uint and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator |(uint a, SecureBigInteger b) =>
+			new SecureBigInteger(a | b.Decrypted);
+
+		/// <summary>XORs a secured big integer value and a uint.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator ^(SecureBigInteger a, uint b) =>
+			new SecureBigInteger(a.Decrypted ^ b);
+
+		/// <summary>XORs a uint and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator ^(uint a, SecureBigInteger b) =>
+			new SecureBigInteger(a ^ b.Decrypted);
+
+		/// <summary>Adds a secured big integer value and a long.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator +(SecureBigInteger a, long b) =>
+			new SecureBigInteger(a.Decrypted + b);
+
+		/// <summary>Adds a long and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator +(long a, SecureBigInteger b) =>
+			new SecureBigInteger(a + b.Decrypted);
+
+		/// <summary>Subtracts a secured big integer value and a long.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator -(SecureBigInteger a, long b) =>
+			new SecureBigInteger(a.Decrypted - b);
+
+		/// <summary>Subtracts a long and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator -(long a, SecureBigInteger b) =>
+			new SecureBigInteger(a - b.Decrypted);
+
+		/// <summary>Multiplies a secured big integer value and a long.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator *(SecureBigInteger a, long b) =>
+			new SecureBigInteger(a.Decrypted * b);
+
+		/// <summary>Multiplies a long and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator *(long a, SecureBigInteger b) =>
+			new SecureBigInteger(a * b.Decrypted);
+
+		/// <summary>Divides a secured big integer value and a long.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator /(SecureBigInteger a, long b) =>
+			new SecureBigInteger(a.Decrypted / b);
+
+		/// <summary>Divides a long and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator /(long a, SecureBigInteger b) =>
+			new SecureBigInteger(a / b.Decrypted);
+
+		/// <summary>Remainders a secured big integer value and a long.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator %(SecureBigInteger a, long b) =>
+			new SecureBigInteger(a.Decrypted % b);
+
+		/// <summary>Remainders a long and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator %(long a, SecureBigInteger b) =>
+			new SecureBigInteger(a % b.Decrypted);
+
+		/// <summary>Tests a secured big integer value and a long.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator ==(SecureBigInteger a, long b) =>
+			a.Decrypted == b;
+
+		/// <summary>Tests a long and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator ==(long a, SecureBigInteger b) =>
+			a == b.Decrypted;
+
+		/// <summary>Tests a secured big integer value and a long.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator !=(SecureBigInteger a, long b) =>
+			a.Decrypted != b;
+
+		/// <summary>Tests a long and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator !=(long a, SecureBigInteger b) =>
+			a != b.Decrypted;
+
+		/// <summary>Compares a secured big integer value and a long.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator <(SecureBigInteger a, long b) =>
+			a.Decrypted < b;
+
+		/// <summary>Compares a long and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator <(long a, SecureBigInteger b) =>
+			a < b.Decrypted;
+
+		/// <summary>Compares a secured big integer value and a long.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator <=(SecureBigInteger a, long b) =>
+			a.Decrypted <= b;
+
+		/// <summary>Compares a long and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator <=(long a, SecureBigInteger b) =>
+			a <= b.Decrypted;
+
+		/// <summary>Compares a secured big integer value and a long.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator >(SecureBigInteger a, long b) =>
+			a.Decrypted > b;
+
+		/// <summary>Compares a long and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator >(long a, SecureBigInteger b) =>
+			a > b.Decrypted;
+
+		/// <summary>Compares a secured big integer value and a long.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator >=(SecureBigInteger a, long b) =>
+			a.Decrypted >= b;
+
+		/// <summary>Compares a long and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator >=(long a, SecureBigInteger b) =>
+			a >= b.Decrypted;
+
+		/// <summary>ANDs a secured big integer value and a long.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator &(SecureBigInteger a, long b) =>
+			new SecureBigInteger(a.Decrypted & b);
+
+		/// <summary>ANDs a long and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator &(long a, SecureBigInteger b) =>
+			new SecureBigInteger(a & b.Decrypted);
+
+		/// <summary>ORs a secured big integer value and a long.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator |(SecureBigInteger a, long b) =>
+			new SecureBigInteger(a.Decrypted | b);
+
+		/// <summary>ORs a long and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator |(long a, SecureBigInteger b) =>
+			new SecureBigInteger(a | b.Decrypted);
+
+		/// <summary>XORs a secured big integer value and a long.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator ^(SecureBigInteger a, long b) =>
+			new SecureBigInteger(a.Decrypted ^ b);
+
+		/// <summary>XORs a long and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator ^(long a, SecureBigInteger b) =>
+			new SecureBigInteger(a ^ b.Decrypted);
+
+		/// <summary>Adds a secured big integer value and a ulong.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator +(SecureBigInteger a, ulong b) =>
+			new SecureBigInteger(a.Decrypted + b);
+
+		/// <summary>Adds a ulong and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator +(ulong a, SecureBigInteger b) =>
+			new SecureBigInteger(a + b.Decrypted);
+
+		/// <summary>Subtracts a secured big integer value and a ulong.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator -(SecureBigInteger a, ulong b) =>
+			new SecureBigInteger(a.Decrypted - b);
+
+		/// <summary>Subtracts a ulong and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator -(ulong a, SecureBigInteger b) =>
+			new SecureBigInteger(a - b.Decrypted);
+
+		/// <summary>Multiplies a secured big integer value and a ulong.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator *(SecureBigInteger a, ulong b) =>
+			new SecureBigInteger(a.Decrypted * b);
+
+		/// <summary>Multiplies a ulong and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator *(ulong a, SecureBigInteger b) =>
+			new SecureBigInteger(a * b.Decrypted);
+
+		/// <summary>Divides a secured big integer value and a ulong.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator /(SecureBigInteger a, ulong b) =>
+			new SecureBigInteger(a.Decrypted / b);
+
+		/// <summary>Divides a ulong and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator /(ulong a, SecureBigInteger b) =>
+			new SecureBigInteger(a / b.Decrypted);
+
+		/// <summary>Remainders a secured big integer value and a ulong.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator %(SecureBigInteger a, ulong b) =>
+			new SecureBigInteger(a.Decrypted % b);
+
+		/// <summary>Remainders a ulong and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator %(ulong a, SecureBigInteger b) =>
+			new SecureBigInteger(a % b.Decrypted);
+
+		/// <summary>Tests a secured big integer value and a ulong.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator ==(SecureBigInteger a, ulong b) =>
+			a.Decrypted == b;
+
+		/// <summary>Tests a ulong and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator ==(ulong a, SecureBigInteger b) =>
+			a == b.Decrypted;
+
+		/// <summary>Tests a secured big integer value and a ulong.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator !=(SecureBigInteger a, ulong b) =>
+			a.Decrypted != b;
+
+		/// <summary>Tests a ulong and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator !=(ulong a, SecureBigInteger b) =>
+			a != b.Decrypted;
+
+		/// <summary>Compares a secured big integer value and a ulong.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator <(SecureBigInteger a, ulong b) =>
+			a.Decrypted < b;
+
+		/// <summary>Compares a ulong and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator <(ulong a, SecureBigInteger b) =>
+			a < b.Decrypted;
+
+		/// <summary>Compares a secured big integer value and a ulong.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator <=(SecureBigInteger a, ulong b) =>
+			a.Decrypted <= b;
+
+		/// <summary>Compares a ulong and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator <=(ulong a, SecureBigInteger b) =>
+			a <= b.Decrypted;
+
+		/// <summary>Compares a secured big integer value and a ulong.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator >(SecureBigInteger a, ulong b) =>
+			a.Decrypted > b;
+
+		/// <summary>Compares a ulong and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator >(ulong a, SecureBigInteger b) =>
+			a > b.Decrypted;
+
+		/// <summary>Compares a secured big integer value and a ulong.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator >=(SecureBigInteger a, ulong b) =>
+			a.Decrypted >= b;
+
+		/// <summary>Compares a ulong and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static bool operator >=(ulong a, SecureBigInteger b) =>
+			a >= b.Decrypted;
+
+		/// <summary>ANDs a secured big integer value and a ulong.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator &(SecureBigInteger a, ulong b) =>
+			new SecureBigInteger(a.Decrypted & b);
+
+		/// <summary>ANDs a ulong and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator &(ulong a, SecureBigInteger b) =>
+			new SecureBigInteger(a & b.Decrypted);
+
+		/// <summary>ORs a secured big integer value and a ulong.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator |(SecureBigInteger a, ulong b) =>
+			new SecureBigInteger(a.Decrypted | b);
+
+		/// <summary>ORs a ulong and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator |(ulong a, SecureBigInteger b) =>
+			new SecureBigInteger(a | b.Decrypted);
+
+		/// <summary>XORs a secured big integer value and a ulong.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator ^(SecureBigInteger a, ulong b) =>
+			new SecureBigInteger(a.Decrypted ^ b);
+
+		/// <summary>XORs a ulong and a secured big integer value.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static SecureBigInteger operator ^(ulong a, SecureBigInteger b) =>
+			new SecureBigInteger(a ^ b.Decrypted);
+
 		/// <summary>Shifts a secured big integer value left by a plain amount.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static SecureBigInteger operator <<(SecureBigInteger a, int b) =>

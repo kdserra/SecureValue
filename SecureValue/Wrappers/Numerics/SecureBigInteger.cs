@@ -375,6 +375,26 @@ namespace SecureValue.Numerics
 		public static implicit operator SecureBigInteger(BigInteger value) =>
 			new SecureBigInteger(value);
 
+		/// <summary>Converts a plain int value into its secured form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static implicit operator SecureBigInteger(int value) =>
+			new SecureBigInteger((BigInteger)value);
+
+		/// <summary>Converts a plain uint value into its secured form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static implicit operator SecureBigInteger(uint value) =>
+			new SecureBigInteger((BigInteger)value);
+
+		/// <summary>Converts a plain long value into its secured form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static implicit operator SecureBigInteger(long value) =>
+			new SecureBigInteger((BigInteger)value);
+
+		/// <summary>Converts a plain ulong value into its secured form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static implicit operator SecureBigInteger(ulong value) =>
+			new SecureBigInteger((BigInteger)value);
+
 		/// <summary>Converts back to the plain BigInteger value (decrypts on read).</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static implicit operator BigInteger(SecureBigInteger value) => value.Decrypted;

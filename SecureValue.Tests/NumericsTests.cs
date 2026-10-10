@@ -100,6 +100,224 @@ namespace SecureValue.Tests
 		}
 
 		[Fact]
+		public void BigInteger_PlainConversions_AssignFromInt_UInt_Long_ULong()
+		{
+			SecureBigInteger fromInt = 100;
+			SecureBigInteger fromUInt = 100u;
+			SecureBigInteger fromLong = 100L;
+			SecureBigInteger fromULong = 100UL;
+			Assert.Equal((BigInteger)100, (BigInteger)fromInt);
+			Assert.Equal((BigInteger)100, (BigInteger)fromUInt);
+			Assert.Equal((BigInteger)100, (BigInteger)fromLong);
+			Assert.Equal((BigInteger)100, (BigInteger)fromULong);
+
+			int iv = 7;
+			uint uv = 7u;
+			long lv = 7L;
+			ulong ulv = 7UL;
+			SecureBigInteger vInt = iv;
+			SecureBigInteger vUInt = uv;
+			SecureBigInteger vLong = lv;
+			SecureBigInteger vULong = ulv;
+			Assert.Equal((BigInteger)7, (BigInteger)vInt);
+			Assert.Equal((BigInteger)7, (BigInteger)vUInt);
+			Assert.Equal((BigInteger)7, (BigInteger)vLong);
+			Assert.Equal((BigInteger)7, (BigInteger)vULong);
+
+			SecureBigInteger neg = -100;
+			Assert.Equal((BigInteger)(-100), (BigInteger)neg);
+		}
+
+		[Fact]
+		public void BigInteger_Arithmetic_AllOperandKinds()
+		{
+			SecureBigInteger a = 100;
+			SecureBigInteger b = 7;
+			BigInteger big = new BigInteger(7);
+
+			// (P,P): 100+7=107, 100-7=93, 100*7=700, 100/7=14, 100%7=2.
+			Assert.Equal((BigInteger)107, (BigInteger)(a + b));
+			Assert.Equal((BigInteger)93, (BigInteger)(a - b));
+			Assert.Equal((BigInteger)700, (BigInteger)(a * b));
+			Assert.Equal((BigInteger)14, (BigInteger)(a / b));
+			Assert.Equal((BigInteger)2, (BigInteger)(a % b));
+
+			// (P,BigInteger) and (BigInteger,P).
+			Assert.Equal((BigInteger)107, (BigInteger)(a + big));
+			Assert.Equal((BigInteger)107, (BigInteger)(big + a));
+			Assert.Equal((BigInteger)93, (BigInteger)(a - big));
+			Assert.Equal((BigInteger)(-93), (BigInteger)(big - a));
+			Assert.Equal((BigInteger)700, (BigInteger)(a * big));
+			Assert.Equal((BigInteger)700, (BigInteger)(big * a));
+			Assert.Equal((BigInteger)14, (BigInteger)(a / big));
+			Assert.Equal((BigInteger)0, (BigInteger)(big / a));
+			Assert.Equal((BigInteger)2, (BigInteger)(a % big));
+			Assert.Equal((BigInteger)7, (BigInteger)(big % a));
+
+			// (P,int) and (int,P).
+			Assert.Equal((BigInteger)107, (BigInteger)(a + 7));
+			Assert.Equal((BigInteger)107, (BigInteger)(7 + a));
+			Assert.Equal((BigInteger)93, (BigInteger)(a - 7));
+			Assert.Equal((BigInteger)(-93), (BigInteger)(7 - a));
+			Assert.Equal((BigInteger)700, (BigInteger)(a * 7));
+			Assert.Equal((BigInteger)700, (BigInteger)(7 * a));
+			Assert.Equal((BigInteger)14, (BigInteger)(a / 7));
+			Assert.Equal((BigInteger)0, (BigInteger)(7 / a));
+			Assert.Equal((BigInteger)2, (BigInteger)(a % 7));
+			Assert.Equal((BigInteger)7, (BigInteger)(7 % a));
+
+			// (P,uint) and (uint,P).
+			Assert.Equal((BigInteger)107, (BigInteger)(a + 7u));
+			Assert.Equal((BigInteger)107, (BigInteger)(7u + a));
+			Assert.Equal((BigInteger)93, (BigInteger)(a - 7u));
+			Assert.Equal((BigInteger)(-93), (BigInteger)(7u - a));
+			Assert.Equal((BigInteger)700, (BigInteger)(a * 7u));
+			Assert.Equal((BigInteger)700, (BigInteger)(7u * a));
+			Assert.Equal((BigInteger)14, (BigInteger)(a / 7u));
+			Assert.Equal((BigInteger)0, (BigInteger)(7u / a));
+			Assert.Equal((BigInteger)2, (BigInteger)(a % 7u));
+			Assert.Equal((BigInteger)7, (BigInteger)(7u % a));
+
+			// (P,long) and (long,P).
+			Assert.Equal((BigInteger)107, (BigInteger)(a + 7L));
+			Assert.Equal((BigInteger)107, (BigInteger)(7L + a));
+			Assert.Equal((BigInteger)93, (BigInteger)(a - 7L));
+			Assert.Equal((BigInteger)(-93), (BigInteger)(7L - a));
+			Assert.Equal((BigInteger)700, (BigInteger)(a * 7L));
+			Assert.Equal((BigInteger)700, (BigInteger)(7L * a));
+			Assert.Equal((BigInteger)14, (BigInteger)(a / 7L));
+			Assert.Equal((BigInteger)0, (BigInteger)(7L / a));
+			Assert.Equal((BigInteger)2, (BigInteger)(a % 7L));
+			Assert.Equal((BigInteger)7, (BigInteger)(7L % a));
+
+			// (P,ulong) and (ulong,P).
+			Assert.Equal((BigInteger)107, (BigInteger)(a + 7UL));
+			Assert.Equal((BigInteger)107, (BigInteger)(7UL + a));
+			Assert.Equal((BigInteger)93, (BigInteger)(a - 7UL));
+			Assert.Equal((BigInteger)(-93), (BigInteger)(7UL - a));
+			Assert.Equal((BigInteger)700, (BigInteger)(a * 7UL));
+			Assert.Equal((BigInteger)700, (BigInteger)(7UL * a));
+			Assert.Equal((BigInteger)14, (BigInteger)(a / 7UL));
+			Assert.Equal((BigInteger)0, (BigInteger)(7UL / a));
+			Assert.Equal((BigInteger)2, (BigInteger)(a % 7UL));
+			Assert.Equal((BigInteger)7, (BigInteger)(7UL % a));
+
+			// Beyond 64 bits: operators scale past long range.
+			SecureBigInteger huge = BigInteger.Pow(10, 30);
+			Assert.Equal(BigInteger.Pow(10, 30) + 1, (BigInteger)(huge + 1));
+			Assert.Equal(BigInteger.Pow(10, 30) * 2, (BigInteger)(huge + huge));
+		}
+
+		[Fact]
+		public void BigInteger_Comparisons_AllOperandKinds()
+		{
+			SecureBigInteger a = 100;
+			SecureBigInteger b = 100;
+			SecureBigInteger c = 7;
+			BigInteger bigEq = new BigInteger(100);
+			BigInteger bigLo = new BigInteger(7);
+
+			// (P,P).
+			Assert.True(a == b);
+			Assert.False(a != b);
+			Assert.False(a < b);
+			Assert.True(a <= b);
+			Assert.False(a > b);
+			Assert.True(a >= b);
+			Assert.True(c < a);
+			Assert.True(c <= a);
+			Assert.True(a > c);
+			Assert.True(a >= c);
+			Assert.True(a != c);
+
+			// (P,BigInteger) and (BigInteger,P).
+			Assert.True(a == bigEq);
+			Assert.True(bigEq == a);
+			Assert.True(a != bigLo);
+			Assert.True(bigLo != a);
+			Assert.True(a > bigLo);
+			Assert.True(bigLo < a);
+			Assert.True(a >= bigEq);
+			Assert.True(bigEq <= a);
+
+			// int, uint, long, ulong, both orders.
+			Assert.True(a == 100);
+			Assert.True(100 == a);
+			Assert.True(a != 7);
+			Assert.True(7 != a);
+			Assert.True(a > 7);
+			Assert.True(7 < a);
+			Assert.True(a >= 100);
+			Assert.True(100 <= a);
+			Assert.True(a == 100u);
+			Assert.True(100u == a);
+			Assert.True(a > 7u);
+			Assert.True(7u < a);
+			Assert.True(a == 100L);
+			Assert.True(100L == a);
+			Assert.True(a > 7L);
+			Assert.True(7L < a);
+			Assert.True(a == 100UL);
+			Assert.True(100UL == a);
+			Assert.True(a > 7UL);
+			Assert.True(7UL < a);
+		}
+
+		[Fact]
+		public void BigInteger_Bitwise_Unary_Shifts()
+		{
+			// 12 = 0b1100, 10 = 0b1010: &=8, |=14, ^=6.
+			SecureBigInteger a = 12;
+			SecureBigInteger b = 10;
+
+			// (P,P).
+			Assert.Equal((BigInteger)8, (BigInteger)(a & b));
+			Assert.Equal((BigInteger)14, (BigInteger)(a | b));
+			Assert.Equal((BigInteger)6, (BigInteger)(a ^ b));
+
+			// Mixed with BigInteger, int, uint, long, ulong, both orders.
+			Assert.Equal((BigInteger)8, (BigInteger)(a & new BigInteger(10)));
+			Assert.Equal((BigInteger)8, (BigInteger)(new BigInteger(12) & b));
+			Assert.Equal((BigInteger)8, (BigInteger)(a & 10));
+			Assert.Equal((BigInteger)8, (BigInteger)(10 & a));
+			Assert.Equal((BigInteger)14, (BigInteger)(a | 10));
+			Assert.Equal((BigInteger)14, (BigInteger)(10 | a));
+			Assert.Equal((BigInteger)6, (BigInteger)(a ^ 10));
+			Assert.Equal((BigInteger)6, (BigInteger)(10 ^ a));
+			Assert.Equal((BigInteger)8, (BigInteger)(a & 10u));
+			Assert.Equal((BigInteger)8, (BigInteger)(10u & a));
+			Assert.Equal((BigInteger)14, (BigInteger)(a | 10u));
+			Assert.Equal((BigInteger)6, (BigInteger)(a ^ 10u));
+			Assert.Equal((BigInteger)8, (BigInteger)(a & 10L));
+			Assert.Equal((BigInteger)8, (BigInteger)(10L & a));
+			Assert.Equal((BigInteger)14, (BigInteger)(a | 10L));
+			Assert.Equal((BigInteger)6, (BigInteger)(a ^ 10L));
+			Assert.Equal((BigInteger)8, (BigInteger)(a & 10UL));
+			Assert.Equal((BigInteger)8, (BigInteger)(10UL & a));
+			Assert.Equal((BigInteger)14, (BigInteger)(a | 10UL));
+			Assert.Equal((BigInteger)6, (BigInteger)(a ^ 10UL));
+
+			// Unary: -12, +12, ~12 = -13.
+			Assert.Equal((BigInteger)(-12), (BigInteger)(-a));
+			Assert.Equal((BigInteger)12, (BigInteger)(+a));
+			Assert.Equal(~(BigInteger)12, (BigInteger)(~a));
+
+			SecureBigInteger inc = 12;
+			inc++;
+			Assert.Equal((BigInteger)13, (BigInteger)inc);
+			inc--;
+			Assert.Equal((BigInteger)12, (BigInteger)inc);
+
+			// Shifts take a plain int count: 100 << 2 = 400, 100 >> 2 = 25.
+			SecureBigInteger s = 100;
+			Assert.Equal((BigInteger)400, (BigInteger)(s << 2));
+			Assert.Equal((BigInteger)25, (BigInteger)(s >> 2));
+			int n = 3;
+			Assert.Equal((BigInteger)800, (BigInteger)(s << n));
+			Assert.Equal((BigInteger)12, (BigInteger)(s >> n));
+		}
+
+		[Fact]
 		public void SameBigInteger_DifferentCiphertext()
 		{
 			SecureBigInteger a = BigInteger.Pow(10, 30);

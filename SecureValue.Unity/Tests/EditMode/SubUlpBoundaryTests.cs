@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using System.Runtime.InteropServices;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -9,10 +10,12 @@ namespace SecureValue.Unity.Tests
 	/// EditMode sub-sweep-resolution boundary coverage for the Unity-native float-lane
 	/// wrappers: single-ULP neighborhoods of the float boundaries, which index-stepped
 	/// sweeps leap over entirely. Integer-lane regions are owned 1:1 by ThoroughnessTests
-	/// and are deliberately NOT repeated here. Comparison uses round-trip ("R")
-	/// formatting: UnityEngine Vector/Quaternion == is approximate and would mask ULP
-	/// drift, while "R" strings are bit-exact. Fully-qualified wrapper names throughout.
-	/// No dynamic (no DLR under IL2CPP).
+	/// and are deliberately NOT repeated here. Comparison is bitwise over the lanes:
+	/// UnityEngine Vector/Quaternion == is approximate and would mask ULP drift, while
+	/// string formatting would dominate runtime (it pushed Matrix4x4 past the runner's
+	/// 180 s default timeout); reinterpreting the lanes as int32 is both bit-exact and
+	/// allocation-free. Failure text is formatted lazily for the same reason.
+	/// Fully-qualified wrapper names throughout. No dynamic (no DLR under IL2CPP).
 	/// </summary>
 	public class SubUlpBoundaryTests
 	{
@@ -21,7 +24,7 @@ namespace SecureValue.Unity.Tests
 		private static readonly int FloatMinBits = BitConverter.SingleToInt32Bits(float.MinValue);
 		private static readonly int FloatMaxBits = BitConverter.SingleToInt32Bits(float.MaxValue);
 
-		[Test]
+		[Test, Timeout(600000)]
 		public void UnityVector2_SubUlpBoundaries()
 		{
 			FloatRegionLanes(
@@ -31,17 +34,18 @@ namespace SecureValue.Unity.Tests
 				{
 					var value = new Vector2(lanes[0], lanes[1]);
 					SecureValue.Unity.SecureVector2 p = value;
+					Vector2 got = p;
 					Report(
-						((Vector2)p).ToString("R") == value.ToString("R"),
+						SameBits(got.x, value.x) && SameBits(got.y, value.y),
 						block,
-						value.ToString(),
-						st
+						st,
+						() => value.ToString()
 					);
 				}
 			);
 		}
 
-		[Test]
+		[Test, Timeout(600000)]
 		public void UnityVector3_SubUlpBoundaries()
 		{
 			FloatRegionLanes(
@@ -51,17 +55,20 @@ namespace SecureValue.Unity.Tests
 				{
 					var value = new Vector3(lanes[0], lanes[1], lanes[2]);
 					SecureValue.Unity.SecureVector3 p = value;
+					Vector3 got = p;
 					Report(
-						((Vector3)p).ToString("R") == value.ToString("R"),
+						SameBits(got.x, value.x)
+							&& SameBits(got.y, value.y)
+							&& SameBits(got.z, value.z),
 						block,
-						value.ToString(),
-						st
+						st,
+						() => value.ToString()
 					);
 				}
 			);
 		}
 
-		[Test]
+		[Test, Timeout(600000)]
 		public void UnityVector4_SubUlpBoundaries()
 		{
 			FloatRegionLanes(
@@ -71,17 +78,21 @@ namespace SecureValue.Unity.Tests
 				{
 					var value = new Vector4(lanes[0], lanes[1], lanes[2], lanes[3]);
 					SecureValue.Unity.SecureVector4 p = value;
+					Vector4 got = p;
 					Report(
-						((Vector4)p).ToString("R") == value.ToString("R"),
+						SameBits(got.x, value.x)
+							&& SameBits(got.y, value.y)
+							&& SameBits(got.z, value.z)
+							&& SameBits(got.w, value.w),
 						block,
-						value.ToString(),
-						st
+						st,
+						() => value.ToString()
 					);
 				}
 			);
 		}
 
-		[Test]
+		[Test, Timeout(600000)]
 		public void UnityRect_SubUlpBoundaries()
 		{
 			FloatRegionLanes(
@@ -91,17 +102,21 @@ namespace SecureValue.Unity.Tests
 				{
 					var value = new Rect(lanes[0], lanes[1], lanes[2], lanes[3]);
 					SecureValue.Unity.SecureRect p = value;
+					Rect got = p;
 					Report(
-						((Rect)p).ToString("R") == value.ToString("R"),
+						SameBits(got.x, value.x)
+							&& SameBits(got.y, value.y)
+							&& SameBits(got.width, value.width)
+							&& SameBits(got.height, value.height),
 						block,
-						value.ToString(),
-						st
+						st,
+						() => value.ToString()
 					);
 				}
 			);
 		}
 
-		[Test]
+		[Test, Timeout(600000)]
 		public void UnityBounds_SubUlpBoundaries()
 		{
 			FloatRegionLanes(
@@ -114,17 +129,23 @@ namespace SecureValue.Unity.Tests
 						new Vector3(lanes[3], lanes[4], lanes[5])
 					);
 					SecureValue.Unity.SecureBounds p = value;
+					Bounds got = p;
 					Report(
-						((Bounds)p).ToString("R") == value.ToString("R"),
+						SameBits(got.center.x, value.center.x)
+							&& SameBits(got.center.y, value.center.y)
+							&& SameBits(got.center.z, value.center.z)
+							&& SameBits(got.extents.x, value.extents.x)
+							&& SameBits(got.extents.y, value.extents.y)
+							&& SameBits(got.extents.z, value.extents.z),
 						block,
-						value.ToString(),
-						st
+						st,
+						() => value.ToString()
 					);
 				}
 			);
 		}
 
-		[Test]
+		[Test, Timeout(600000)]
 		public void UnityColor_SubUlpBoundaries()
 		{
 			FloatRegionLanes(
@@ -134,17 +155,21 @@ namespace SecureValue.Unity.Tests
 				{
 					var value = new Color(lanes[0], lanes[1], lanes[2], lanes[3]);
 					SecureValue.Unity.SecureColor p = value;
+					Color got = p;
 					Report(
-						((Color)p).ToString("R") == value.ToString("R"),
+						SameBits(got.r, value.r)
+							&& SameBits(got.g, value.g)
+							&& SameBits(got.b, value.b)
+							&& SameBits(got.a, value.a),
 						block,
-						value.ToString(),
-						st
+						st,
+						() => value.ToString()
 					);
 				}
 			);
 		}
 
-		[Test]
+		[Test, Timeout(600000)]
 		public void UnityQuaternion_SubUlpBoundaries()
 		{
 			FloatRegionLanes(
@@ -154,17 +179,21 @@ namespace SecureValue.Unity.Tests
 				{
 					var value = new Quaternion(lanes[0], lanes[1], lanes[2], lanes[3]);
 					SecureValue.Unity.SecureQuaternion p = value;
+					Quaternion got = p;
 					Report(
-						((Quaternion)p).ToString("R") == value.ToString("R"),
+						SameBits(got.x, value.x)
+							&& SameBits(got.y, value.y)
+							&& SameBits(got.z, value.z)
+							&& SameBits(got.w, value.w),
 						block,
-						value.ToString(),
-						st
+						st,
+						() => value.ToString()
 					);
 				}
 			);
 		}
 
-		[Test]
+		[Test, Timeout(600000)]
 		public void UnityMatrix4x4_SubUlpBoundaries()
 		{
 			FloatRegionLanes(
@@ -179,17 +208,33 @@ namespace SecureValue.Unity.Tests
 						new Vector4(lanes[12], lanes[13], lanes[14], lanes[15])
 					);
 					SecureValue.Unity.SecureMatrix4x4 p = value;
+					Matrix4x4 got = p;
 					Report(
-						((Matrix4x4)p).ToString("R") == value.ToString("R"),
+						SameBits(got.m00, value.m00)
+							&& SameBits(got.m01, value.m01)
+							&& SameBits(got.m02, value.m02)
+							&& SameBits(got.m03, value.m03)
+							&& SameBits(got.m10, value.m10)
+							&& SameBits(got.m11, value.m11)
+							&& SameBits(got.m12, value.m12)
+							&& SameBits(got.m13, value.m13)
+							&& SameBits(got.m20, value.m20)
+							&& SameBits(got.m21, value.m21)
+							&& SameBits(got.m22, value.m22)
+							&& SameBits(got.m23, value.m23)
+							&& SameBits(got.m30, value.m30)
+							&& SameBits(got.m31, value.m31)
+							&& SameBits(got.m32, value.m32)
+							&& SameBits(got.m33, value.m33),
 						block,
-						value.ToString(),
-						st
+						st,
+						() => value.ToString()
 					);
 				}
 			);
 		}
 
-		[Test]
+		[Test, Timeout(600000)]
 		public void UnityPlane_SubUlpBoundaries()
 		{
 			FloatRegionLanes(
@@ -199,17 +244,21 @@ namespace SecureValue.Unity.Tests
 				{
 					var value = new Plane(new Vector3(lanes[0], lanes[1], lanes[2]), lanes[3]);
 					SecureValue.Unity.SecurePlane p = value;
+					Plane got = p;
 					Report(
-						((Plane)p).ToString("R") == value.ToString("R"),
+						SameBits(got.normal.x, value.normal.x)
+							&& SameBits(got.normal.y, value.normal.y)
+							&& SameBits(got.normal.z, value.normal.z)
+							&& SameBits(got.distance, value.distance),
 						block,
-						value.ToString(),
-						st
+						st,
+						() => value.ToString()
 					);
 				}
 			);
 		}
 
-		[Test]
+		[Test, Timeout(600000)]
 		public void UnityRay_SubUlpBoundaries()
 		{
 			FloatRegionLanes(
@@ -222,11 +271,17 @@ namespace SecureValue.Unity.Tests
 						new Vector3(lanes[3], lanes[4], lanes[5])
 					);
 					SecureValue.Unity.SecureRay p = value;
+					Ray got = p;
 					Report(
-						((Ray)p).ToString("R") == value.ToString("R"),
+						SameBits(got.origin.x, value.origin.x)
+							&& SameBits(got.origin.y, value.origin.y)
+							&& SameBits(got.origin.z, value.origin.z)
+							&& SameBits(got.direction.x, value.direction.x)
+							&& SameBits(got.direction.y, value.direction.y)
+							&& SameBits(got.direction.z, value.direction.z),
 						block,
-						value.ToString(),
-						st
+						st,
+						() => value.ToString()
 					);
 				}
 			);
@@ -239,13 +294,30 @@ namespace SecureValue.Unity.Tests
 			public long Tested;
 		}
 
-		private static void Report(bool ok, string block, string text, RegionState st)
+		[StructLayout(LayoutKind.Explicit)]
+		private struct FloatIntUnion
+		{
+			[FieldOffset(0)]
+			public float F;
+
+			[FieldOffset(0)]
+			public int I;
+		}
+
+		/// <summary>
+		/// Bitwise float equality: the wrappers preserve lane bits exactly, so any
+		/// drift — including one UnityEngine == would call "close enough" — fails.
+		/// </summary>
+		private static bool SameBits(float a, float b) =>
+			new FloatIntUnion { F = a }.I == new FloatIntUnion { F = b }.I;
+
+		private static void Report(bool ok, string block, RegionState st, Func<string> describe)
 		{
 			if (!ok)
 			{
 				if (st.Failures == 0)
 				{
-					st.First = $"{block} = {text}";
+					st.First = $"{block} = {describe()}";
 				}
 				st.Failures++;
 			}
@@ -253,7 +325,8 @@ namespace SecureValue.Unity.Tests
 		}
 
 		// One ULP step per lane from each boundary (lane k starts k ULPs in, so lanes
-		// never share a value).
+		// never share a value). Lane buffers are hoisted out of the loop: allocating
+		// them per iteration tripled gen-0 churn for no reason.
 		private static void FloatRegionLanes(
 			string name,
 			int laneCount,
@@ -261,11 +334,11 @@ namespace SecureValue.Unity.Tests
 		)
 		{
 			var st = new RegionState();
+			float[] aboveMin = new float[laneCount];
+			float[] atZero = new float[laneCount];
+			float[] belowMax = new float[laneCount];
 			for (long i = 0; i < Region; i++)
 			{
-				float[] aboveMin = new float[laneCount];
-				float[] atZero = new float[laneCount];
-				float[] belowMax = new float[laneCount];
 				for (int lane = 0; lane < laneCount; lane++)
 				{
 					int k32 = (int)(i + lane);
