@@ -8,7 +8,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "dotnet run Tools/collect-release-assets.cs -- ${nextRelease.version} && dotnet run Tools/bump-versions.cs -- ${nextRelease.version} && dotnet run Tools/pack-unitypackage.cs"
+        "prepareCmd": "dotnet run Tools/collect-release-assets.cs -- ${nextRelease.version} && dotnet run Tools/bump-versions.cs -- ${nextRelease.version} && dotnet run Tools/sync-readme-version.cs -- ${nextRelease.version} && dotnet run Tools/pack-unitypackage.cs"
       }
     ],
     [
@@ -20,7 +20,7 @@
     [
       "@semantic-release/git",
       {
-        "assets": ["CHANGELOG.md", "SecureValue.Unity/package.json", "SecureValue/SecureValue.csproj"],
+        "assets": ["CHANGELOG.md", "README.md", "SecureValue.Unity/package.json", "SecureValue/SecureValue.csproj"],
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }
     ]
