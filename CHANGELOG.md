@@ -1,3 +1,24 @@
+## [2.0.0](https://github.com/kdserra/SecureValue/compare/v1.2.0...v2.0.0) (2026-10-10)
+
+### ⚠ BREAKING CHANGES
+
+* stronger mac verification for strings
+
+### Features
+
+* add Reset to demo ([841d482](https://github.com/kdserra/SecureValue/commit/841d482e9ce30527b5e638913bccf87d0d01f206))
+* add string length validation ([30981ca](https://github.com/kdserra/SecureValue/commit/30981ca82badc59bf3948370e2957d6bd83c27c2))
+* benchmark notifies when it begins ([a5054a0](https://github.com/kdserra/SecureValue/commit/a5054a008d58f8d6b10f0408fa3351817d187e2d))
+* FillWithRandomValues to demo ([3b5221c](https://github.com/kdserra/SecureValue/commit/3b5221c3594e191664b501e5f1493f8cfd891b7e))
+* stronger mac verification for strings ([9e99c6a](https://github.com/kdserra/SecureValue/commit/9e99c6ab366d5e2d4ac88e5d48f0ba883d489509))
+* thread unique salts ([343e944](https://github.com/kdserra/SecureValue/commit/343e944a128b97aea196f6c728f3c4a7a941e112))
+* write benchmark results as 1 log msg ([3b95fa0](https://github.com/kdserra/SecureValue/commit/3b95fa08d6b34f810a9ba460a2718ad6af0cc4db))
+
+### Bug Fixes
+
+* add missed aggressive inlinings ([4edeb75](https://github.com/kdserra/SecureValue/commit/4edeb75bf93f95030d166520877e77e7d863cb0b))
+* nullability warnings ([3f77e15](https://github.com/kdserra/SecureValue/commit/3f77e155d291122d6b9d71b8322d1b0eef0ec9e1))
+
 # [1.2.0](https://github.com/kdserra/SecureValue/compare/v1.1.0...v1.2.0) (2026-10-09)
 
 
