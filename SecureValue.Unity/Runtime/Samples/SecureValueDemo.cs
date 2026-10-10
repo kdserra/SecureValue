@@ -31,7 +31,7 @@ using UnityEngine;
 /// The "Save to JSON" menu additionally records every field's decrypted value to
 /// Assets/saved-values.json; "Validate JSON" compares the live fields against that
 /// record, so deviation across editor sessions is caught with a per-field message.
-/// The "Randomize All Fields" menu assigns fresh random values instead of the
+/// The "Fill with Random Values" menu assigns fresh random values instead of the
 /// constants (proving persistence with non-constant data via the JSON menus);
 /// run Fill again afterwards to restore the constants.
 /// Test constants deliberately avoid 0 and type min/max values: a decrypt failure
@@ -575,13 +575,13 @@ public class SecureValueDemo : MonoBehaviour
 	/// mismatches afterwards until Fill is run again — use Save to JSON before
 	/// restarting and Validate JSON after to prove the random values persisted.
 	/// </summary>
-	[ContextMenu("Randomize All Fields")]
-	private void RandomizeAllFields()
+	[ContextMenu("Fill with Random Values")]
+	private void FillWithRandomValues()
 	{
 		int checks = 0;
 		int failures = 0;
 #if UNITY_EDITOR
-		UnityEditor.Undo.RecordObject(this, "Randomize All Fields");
+		UnityEditor.Undo.RecordObject(this, "Fill with Random Values");
 #endif
 
 		int health =
@@ -959,7 +959,7 @@ public class SecureValueDemo : MonoBehaviour
 #endif
 
 		Debug.Log(
-			$"[SecureValueDemo] Randomize complete: {checks - failures}/{checks} values round-tripped immediately. These are NOT the Fill constants — Validate Test Values will mismatch until Fill runs again."
+			$"[SecureValueDemo] Random fill complete: {checks - failures}/{checks} values round-tripped immediately. These are NOT the Fill constants — Validate Test Values will mismatch until Fill runs again."
 		);
 	}
 
