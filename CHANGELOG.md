@@ -1,3 +1,9 @@
+## [2.1.0](https://github.com/kdserra/SecureValue/compare/v2.0.0...v2.1.0) (2026-10-10)
+
+### Features
+
+* add more supported operators for BigInteger ([3700ee4](https://github.com/kdserra/SecureValue/commit/3700ee4b301d533569e8ac71e2e7e8361ed65ee2))
+
 ## [2.0.0](https://github.com/kdserra/SecureValue/compare/v1.2.0...v2.0.0) (2026-10-10)
 
 ### ⚠ BREAKING CHANGES
