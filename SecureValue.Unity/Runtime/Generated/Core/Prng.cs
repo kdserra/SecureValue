@@ -55,6 +55,11 @@ namespace SecureValue
 		[ThreadStatic]
 		private static bool t_ready;
 
+		// The process key is shared by every thread. A unique stream number is
+		// therefore required in addition to it; otherwise every thread would
+		// start from the same xoshiro state and emit the same salt sequence.
+		private static long s_streamCounter;
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static ulong Next()
 		{
@@ -69,7 +74,8 @@ namespace SecureValue
 
 		private static State Create()
 		{
-			ulong z = Keys.K0 ^ Mixing.RotateLeft(Keys.K1, 32);
+			ulong stream = unchecked((ulong)Interlocked.Increment(ref s_streamCounter));
+			ulong z = Keys.K0 ^ Mixing.RotateLeft(Keys.K1, 32) ^ Mixing.SplitMix(stream);
 			z += 0x9E3779B97F4A7C15UL;
 			ulong s0 = Mixing.SplitMix(z);
 			z += 0x9E3779B97F4A7C15UL;

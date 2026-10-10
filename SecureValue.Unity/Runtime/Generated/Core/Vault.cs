@@ -108,6 +108,10 @@ namespace SecureValue
 		internal static uint ComputeTag(ReadOnlySpan<ulong> ciphers, in KeySet rk) =>
 			Mac.ComputeTag(ciphers, rk);
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static uint ComputeTag(ulong prefix, ReadOnlySpan<ulong> ciphers, in KeySet rk) =>
+			Mac.ComputeTag(prefix, ciphers, rk);
+
 		/// <summary>
 		/// Per-word keystream mask for array-backed wrappers (index folded in cheaply).
 		/// A pure function of (salt, index). Each value and each backup copy
