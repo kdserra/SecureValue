@@ -142,14 +142,14 @@ namespace SecureValue.Benchmarks
 			return v;
 		}
 
-        [Benchmark(Description = "SecureString")]
-        public string? SecureString_WriteRead()
-        {
-            SecureString v = "benchmark secret";
-            return v;
-        }
+		[Benchmark(Description = "SecureString")]
+		public string? SecureString_WriteRead()
+		{
+			SecureString v = "benchmark secret";
+			return v;
+		}
 
-        private char[] buffer = new char[16];
+		private char[] buffer = new char[16];
 
 		[Benchmark(Description = "SecureString_Span")]
 		public ReadOnlySpan<char> SecureString_Span_WriteRead()
@@ -159,15 +159,15 @@ namespace SecureValue.Benchmarks
 			return buffer;
 		}
 
-        [Benchmark(Description = "SecureBigInteger")]
-        public BigInteger SecureBigInteger_WriteRead()
-        {
-            Numerics.SecureBigInteger v = 4000000000000000000;
-            return v;
-        }
+		[Benchmark(Description = "SecureBigInteger")]
+		public BigInteger SecureBigInteger_WriteRead()
+		{
+			Numerics.SecureBigInteger v = 4000000000000000000;
+			return v;
+		}
 
 #if NET6_0_OR_GREATER
-        [Benchmark(Description = "SecureDateOnly")]
+		[Benchmark(Description = "SecureDateOnly")]
 		public DateOnly SecureDateOnly_WriteRead()
 		{
 			SecureDateOnly v = new DateOnly(2026, 2, 28);
