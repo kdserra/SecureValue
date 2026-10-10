@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Numerics;
+using System.Reflection;
 using SecureValue;
 using SecureValue.Numerics;
 using Xunit;
@@ -292,6 +293,206 @@ namespace SecureValue.Tests
 		}
 
 		[Fact]
+		public void ExplicitCasts_PlainAndSecuredAreEqual()
+		{
+			sbyte plainSbyte = 100;
+			SecureSByte securedSbyte = plainSbyte;
+			Assert.Equal(plainSbyte, (sbyte)securedSbyte);
+			Assert.Equal((byte)plainSbyte, (byte)securedSbyte);
+			Assert.Equal((short)plainSbyte, (short)securedSbyte);
+			Assert.Equal((ushort)plainSbyte, (ushort)securedSbyte);
+			Assert.Equal((int)plainSbyte, (int)securedSbyte);
+			Assert.Equal((uint)plainSbyte, (uint)securedSbyte);
+			Assert.Equal((long)plainSbyte, (long)securedSbyte);
+			Assert.Equal((ulong)plainSbyte, (ulong)securedSbyte);
+			Assert.Equal((char)plainSbyte, (char)securedSbyte);
+			Assert.Equal((float)plainSbyte, (float)securedSbyte);
+			Assert.Equal((double)plainSbyte, (double)securedSbyte);
+			Assert.Equal((decimal)plainSbyte, (decimal)securedSbyte);
+
+			byte plainByte = 100;
+			SecureByte securedByte = plainByte;
+			Assert.Equal((sbyte)plainByte, (sbyte)securedByte);
+			Assert.Equal(plainByte, (byte)securedByte);
+			Assert.Equal((short)plainByte, (short)securedByte);
+			Assert.Equal((ushort)plainByte, (ushort)securedByte);
+			Assert.Equal((int)plainByte, (int)securedByte);
+			Assert.Equal((uint)plainByte, (uint)securedByte);
+			Assert.Equal((long)plainByte, (long)securedByte);
+			Assert.Equal((ulong)plainByte, (ulong)securedByte);
+			Assert.Equal((char)plainByte, (char)securedByte);
+			Assert.Equal((float)plainByte, (float)securedByte);
+			Assert.Equal((double)plainByte, (double)securedByte);
+			Assert.Equal((decimal)plainByte, (decimal)securedByte);
+
+			short plainShort = 100;
+			SecureShort securedShort = plainShort;
+			Assert.Equal((sbyte)plainShort, (sbyte)securedShort);
+			Assert.Equal((byte)plainShort, (byte)securedShort);
+			Assert.Equal(plainShort, (short)securedShort);
+			Assert.Equal((ushort)plainShort, (ushort)securedShort);
+			Assert.Equal((int)plainShort, (int)securedShort);
+			Assert.Equal((uint)plainShort, (uint)securedShort);
+			Assert.Equal((long)plainShort, (long)securedShort);
+			Assert.Equal((ulong)plainShort, (ulong)securedShort);
+			Assert.Equal((char)plainShort, (char)securedShort);
+			Assert.Equal((float)plainShort, (float)securedShort);
+			Assert.Equal((double)plainShort, (double)securedShort);
+			Assert.Equal((decimal)plainShort, (decimal)securedShort);
+
+			ushort plainUShort = 100;
+			SecureUShort securedUShort = plainUShort;
+			Assert.Equal((sbyte)plainUShort, (sbyte)securedUShort);
+			Assert.Equal((byte)plainUShort, (byte)securedUShort);
+			Assert.Equal((short)plainUShort, (short)securedUShort);
+			Assert.Equal(plainUShort, (ushort)securedUShort);
+			Assert.Equal((int)plainUShort, (int)securedUShort);
+			Assert.Equal((uint)plainUShort, (uint)securedUShort);
+			Assert.Equal((long)plainUShort, (long)securedUShort);
+			Assert.Equal((ulong)plainUShort, (ulong)securedUShort);
+			Assert.Equal((char)plainUShort, (char)securedUShort);
+			Assert.Equal((float)plainUShort, (float)securedUShort);
+			Assert.Equal((double)plainUShort, (double)securedUShort);
+			Assert.Equal((decimal)plainUShort, (decimal)securedUShort);
+
+			int plainInt = 100;
+			SecureInt securedInt = plainInt;
+			Assert.Equal((sbyte)plainInt, (sbyte)securedInt);
+			Assert.Equal((byte)plainInt, (byte)securedInt);
+			Assert.Equal((short)plainInt, (short)securedInt);
+			Assert.Equal((ushort)plainInt, (ushort)securedInt);
+			Assert.Equal(plainInt, (int)securedInt);
+			Assert.Equal((uint)plainInt, (uint)securedInt);
+			Assert.Equal((long)plainInt, (long)securedInt);
+			Assert.Equal((ulong)plainInt, (ulong)securedInt);
+			Assert.Equal((char)plainInt, (char)securedInt);
+			Assert.Equal((float)plainInt, (float)securedInt);
+			Assert.Equal((double)plainInt, (double)securedInt);
+			Assert.Equal((decimal)plainInt, (decimal)securedInt);
+
+			uint plainUInt = 100;
+			SecureUInt securedUInt = plainUInt;
+			Assert.Equal((sbyte)plainUInt, (sbyte)securedUInt);
+			Assert.Equal((byte)plainUInt, (byte)securedUInt);
+			Assert.Equal((short)plainUInt, (short)securedUInt);
+			Assert.Equal((ushort)plainUInt, (ushort)securedUInt);
+			Assert.Equal((int)plainUInt, (int)securedUInt);
+			Assert.Equal(plainUInt, (uint)securedUInt);
+			Assert.Equal((long)plainUInt, (long)securedUInt);
+			Assert.Equal((ulong)plainUInt, (ulong)securedUInt);
+			Assert.Equal((char)plainUInt, (char)securedUInt);
+			Assert.Equal((float)plainUInt, (float)securedUInt);
+			Assert.Equal((double)plainUInt, (double)securedUInt);
+			Assert.Equal((decimal)plainUInt, (decimal)securedUInt);
+
+			long plainLong = 100;
+			SecureLong securedLong = plainLong;
+			Assert.Equal((sbyte)plainLong, (sbyte)securedLong);
+			Assert.Equal((byte)plainLong, (byte)securedLong);
+			Assert.Equal((short)plainLong, (short)securedLong);
+			Assert.Equal((ushort)plainLong, (ushort)securedLong);
+			Assert.Equal((int)plainLong, (int)securedLong);
+			Assert.Equal((uint)plainLong, (uint)securedLong);
+			Assert.Equal(plainLong, (long)securedLong);
+			Assert.Equal((ulong)plainLong, (ulong)securedLong);
+			Assert.Equal((char)plainLong, (char)securedLong);
+			Assert.Equal((float)plainLong, (float)securedLong);
+			Assert.Equal((double)plainLong, (double)securedLong);
+			Assert.Equal((decimal)plainLong, (decimal)securedLong);
+
+			ulong plainULong = 100;
+			SecureULong securedULong = plainULong;
+			Assert.Equal((sbyte)plainULong, (sbyte)securedULong);
+			Assert.Equal((byte)plainULong, (byte)securedULong);
+			Assert.Equal((short)plainULong, (short)securedULong);
+			Assert.Equal((ushort)plainULong, (ushort)securedULong);
+			Assert.Equal((int)plainULong, (int)securedULong);
+			Assert.Equal((uint)plainULong, (uint)securedULong);
+			Assert.Equal((long)plainULong, (long)securedULong);
+			Assert.Equal(plainULong, (ulong)securedULong);
+			Assert.Equal((char)plainULong, (char)securedULong);
+			Assert.Equal((float)plainULong, (float)securedULong);
+			Assert.Equal((double)plainULong, (double)securedULong);
+			Assert.Equal((decimal)plainULong, (decimal)securedULong);
+
+			char plainChar = 'd';
+			SecureChar securedChar = plainChar;
+			Assert.Equal((sbyte)plainChar, (sbyte)securedChar);
+			Assert.Equal((byte)plainChar, (byte)securedChar);
+			Assert.Equal((short)plainChar, (short)securedChar);
+			Assert.Equal((ushort)plainChar, (ushort)securedChar);
+			Assert.Equal((int)plainChar, (int)securedChar);
+			Assert.Equal((uint)plainChar, (uint)securedChar);
+			Assert.Equal((long)plainChar, (long)securedChar);
+			Assert.Equal((ulong)plainChar, (ulong)securedChar);
+			Assert.Equal(plainChar, (char)securedChar);
+			Assert.Equal((float)plainChar, (float)securedChar);
+			Assert.Equal((double)plainChar, (double)securedChar);
+			Assert.Equal((decimal)plainChar, (decimal)securedChar);
+
+			float plainFloat = 100f;
+			SecureFloat securedFloat = plainFloat;
+			Assert.Equal((sbyte)plainFloat, (sbyte)securedFloat);
+			Assert.Equal((byte)plainFloat, (byte)securedFloat);
+			Assert.Equal((short)plainFloat, (short)securedFloat);
+			Assert.Equal((ushort)plainFloat, (ushort)securedFloat);
+			Assert.Equal((int)plainFloat, (int)securedFloat);
+			Assert.Equal((uint)plainFloat, (uint)securedFloat);
+			Assert.Equal((long)plainFloat, (long)securedFloat);
+			Assert.Equal((ulong)plainFloat, (ulong)securedFloat);
+			Assert.Equal((char)plainFloat, (char)securedFloat);
+			Assert.Equal(plainFloat, (float)securedFloat);
+			Assert.Equal((double)plainFloat, (double)securedFloat);
+			Assert.Equal((decimal)plainFloat, (decimal)securedFloat);
+
+			double plainDouble = 100.0;
+			SecureDouble securedDouble = plainDouble;
+			Assert.Equal((sbyte)plainDouble, (sbyte)securedDouble);
+			Assert.Equal((byte)plainDouble, (byte)securedDouble);
+			Assert.Equal((short)plainDouble, (short)securedDouble);
+			Assert.Equal((ushort)plainDouble, (ushort)securedDouble);
+			Assert.Equal((int)plainDouble, (int)securedDouble);
+			Assert.Equal((uint)plainDouble, (uint)securedDouble);
+			Assert.Equal((long)plainDouble, (long)securedDouble);
+			Assert.Equal((ulong)plainDouble, (ulong)securedDouble);
+			Assert.Equal((char)plainDouble, (char)securedDouble);
+			Assert.Equal((float)plainDouble, (float)securedDouble);
+			Assert.Equal(plainDouble, (double)securedDouble);
+			Assert.Equal((decimal)plainDouble, (decimal)securedDouble);
+
+			decimal plainDecimal = 100m;
+			SecureDecimal securedDecimal = plainDecimal;
+			Assert.Equal((sbyte)plainDecimal, (sbyte)securedDecimal);
+			Assert.Equal((byte)plainDecimal, (byte)securedDecimal);
+			Assert.Equal((short)plainDecimal, (short)securedDecimal);
+			Assert.Equal((ushort)plainDecimal, (ushort)securedDecimal);
+			Assert.Equal((int)plainDecimal, (int)securedDecimal);
+			Assert.Equal((uint)plainDecimal, (uint)securedDecimal);
+			Assert.Equal((long)plainDecimal, (long)securedDecimal);
+			Assert.Equal((ulong)plainDecimal, (ulong)securedDecimal);
+			Assert.Equal((char)plainDecimal, (char)securedDecimal);
+			Assert.Equal((float)plainDecimal, (float)securedDecimal);
+			Assert.Equal((double)plainDecimal, (double)securedDecimal);
+			Assert.Equal(plainDecimal, (decimal)securedDecimal);
+
+			BigInteger plainBigInteger = new BigInteger(100);
+			SecureBigInteger securedBigInteger = plainBigInteger;
+			Assert.Equal((sbyte)plainBigInteger, (sbyte)securedBigInteger);
+			Assert.Equal((byte)plainBigInteger, (byte)securedBigInteger);
+			Assert.Equal((short)plainBigInteger, (short)securedBigInteger);
+			Assert.Equal((ushort)plainBigInteger, (ushort)securedBigInteger);
+			Assert.Equal((int)plainBigInteger, (int)securedBigInteger);
+			Assert.Equal((uint)plainBigInteger, (uint)securedBigInteger);
+			Assert.Equal((long)plainBigInteger, (long)securedBigInteger);
+			Assert.Equal((ulong)plainBigInteger, (ulong)securedBigInteger);
+			Assert.Equal((char)(int)plainBigInteger, (char)securedBigInteger);
+			Assert.Equal((float)plainBigInteger, (float)securedBigInteger);
+			Assert.Equal((double)plainBigInteger, (double)securedBigInteger);
+			Assert.Equal((decimal)plainBigInteger, (decimal)securedBigInteger);
+			Assert.Equal(plainBigInteger, (BigInteger)securedBigInteger);
+		}
+
+		[Fact]
 		public void BigInteger_ExplicitFloatTwinsNeverThrowLikeBcl()
 		{
 			SecureBigInteger hugeFloat = BigInteger.Pow(2, 200);
@@ -301,5 +502,101 @@ namespace SecureValue.Tests
 			Assert.Equal((double)(BigInteger)hugeDouble, (double)(SecureDouble)hugeDouble);
 			Assert.True(double.IsPositiveInfinity((double)(SecureDouble)hugeDouble));
 		}
+
+		[Fact]
+		public void BigInteger_ExplicitPlainTwinsMirrorBcl()
+		{
+			BigInteger plain = new BigInteger(100);
+			SecureBigInteger secured = plain;
+			Assert.Equal((sbyte)plain, (sbyte)secured);
+			Assert.Equal((byte)plain, (byte)secured);
+			Assert.Equal((short)plain, (short)secured);
+			Assert.Equal((ushort)plain, (ushort)secured);
+			Assert.Equal((int)plain, (int)secured);
+			Assert.Equal((uint)plain, (uint)secured);
+			Assert.Equal((long)plain, (long)secured);
+			Assert.Equal((ulong)plain, (ulong)secured);
+			Assert.Equal((char)100, (char)secured);
+			Assert.Equal((float)plain, (float)secured);
+			Assert.Equal((double)plain, (double)secured);
+			Assert.Equal((decimal)plain, (decimal)secured);
+			SecureBigInteger huge = BigInteger.Pow(2, 100);
+			Assert.Throws<OverflowException>(() => (int)huge);
+			Assert.Throws<OverflowException>(() => (decimal)huge);
+			Assert.True(float.IsPositiveInfinity((float)(SecureBigInteger)BigInteger.Pow(2, 200)));
+		}
+
+		[Fact]
+		public void SecureTwins_HaveMatchingPlainTwins()
+		{
+			// Every explicit SecureX -> SecureY twin must have a same-source
+			// explicit SecureX -> plainY twin returning the same value.
+			Type[] wrappers =
+			[
+				typeof(SecureSByte),
+				typeof(SecureByte),
+				typeof(SecureShort),
+				typeof(SecureUShort),
+				typeof(SecureInt),
+				typeof(SecureUInt),
+				typeof(SecureLong),
+				typeof(SecureULong),
+				typeof(SecureChar),
+				typeof(SecureFloat),
+				typeof(SecureDouble),
+				typeof(SecureDecimal),
+			];
+			foreach (Type source in wrappers)
+			{
+				Type wrapped = source.GetProperty("Decrypted")!.PropertyType;
+				object sample = Convert.ChangeType(100, wrapped);
+				object secured = Activator.CreateInstance(source, sample)!;
+				MethodInfo[] explicits = source
+					.GetMethods(BindingFlags.Public | BindingFlags.Static)
+					.Where(m => m.Name == "op_Explicit" && MatchesSource(m, source))
+					.ToArray();
+				Assert.NotEmpty(explicits);
+				foreach (MethodInfo twin in explicits)
+				{
+					if (!IsSecureTwin(twin.ReturnType))
+					{
+						continue;
+					}
+					Type twinPlain = twin.ReturnType.GetProperty("Decrypted")!.PropertyType;
+					MethodInfo? plainOp = explicits.FirstOrDefault(m => m.ReturnType == twinPlain);
+					Assert.NotNull(plainOp);
+					object twinValue = twin.Invoke(null, [secured])!;
+					object expected = twinValue
+						.GetType()
+						.GetProperty("Decrypted")!
+						.GetValue(twinValue)!;
+					Assert.Equal(expected, plainOp.Invoke(null, [secured]));
+					// Cast equality against the plain baseline: the secured twin
+					// must equal the ordinary primitive built from the same sample,
+					// and the secured twin must equal a directly built twin.
+					// (Char has no IConvertible path to float/double, so route it
+					// through int first — same value, supported conversion. The
+					// mirror gap (float/double to char) routes through int too,
+					// exactly like the twin body does.)
+					object baselineSource = sample is char ch ? (object)(int)ch : sample;
+					object baseline =
+						twinPlain == typeof(char)
+							? (object)(char)Convert.ToInt32(baselineSource)
+							: Convert.ChangeType(baselineSource, twinPlain);
+					Assert.Equal(baseline, expected);
+					Assert.Equal(Activator.CreateInstance(twin.ReturnType, baseline), twinValue);
+				}
+			}
+		}
+
+		private static bool MatchesSource(MethodInfo method, Type source)
+		{
+			ParameterInfo[] parameters = method.GetParameters();
+			return parameters.Length == 1 && parameters[0].ParameterType == source;
+		}
+
+		private static bool IsSecureTwin(Type type) =>
+			type.Namespace == "SecureValue"
+			&& type.Name.StartsWith("Secure", StringComparison.Ordinal);
 	}
 }

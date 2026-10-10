@@ -263,55 +263,110 @@ namespace SecureValue
 		public static explicit operator SecureSByte(SecureInt value) =>
 			new SecureSByte((sbyte)value.Decrypted);
 
+		/// <summary>Converts a secured int value into its sbyte form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static explicit operator sbyte(SecureInt value) =>
+			(sbyte)value.Decrypted;
+
 		/// <summary>Converts a secured int value into its secured byte form.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static explicit operator SecureByte(SecureInt value) =>
 			new SecureByte((byte)value.Decrypted);
+
+		/// <summary>Converts a secured int value into its byte form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static explicit operator byte(SecureInt value) =>
+			(byte)value.Decrypted;
 
 		/// <summary>Converts a secured int value into its secured short form.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static explicit operator SecureShort(SecureInt value) =>
 			new SecureShort((short)value.Decrypted);
 
+		/// <summary>Converts a secured int value into its short form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static explicit operator short(SecureInt value) =>
+			(short)value.Decrypted;
+
 		/// <summary>Converts a secured int value into its secured ushort form.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static explicit operator SecureUShort(SecureInt value) =>
 			new SecureUShort((ushort)value.Decrypted);
+
+		/// <summary>Converts a secured int value into its ushort form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static explicit operator ushort(SecureInt value) =>
+			(ushort)value.Decrypted;
 
 		/// <summary>Converts a secured int value into its secured uint form.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static explicit operator SecureUInt(SecureInt value) =>
 			new SecureUInt((uint)value.Decrypted);
 
+		/// <summary>Converts a secured int value into its uint form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static explicit operator uint(SecureInt value) =>
+			(uint)value.Decrypted;
+
 		/// <summary>Converts a secured int value into its secured long form.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static explicit operator SecureLong(SecureInt value) =>
 			new SecureLong((long)value.Decrypted);
+
+		/// <summary>Converts a secured int value into its long form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static explicit operator long(SecureInt value) =>
+			(long)value.Decrypted;
 
 		/// <summary>Converts a secured int value into its secured ulong form.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static explicit operator SecureULong(SecureInt value) =>
 			new SecureULong((ulong)value.Decrypted);
 
+		/// <summary>Converts a secured int value into its ulong form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static explicit operator ulong(SecureInt value) =>
+			(ulong)value.Decrypted;
+
 		/// <summary>Converts a secured int value into its secured char form.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static explicit operator SecureChar(SecureInt value) =>
 			new SecureChar((char)value.Decrypted);
+
+		/// <summary>Converts a secured int value into its char form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static explicit operator char(SecureInt value) =>
+			(char)value.Decrypted;
 
 		/// <summary>Converts a secured int value into its secured float form.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static explicit operator SecureFloat(SecureInt value) =>
 			new SecureFloat((float)value.Decrypted);
 
+		/// <summary>Converts a secured int value into its float form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static explicit operator float(SecureInt value) =>
+			(float)value.Decrypted;
+
 		/// <summary>Converts a secured int value into its secured double form.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static explicit operator SecureDouble(SecureInt value) =>
 			new SecureDouble((double)value.Decrypted);
 
+		/// <summary>Converts a secured int value into its double form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static explicit operator double(SecureInt value) =>
+			(double)value.Decrypted;
+
 		/// <summary>Converts a secured int value into its secured decimal form.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static explicit operator SecureDecimal(SecureInt value) =>
 			new SecureDecimal((decimal)value.Decrypted);
+
+		/// <summary>Converts a secured int value into its decimal form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static explicit operator decimal(SecureInt value) =>
+			(decimal)value.Decrypted;
 
 		/// <summary>Compares the decrypted value with a plain int value for equality.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -459,6 +459,54 @@ namespace SecureValue.Numerics
 		public static explicit operator SecureDecimal(SecureBigInteger value) =>
 			new SecureDecimal((decimal)value.Decrypted);
 
+		/// <summary>Converts a secured BigInteger value into its sbyte form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static explicit operator sbyte(SecureBigInteger value) => (sbyte)value.Decrypted;
+
+		/// <summary>Converts a secured BigInteger value into its byte form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static explicit operator byte(SecureBigInteger value) => (byte)value.Decrypted;
+
+		/// <summary>Converts a secured BigInteger value into its short form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static explicit operator short(SecureBigInteger value) => (short)value.Decrypted;
+
+		/// <summary>Converts a secured BigInteger value into its ushort form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static explicit operator ushort(SecureBigInteger value) => (ushort)value.Decrypted;
+
+		/// <summary>Converts a secured BigInteger value into its int form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static explicit operator int(SecureBigInteger value) => (int)value.Decrypted;
+
+		/// <summary>Converts a secured BigInteger value into its uint form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static explicit operator uint(SecureBigInteger value) => (uint)value.Decrypted;
+
+		/// <summary>Converts a secured BigInteger value into its long form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static explicit operator long(SecureBigInteger value) => (long)value.Decrypted;
+
+		/// <summary>Converts a secured BigInteger value into its ulong form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static explicit operator ulong(SecureBigInteger value) => (ulong)value.Decrypted;
+
+		/// <summary>Converts a secured BigInteger value into its char form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static explicit operator char(SecureBigInteger value) => (char)(int)value.Decrypted;
+
+		/// <summary>Converts a secured BigInteger value into its float form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static explicit operator float(SecureBigInteger value) => (float)value.Decrypted;
+
+		/// <summary>Converts a secured BigInteger value into its double form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static explicit operator double(SecureBigInteger value) => (double)value.Decrypted;
+
+		/// <summary>Converts a secured BigInteger value into its decimal form.</summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static explicit operator decimal(SecureBigInteger value) => (decimal)value.Decrypted;
+
 		/// <summary>Compares this value with another secured BigInteger for equality.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool Equals(SecureBigInteger other) => Decrypted.Equals(other.Decrypted);
