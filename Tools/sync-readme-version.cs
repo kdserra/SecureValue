@@ -4,14 +4,19 @@
 // the latest release: rewrites ONLY the pin-example line
 //   To pin a version, append the version tag, ex: **`#vX.Y.Z`**
 // leaving every other line (including any historical version mentions)
-// byte-identical. The staged SecureValue.Unity/README.md copy picks the new
-// pin up on the next Unity staging run. Fails loudly when the anchor line is
+// byte-identical. The staged SecureValue.Unity/README.md copy is refreshed
+// from the root README during the same prepare step (pack-unitypackage
+// re-runs the Unity staging script after this tool) and both files are
+// committed together by the semantic-release git plugin, so the UPM copy
+// never lags a release behind. Fails loudly when the anchor line is
 // missing or the version is not plain X.Y.Z (this repo releases from master
 // only, so prerelease suffixes are rejected rather than guessed at).
 //
 // Run: dotnet run Tools/sync-readme-version.cs -- <version>
-//   (called by semantic-release exec prepare; see .releaserc.json. The git
-//   plugin commits README.md back under the same [skip ci] release commit.)
+//   (called by semantic-release exec prepare BEFORE collect-release-assets,
+//   so the NuGet README copy packed from the root README already carries the
+//   new pin; see .releaserc.json. The git plugin commits README.md back
+//   under the same [skip ci] release commit.)
 
 using System.Text;
 using System.Text.RegularExpressions;
