@@ -208,9 +208,9 @@ namespace SecureValue.Benchmarks
 
 		[Benchmark]
 		public SecureString SecureValue_String_WriteSpan() =>
-			SecureString.Parse(_stringChars, provider: null);
+            _stringChars;
 
-		[Benchmark]
+        [Benchmark]
 		public int SecureValue_String_ReadSpan_StackDecrypt() =>
 			_secureString.StackDecrypt(static chars => chars[0]);
 	}
