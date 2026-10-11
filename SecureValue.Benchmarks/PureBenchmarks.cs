@@ -207,7 +207,7 @@ namespace SecureValue.Benchmarks
 		}
 
 		[Benchmark]
-		public SecureString SecureValue_String_WriteSpan() => _stringChars;
+		public SecureString SecureValue_String_WriteSpan() => _stringChars.AsSpan();
 
 		[Benchmark]
 		public int SecureValue_String_ReadSpan_StackDecrypt() =>
