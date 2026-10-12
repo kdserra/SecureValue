@@ -19,16 +19,23 @@ namespace SecureValue
 	{
 		private static Action? _handlers;
 		private static int _dispatchCount;
-		private static bool _hasDetected;
+
+		/// <summary>MAC-verified detection state.</summary>
+		private static uint _detectionHash = H(false);
 
 		/// <summary>Maximum tamper-event dispatches per process run (storm bound).</summary>
 		private const int MaxTamperDispatches = 1;
+
+		/// <summary>Keyed state code. </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static uint H(bool detected) =>
+			Mac.ComputeTag(detected ? 1UL : 0UL, Keys.ProcessSet);
 
 		/// <summary>Gets whether tampering has been detected at any point during the process run.</summary>
 		public static bool HasDetectedTampering
 		{
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			get => Volatile.Read(ref _hasDetected);
+			get => Volatile.Read(ref _detectionHash) != H(false);
 		}
 
 		/// <summary>
@@ -74,13 +81,14 @@ namespace SecureValue
 		{
 			_handlers = null;
 			_dispatchCount = 0;
+			Volatile.Write(ref _detectionHash, H(false));
 		}
 #endif
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static void Raise()
 		{
-			Volatile.Write(ref _hasDetected, true);
+			Volatile.Write(ref _detectionHash, H(true));
 			if (Interlocked.Increment(ref _dispatchCount) <= MaxTamperDispatches)
 			{
 				_handlers?.Invoke();
@@ -91,7 +99,7 @@ namespace SecureValue
 		internal static void ResetThrottleForTesting()
 		{
 			Interlocked.Exchange(ref _dispatchCount, 0);
-			Volatile.Write(ref _hasDetected, false);
+			Volatile.Write(ref _detectionHash, H(false));
 		}
 	}
 }

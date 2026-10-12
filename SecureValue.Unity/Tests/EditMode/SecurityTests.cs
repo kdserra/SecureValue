@@ -177,6 +177,55 @@ namespace SecureValue.Unity.Tests
 			Assert.IsTrue(TamperingNotifier.HasDetectedTampering);
 		}
 
+		private static FieldInfo DetectionHashField() =>
+			typeof(TamperingNotifier).GetField(
+				"_detectionHash",
+				BindingFlags.NonPublic | BindingFlags.Static
+			);
+
+		[Test]
+		public void DetectionHash_OverwriteWithZeroOneRandom_FailsClosed()
+		{
+			// Attacker overwrites the stored detection code with a trivially
+			// scannable value. Fail-closed: anything but the exact keyed clean
+			// code must read as detected.
+			FieldInfo field = DetectionHashField();
+			uint clean = (uint)field.GetValue(null);
+			try
+			{
+				foreach (uint forged in new uint[] { 0, 1, 0xFFFFFFFF, 0xDEADBEEF, clean ^ 1 })
+				{
+					field.SetValue(null, forged);
+					Assert.IsTrue(
+						TamperingNotifier.HasDetectedTampering,
+						"forged detection hash " + forged + " must read as detected"
+					);
+				}
+			}
+			finally
+			{
+				TamperingNotifier.ResetThrottleForTesting();
+			}
+			Assert.IsFalse(TamperingNotifier.HasDetectedTampering);
+		}
+
+		[Test]
+		public void DetectionHash_StaysDetectedWhenOverwrittenAfterTamper()
+		{
+			// Clearing the flag after a real detection by zeroing memory must
+			// not work: the zeroed code differs from the keyed clean code.
+			object box = (SecureValue.Unity.SecureVector3)new Vector3(1f, 2f, 3f);
+			CorruptCells(box);
+			Assert.Throws<TamperedException>(() =>
+			{
+				Vector3 x = (SecureValue.Unity.SecureVector3)box;
+			});
+			Assert.IsTrue(TamperingNotifier.HasDetectedTampering);
+
+			DetectionHashField().SetValue(null, 0U);
+			Assert.IsTrue(TamperingNotifier.HasDetectedTampering);
+		}
+
 		[Test]
 		public void ZeroedLiveCell_ReadsDefaultWithoutNotifying()
 		{

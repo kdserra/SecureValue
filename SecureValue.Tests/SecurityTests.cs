@@ -212,6 +212,55 @@ namespace SecureValue.Tests
 			Assert.True(TamperingNotifier.HasDetectedTampering);
 		}
 
+		// ---------- MAC-verified detection flag ----------
+
+		private static FieldInfo DetectionHashField() =>
+			typeof(TamperingNotifier).GetField(
+				"_detectionHash",
+				BindingFlags.NonPublic | BindingFlags.Static
+			)!;
+
+		[Fact]
+		public void DetectionHash_OverwriteWithZeroOneRandom_FailsClosed()
+		{
+			// Attacker overwrites the stored detection code with a trivially
+			// scannable value. Fail-closed: anything but the exact keyed clean
+			// code must read as detected.
+			FieldInfo field = DetectionHashField();
+			uint clean = (uint)field.GetValue(null)!;
+			try
+			{
+				foreach (uint forged in new uint[] { 0, 1, 0xFFFFFFFF, 0xDEADBEEF, clean ^ 1 })
+				{
+					field.SetValue(null, forged);
+					Assert.True(
+						TamperingNotifier.HasDetectedTampering,
+						"forged detection hash " + forged + " must read as detected"
+					);
+				}
+			}
+			finally
+			{
+				TamperingNotifier.ResetThrottleForTesting();
+			}
+			Assert.False(TamperingNotifier.HasDetectedTampering);
+		}
+
+		[Fact]
+		public void DetectionHash_StaysDetectedWhenOverwrittenAfterTamper()
+		{
+			// Clearing the flag after a real detection by zeroing memory must
+			// not work: the zeroed code differs from the keyed clean code.
+			var cells = new Cell[1];
+			cells[0].Protect(999);
+			cells[0].CorruptBothForTesting();
+			Assert.Throws<TamperedException>(() => cells[0].Unprotect());
+			Assert.True(TamperingNotifier.HasDetectedTampering);
+
+			DetectionHashField().SetValue(null, 0U);
+			Assert.True(TamperingNotifier.HasDetectedTampering);
+		}
+
 		// ---------- zero-out attacks ----------
 
 		[Fact]
