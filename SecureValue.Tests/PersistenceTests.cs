@@ -17,6 +17,9 @@ namespace SecureValue.Tests
 	/// so clones stay clean; deleting it forces a fresh initialization run.
 	/// A version marker re-initializes (instead of failing) when the storage
 	/// format itself changes; anything else wrong with a versioned file fails.
+	/// When SECUREVALUE_PERSISTENCE_MODE=validate, both soft paths (missing file,
+	/// version mismatch) fail loudly instead of re-initializing, guaranteeing CI
+	/// proves the hard validation path ran.
 	/// </summary>
 	public class PersistenceTests
 	{
@@ -29,8 +32,19 @@ namespace SecureValue.Tests
 		public void CrossSession_StoredPayloadsReloadAgainstOriginalConstants()
 		{
 			string path = PayloadPath;
+			bool strictValidate = string.Equals(
+				Environment.GetEnvironmentVariable("SECUREVALUE_PERSISTENCE_MODE"),
+				"validate",
+				StringComparison.OrdinalIgnoreCase
+			);
 			if (!File.Exists(path))
 			{
+				if (strictValidate)
+				{
+					Assert.Fail(
+						$"Persistence validate run found no file at {path}; the init run did not produce one (soft path blocked)."
+					);
+				}
 				File.WriteAllText(path, CapturePayloads());
 				return;
 			}
@@ -61,6 +75,12 @@ namespace SecureValue.Tests
 			}
 			if (version != PayloadVersion)
 			{
+				if (strictValidate)
+				{
+					Assert.Fail(
+						$"Persistence validate run found version {version} but expected {PayloadVersion}; re-init soft path blocked."
+					);
+				}
 				// Storage format moved on: the old file is meaningless, not wrong.
 				File.WriteAllText(path, CapturePayloads());
 				return;
