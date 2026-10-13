@@ -279,7 +279,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<SecureDateTimeOffset> ToSecure(this IEnumerable<DateTimeOffset> values)
+		public static IEnumerable<SecureDateTimeOffset> ToSecure(
+			this IEnumerable<DateTimeOffset> values
+		)
 		{
 			if (values is null)
 			{
@@ -363,7 +365,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Numerics.SecureBigInteger> ToSecure(this IEnumerable<System.Numerics.BigInteger> values)
+		public static IEnumerable<Numerics.SecureBigInteger> ToSecure(
+			this IEnumerable<System.Numerics.BigInteger> values
+		)
 		{
 			if (values is null)
 			{
@@ -379,7 +383,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Numerics.SecureComplex> ToSecure(this IEnumerable<System.Numerics.Complex> values)
+		public static IEnumerable<Numerics.SecureComplex> ToSecure(
+			this IEnumerable<System.Numerics.Complex> values
+		)
 		{
 			if (values is null)
 			{
@@ -395,7 +401,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Numerics.SecureMatrix3x2> ToSecure(this IEnumerable<System.Numerics.Matrix3x2> values)
+		public static IEnumerable<Numerics.SecureMatrix3x2> ToSecure(
+			this IEnumerable<System.Numerics.Matrix3x2> values
+		)
 		{
 			if (values is null)
 			{
@@ -411,7 +419,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Numerics.SecureMatrix4x4> ToSecure(this IEnumerable<System.Numerics.Matrix4x4> values)
+		public static IEnumerable<Numerics.SecureMatrix4x4> ToSecure(
+			this IEnumerable<System.Numerics.Matrix4x4> values
+		)
 		{
 			if (values is null)
 			{
@@ -427,7 +437,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Numerics.SecurePlane> ToSecure(this IEnumerable<System.Numerics.Plane> values)
+		public static IEnumerable<Numerics.SecurePlane> ToSecure(
+			this IEnumerable<System.Numerics.Plane> values
+		)
 		{
 			if (values is null)
 			{
@@ -443,7 +455,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Numerics.SecureQuaternion> ToSecure(this IEnumerable<System.Numerics.Quaternion> values)
+		public static IEnumerable<Numerics.SecureQuaternion> ToSecure(
+			this IEnumerable<System.Numerics.Quaternion> values
+		)
 		{
 			if (values is null)
 			{
@@ -459,7 +473,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Numerics.SecureVector2> ToSecure(this IEnumerable<System.Numerics.Vector2> values)
+		public static IEnumerable<Numerics.SecureVector2> ToSecure(
+			this IEnumerable<System.Numerics.Vector2> values
+		)
 		{
 			if (values is null)
 			{
@@ -475,7 +491,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Numerics.SecureVector3> ToSecure(this IEnumerable<System.Numerics.Vector3> values)
+		public static IEnumerable<Numerics.SecureVector3> ToSecure(
+			this IEnumerable<System.Numerics.Vector3> values
+		)
 		{
 			if (values is null)
 			{
@@ -491,7 +509,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Numerics.SecureVector4> ToSecure(this IEnumerable<System.Numerics.Vector4> values)
+		public static IEnumerable<Numerics.SecureVector4> ToSecure(
+			this IEnumerable<System.Numerics.Vector4> values
+		)
 		{
 			if (values is null)
 			{
@@ -508,7 +528,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Unity.SecureVector2> ToSecure(this IEnumerable<UnityEngine.Vector2> values)
+		public static IEnumerable<Unity.SecureVector2> ToSecure(
+			this IEnumerable<UnityEngine.Vector2> values
+		)
 		{
 			if (values is null)
 			{
@@ -524,7 +546,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Unity.SecureVector2Int> ToSecure(this IEnumerable<UnityEngine.Vector2Int> values)
+		public static IEnumerable<Unity.SecureVector2Int> ToSecure(
+			this IEnumerable<UnityEngine.Vector2Int> values
+		)
 		{
 			if (values is null)
 			{
@@ -540,7 +564,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Unity.SecureVector3> ToSecure(this IEnumerable<UnityEngine.Vector3> values)
+		public static IEnumerable<Unity.SecureVector3> ToSecure(
+			this IEnumerable<UnityEngine.Vector3> values
+		)
 		{
 			if (values is null)
 			{
@@ -556,7 +582,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Unity.SecureVector3Int> ToSecure(this IEnumerable<UnityEngine.Vector3Int> values)
+		public static IEnumerable<Unity.SecureVector3Int> ToSecure(
+			this IEnumerable<UnityEngine.Vector3Int> values
+		)
 		{
 			if (values is null)
 			{
@@ -572,7 +600,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Unity.SecureVector4> ToSecure(this IEnumerable<UnityEngine.Vector4> values)
+		public static IEnumerable<Unity.SecureVector4> ToSecure(
+			this IEnumerable<UnityEngine.Vector4> values
+		)
 		{
 			if (values is null)
 			{
@@ -588,7 +618,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Unity.SecureRect> ToSecure(this IEnumerable<UnityEngine.Rect> values)
+		public static IEnumerable<Unity.SecureRect> ToSecure(
+			this IEnumerable<UnityEngine.Rect> values
+		)
 		{
 			if (values is null)
 			{
@@ -604,7 +636,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Unity.SecureRectInt> ToSecure(this IEnumerable<UnityEngine.RectInt> values)
+		public static IEnumerable<Unity.SecureRectInt> ToSecure(
+			this IEnumerable<UnityEngine.RectInt> values
+		)
 		{
 			if (values is null)
 			{
@@ -620,7 +654,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Unity.SecureBounds> ToSecure(this IEnumerable<UnityEngine.Bounds> values)
+		public static IEnumerable<Unity.SecureBounds> ToSecure(
+			this IEnumerable<UnityEngine.Bounds> values
+		)
 		{
 			if (values is null)
 			{
@@ -636,7 +672,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Unity.SecureBoundsInt> ToSecure(this IEnumerable<UnityEngine.BoundsInt> values)
+		public static IEnumerable<Unity.SecureBoundsInt> ToSecure(
+			this IEnumerable<UnityEngine.BoundsInt> values
+		)
 		{
 			if (values is null)
 			{
@@ -652,7 +690,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Unity.SecureColor> ToSecure(this IEnumerable<UnityEngine.Color> values)
+		public static IEnumerable<Unity.SecureColor> ToSecure(
+			this IEnumerable<UnityEngine.Color> values
+		)
 		{
 			if (values is null)
 			{
@@ -668,7 +708,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Unity.SecureColor32> ToSecure(this IEnumerable<UnityEngine.Color32> values)
+		public static IEnumerable<Unity.SecureColor32> ToSecure(
+			this IEnumerable<UnityEngine.Color32> values
+		)
 		{
 			if (values is null)
 			{
@@ -684,7 +726,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Unity.SecureQuaternion> ToSecure(this IEnumerable<UnityEngine.Quaternion> values)
+		public static IEnumerable<Unity.SecureQuaternion> ToSecure(
+			this IEnumerable<UnityEngine.Quaternion> values
+		)
 		{
 			if (values is null)
 			{
@@ -700,7 +744,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Unity.SecureMatrix4x4> ToSecure(this IEnumerable<UnityEngine.Matrix4x4> values)
+		public static IEnumerable<Unity.SecureMatrix4x4> ToSecure(
+			this IEnumerable<UnityEngine.Matrix4x4> values
+		)
 		{
 			if (values is null)
 			{
@@ -716,7 +762,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Unity.SecurePlane> ToSecure(this IEnumerable<UnityEngine.Plane> values)
+		public static IEnumerable<Unity.SecurePlane> ToSecure(
+			this IEnumerable<UnityEngine.Plane> values
+		)
 		{
 			if (values is null)
 			{
@@ -732,7 +780,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Unity.SecureRay> ToSecure(this IEnumerable<UnityEngine.Ray> values)
+		public static IEnumerable<Unity.SecureRay> ToSecure(
+			this IEnumerable<UnityEngine.Ray> values
+		)
 		{
 			if (values is null)
 			{
@@ -748,7 +798,9 @@ namespace SecureValue
 		/// <param name="values">The plain values to secure.</param>
 		/// <returns>The secured values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<Unity.SecureLayerMask> ToSecure(this IEnumerable<UnityEngine.LayerMask> values)
+		public static IEnumerable<Unity.SecureLayerMask> ToSecure(
+			this IEnumerable<UnityEngine.LayerMask> values
+		)
 		{
 			if (values is null)
 			{
@@ -1021,7 +1073,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<DateTimeOffset> ToDecrypted(this IEnumerable<SecureDateTimeOffset> values)
+		public static IEnumerable<DateTimeOffset> ToDecrypted(
+			this IEnumerable<SecureDateTimeOffset> values
+		)
 		{
 			if (values is null)
 			{
@@ -1105,7 +1159,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<System.Numerics.BigInteger> ToDecrypted(this IEnumerable<Numerics.SecureBigInteger> values)
+		public static IEnumerable<System.Numerics.BigInteger> ToDecrypted(
+			this IEnumerable<Numerics.SecureBigInteger> values
+		)
 		{
 			if (values is null)
 			{
@@ -1121,7 +1177,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<System.Numerics.Complex> ToDecrypted(this IEnumerable<Numerics.SecureComplex> values)
+		public static IEnumerable<System.Numerics.Complex> ToDecrypted(
+			this IEnumerable<Numerics.SecureComplex> values
+		)
 		{
 			if (values is null)
 			{
@@ -1137,7 +1195,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<System.Numerics.Matrix3x2> ToDecrypted(this IEnumerable<Numerics.SecureMatrix3x2> values)
+		public static IEnumerable<System.Numerics.Matrix3x2> ToDecrypted(
+			this IEnumerable<Numerics.SecureMatrix3x2> values
+		)
 		{
 			if (values is null)
 			{
@@ -1153,7 +1213,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<System.Numerics.Matrix4x4> ToDecrypted(this IEnumerable<Numerics.SecureMatrix4x4> values)
+		public static IEnumerable<System.Numerics.Matrix4x4> ToDecrypted(
+			this IEnumerable<Numerics.SecureMatrix4x4> values
+		)
 		{
 			if (values is null)
 			{
@@ -1169,7 +1231,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<System.Numerics.Plane> ToDecrypted(this IEnumerable<Numerics.SecurePlane> values)
+		public static IEnumerable<System.Numerics.Plane> ToDecrypted(
+			this IEnumerable<Numerics.SecurePlane> values
+		)
 		{
 			if (values is null)
 			{
@@ -1185,7 +1249,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<System.Numerics.Quaternion> ToDecrypted(this IEnumerable<Numerics.SecureQuaternion> values)
+		public static IEnumerable<System.Numerics.Quaternion> ToDecrypted(
+			this IEnumerable<Numerics.SecureQuaternion> values
+		)
 		{
 			if (values is null)
 			{
@@ -1201,7 +1267,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<System.Numerics.Vector2> ToDecrypted(this IEnumerable<Numerics.SecureVector2> values)
+		public static IEnumerable<System.Numerics.Vector2> ToDecrypted(
+			this IEnumerable<Numerics.SecureVector2> values
+		)
 		{
 			if (values is null)
 			{
@@ -1217,7 +1285,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<System.Numerics.Vector3> ToDecrypted(this IEnumerable<Numerics.SecureVector3> values)
+		public static IEnumerable<System.Numerics.Vector3> ToDecrypted(
+			this IEnumerable<Numerics.SecureVector3> values
+		)
 		{
 			if (values is null)
 			{
@@ -1233,7 +1303,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<System.Numerics.Vector4> ToDecrypted(this IEnumerable<Numerics.SecureVector4> values)
+		public static IEnumerable<System.Numerics.Vector4> ToDecrypted(
+			this IEnumerable<Numerics.SecureVector4> values
+		)
 		{
 			if (values is null)
 			{
@@ -1250,7 +1322,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<UnityEngine.Vector2> ToDecrypted(this IEnumerable<Unity.SecureVector2> values)
+		public static IEnumerable<UnityEngine.Vector2> ToDecrypted(
+			this IEnumerable<Unity.SecureVector2> values
+		)
 		{
 			if (values is null)
 			{
@@ -1266,7 +1340,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<UnityEngine.Vector2Int> ToDecrypted(this IEnumerable<Unity.SecureVector2Int> values)
+		public static IEnumerable<UnityEngine.Vector2Int> ToDecrypted(
+			this IEnumerable<Unity.SecureVector2Int> values
+		)
 		{
 			if (values is null)
 			{
@@ -1282,7 +1358,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<UnityEngine.Vector3> ToDecrypted(this IEnumerable<Unity.SecureVector3> values)
+		public static IEnumerable<UnityEngine.Vector3> ToDecrypted(
+			this IEnumerable<Unity.SecureVector3> values
+		)
 		{
 			if (values is null)
 			{
@@ -1298,7 +1376,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<UnityEngine.Vector3Int> ToDecrypted(this IEnumerable<Unity.SecureVector3Int> values)
+		public static IEnumerable<UnityEngine.Vector3Int> ToDecrypted(
+			this IEnumerable<Unity.SecureVector3Int> values
+		)
 		{
 			if (values is null)
 			{
@@ -1314,7 +1394,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<UnityEngine.Vector4> ToDecrypted(this IEnumerable<Unity.SecureVector4> values)
+		public static IEnumerable<UnityEngine.Vector4> ToDecrypted(
+			this IEnumerable<Unity.SecureVector4> values
+		)
 		{
 			if (values is null)
 			{
@@ -1330,7 +1412,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<UnityEngine.Rect> ToDecrypted(this IEnumerable<Unity.SecureRect> values)
+		public static IEnumerable<UnityEngine.Rect> ToDecrypted(
+			this IEnumerable<Unity.SecureRect> values
+		)
 		{
 			if (values is null)
 			{
@@ -1346,7 +1430,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<UnityEngine.RectInt> ToDecrypted(this IEnumerable<Unity.SecureRectInt> values)
+		public static IEnumerable<UnityEngine.RectInt> ToDecrypted(
+			this IEnumerable<Unity.SecureRectInt> values
+		)
 		{
 			if (values is null)
 			{
@@ -1362,7 +1448,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<UnityEngine.Bounds> ToDecrypted(this IEnumerable<Unity.SecureBounds> values)
+		public static IEnumerable<UnityEngine.Bounds> ToDecrypted(
+			this IEnumerable<Unity.SecureBounds> values
+		)
 		{
 			if (values is null)
 			{
@@ -1378,7 +1466,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<UnityEngine.BoundsInt> ToDecrypted(this IEnumerable<Unity.SecureBoundsInt> values)
+		public static IEnumerable<UnityEngine.BoundsInt> ToDecrypted(
+			this IEnumerable<Unity.SecureBoundsInt> values
+		)
 		{
 			if (values is null)
 			{
@@ -1394,7 +1484,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<UnityEngine.Color> ToDecrypted(this IEnumerable<Unity.SecureColor> values)
+		public static IEnumerable<UnityEngine.Color> ToDecrypted(
+			this IEnumerable<Unity.SecureColor> values
+		)
 		{
 			if (values is null)
 			{
@@ -1410,7 +1502,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<UnityEngine.Color32> ToDecrypted(this IEnumerable<Unity.SecureColor32> values)
+		public static IEnumerable<UnityEngine.Color32> ToDecrypted(
+			this IEnumerable<Unity.SecureColor32> values
+		)
 		{
 			if (values is null)
 			{
@@ -1426,7 +1520,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<UnityEngine.Quaternion> ToDecrypted(this IEnumerable<Unity.SecureQuaternion> values)
+		public static IEnumerable<UnityEngine.Quaternion> ToDecrypted(
+			this IEnumerable<Unity.SecureQuaternion> values
+		)
 		{
 			if (values is null)
 			{
@@ -1442,7 +1538,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<UnityEngine.Matrix4x4> ToDecrypted(this IEnumerable<Unity.SecureMatrix4x4> values)
+		public static IEnumerable<UnityEngine.Matrix4x4> ToDecrypted(
+			this IEnumerable<Unity.SecureMatrix4x4> values
+		)
 		{
 			if (values is null)
 			{
@@ -1458,7 +1556,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<UnityEngine.Plane> ToDecrypted(this IEnumerable<Unity.SecurePlane> values)
+		public static IEnumerable<UnityEngine.Plane> ToDecrypted(
+			this IEnumerable<Unity.SecurePlane> values
+		)
 		{
 			if (values is null)
 			{
@@ -1474,7 +1574,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<UnityEngine.Ray> ToDecrypted(this IEnumerable<Unity.SecureRay> values)
+		public static IEnumerable<UnityEngine.Ray> ToDecrypted(
+			this IEnumerable<Unity.SecureRay> values
+		)
 		{
 			if (values is null)
 			{
@@ -1490,7 +1592,9 @@ namespace SecureValue
 		/// <param name="values">The secured values to decrypt.</param>
 		/// <returns>The decrypted values, in the same order.</returns>
 		/// <exception cref="ArgumentNullException"><paramref name="values"/> is null (thrown on enumeration).</exception>
-		public static IEnumerable<UnityEngine.LayerMask> ToDecrypted(this IEnumerable<Unity.SecureLayerMask> values)
+		public static IEnumerable<UnityEngine.LayerMask> ToDecrypted(
+			this IEnumerable<Unity.SecureLayerMask> values
+		)
 		{
 			if (values is null)
 			{
@@ -1502,6 +1606,5 @@ namespace SecureValue
 			}
 		}
 #endif
-
 	}
 }
