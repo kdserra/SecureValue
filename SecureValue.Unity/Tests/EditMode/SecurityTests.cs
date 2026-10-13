@@ -233,10 +233,7 @@ namespace SecureValue.Unity.Tests
 			);
 
 		private static uint ExpectedCode(ulong domainSalt, bool detected) =>
-			Mac.ComputeTag(
-				detected ? 1UL : 0UL,
-				Vault.DeriveProcessTagKey(domainSalt)
-			);
+			Mac.ComputeTag(detected ? 1UL : 0UL, Vault.DeriveProcessTagKey(domainSalt));
 
 		[Test]
 		public void DomainSalt_IsNonzeroAndStableAcrossReset()
@@ -289,14 +286,8 @@ namespace SecureValue.Unity.Tests
 			// Regression guard: the codes must be domain-separated from the raw
 			// process key. No raw master-key consumer may remain anywhere.
 			ulong salt = (ulong)DomainSaltField().GetValue(null);
-			Assert.AreNotEqual(
-				Mac.ComputeTag(0UL, Keys.ProcessSet),
-				ExpectedCode(salt, false)
-			);
-			Assert.AreNotEqual(
-				Mac.ComputeTag(1UL, Keys.ProcessSet),
-				ExpectedCode(salt, true)
-			);
+			Assert.AreNotEqual(Mac.ComputeTag(0UL, Keys.ProcessSet), ExpectedCode(salt, false));
+			Assert.AreNotEqual(Mac.ComputeTag(1UL, Keys.ProcessSet), ExpectedCode(salt, true));
 		}
 
 		[Test]
