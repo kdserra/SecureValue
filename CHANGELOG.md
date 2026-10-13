@@ -1,3 +1,9 @@
+## [3.0.1](https://github.com/kdserra/SecureValue/compare/v3.0.0...v3.0.1) (2026-10-13)
+
+### Bug Fixes
+
+* unity import error ([f905264](https://github.com/kdserra/SecureValue/commit/f905264494173b34a8b3a1a574e6f25c92deb1d3))
+
 ## [3.0.0](https://github.com/kdserra/SecureValue/compare/v2.3.0...v3.0.0) (2026-10-13)
 
 ### ⚠ BREAKING CHANGES
