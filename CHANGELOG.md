@@ -1,3 +1,9 @@
+## [3.1.0](https://github.com/kdserra/SecureValue/compare/v3.0.1...v3.1.0) (2026-10-13)
+
+### Features
+
+* add bulk conversion utilities ([8a46f71](https://github.com/kdserra/SecureValue/commit/8a46f714a32eea37490a5b06d0d35ff82f381880))
+
 ## [3.0.1](https://github.com/kdserra/SecureValue/compare/v3.0.0...v3.0.1) (2026-10-13)
 
 ### Bug Fixes
