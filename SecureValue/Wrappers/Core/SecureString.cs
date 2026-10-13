@@ -1579,8 +1579,7 @@ namespace SecureValue
 
 		/// <summary>Compares this value with another secured string. Unset reads as empty.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public int CompareTo(SecureString other) =>
-			Decrypted.CompareTo(other.Decrypted);
+		public int CompareTo(SecureString other) => Decrypted.CompareTo(other.Decrypted);
 
 		/// <summary>Compares this value with another object.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
