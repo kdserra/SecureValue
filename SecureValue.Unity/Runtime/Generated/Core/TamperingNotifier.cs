@@ -89,7 +89,7 @@ namespace SecureValue
 		}
 #endif
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static void Raise()
 		{
 			Volatile.Write(ref _detectionHash, H(true));
