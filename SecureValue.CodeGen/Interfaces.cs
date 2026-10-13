@@ -72,9 +72,7 @@ internal static class Interfaces
 	{
 		sb.Append(Doc("Returns the type code of the wrapped primitive type."));
 		sb.Append(Inline);
-		sb.Append(
-			"\t\tTypeCode IConvertible.GetTypeCode() => Convert.GetTypeCode(Decrypted);\n"
-		);
+		sb.Append("\t\tTypeCode IConvertible.GetTypeCode() => Convert.GetTypeCode(Decrypted);\n");
 		foreach (
 			string target in new[]
 			{
