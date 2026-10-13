@@ -23,7 +23,7 @@ namespace SecureValue.Unity
 		)
 		{
 			EditorGUI.BeginChangeCheck();
-			string next = EditorGUI.TextField(position, label, value ?? string.Empty);
+			string next = EditorGUI.TextField(position, label, value);
 			if (EditorGUI.EndChangeCheck())
 			{
 				write(next);

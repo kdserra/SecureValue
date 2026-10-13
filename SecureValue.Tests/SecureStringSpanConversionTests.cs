@@ -68,8 +68,8 @@ namespace SecureValue.Tests
 			SecureString fromVar = value;
 			Assert.Equal("crown_01", fromVar.Decrypted);
 
-			SecureString fromNull = (string)null!;
-			Assert.Equal(string.Empty, fromNull.Decrypted);
+			Assert.Throws<ArgumentNullException>(() => (SecureString)(string)null!);
+			Assert.Throws<ArgumentNullException>(() => new SecureString((string)null!));
 		}
 
 		[Fact]

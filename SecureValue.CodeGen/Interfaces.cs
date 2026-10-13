@@ -47,7 +47,7 @@ internal static class Interfaces
 			sb.Append($"\t\tint IComparable<{primitive}>.CompareTo({primitive} other) =>\n");
 			if (primitive == "string")
 			{
-				sb.Append("\t\t\t(Decrypted ?? string.Empty).CompareTo(other ?? string.Empty);\n");
+				sb.Append("\t\t\tDecrypted.CompareTo(other ?? string.Empty);\n");
 			}
 			else
 			{
@@ -72,18 +72,9 @@ internal static class Interfaces
 	{
 		sb.Append(Doc("Returns the type code of the wrapped primitive type."));
 		sb.Append(Inline);
-		if (primitive == "string")
-		{
-			sb.Append(
-				"\t\tTypeCode IConvertible.GetTypeCode() => Convert.GetTypeCode(Decrypted ?? string.Empty);\n"
-			);
-		}
-		else
-		{
-			sb.Append(
-				"\t\tTypeCode IConvertible.GetTypeCode() => Convert.GetTypeCode(Decrypted);\n"
-			);
-		}
+		sb.Append(
+			"\t\tTypeCode IConvertible.GetTypeCode() => Convert.GetTypeCode(Decrypted);\n"
+		);
 		foreach (
 			string target in new[]
 			{
@@ -122,44 +113,19 @@ internal static class Interfaces
 			sb.Append(Doc($"Converts the decrypted value to {target} (explicit)."));
 			sb.Append(Inline);
 			sb.Append($"\t\t{target} IConvertible.To{method}(IFormatProvider provider) =>\n");
-			if (primitive == "string")
-			{
-				sb.Append(
-					$"\t\t\t((IConvertible)(Decrypted ?? string.Empty)).To{method}(provider);\n"
-				);
-			}
-			else
-			{
-				sb.Append($"\t\t\t((IConvertible)Decrypted).To{method}(provider);\n");
-			}
+			sb.Append($"\t\t\t((IConvertible)Decrypted).To{method}(provider);\n");
 		}
 
 		sb.Append(Doc("Converts the decrypted value to a string (explicit)."));
 		sb.Append(Inline);
 		sb.Append("\t\tstring IConvertible.ToString(IFormatProvider provider) =>\n");
-		if (primitive == "string")
-		{
-			sb.Append("\t\t\t((IConvertible)(Decrypted ?? string.Empty)).ToString(provider);\n");
-		}
-		else
-		{
-			sb.Append("\t\t\t((IConvertible)Decrypted).ToString(provider);\n");
-		}
+		sb.Append("\t\t\t((IConvertible)Decrypted).ToString(provider);\n");
 		sb.Append(Doc("Converts the decrypted value to the specified type (explicit)."));
 		sb.Append(Inline);
 		sb.Append(
 			"\t\tobject IConvertible.ToType(Type conversionType, IFormatProvider provider) =>\n"
 		);
-		if (primitive == "string")
-		{
-			sb.Append(
-				"\t\t\t((IConvertible)(Decrypted ?? string.Empty)).ToType(conversionType, provider);\n"
-			);
-		}
-		else
-		{
-			sb.Append("\t\t\t((IConvertible)Decrypted).ToType(conversionType, provider);\n");
-		}
+		sb.Append("\t\t\t((IConvertible)Decrypted).ToType(conversionType, provider);\n");
 	}
 
 	/// <summary>ISpanFormattable.TryFormat forwarded to the decrypted value.</summary>

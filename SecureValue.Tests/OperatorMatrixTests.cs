@@ -195,7 +195,9 @@ namespace SecureValue.Tests
 			Assert.True(s == "foo");
 			Assert.True("foo" == s);
 			Assert.True(s != "bar");
-			Assert.True((string?)s != null);
+			Assert.NotNull((string?)s);
+			Assert.Throws<ArgumentNullException>(() => s + (string)null!);
+			Assert.Throws<ArgumentNullException>(() => (string)null! + s);
 		}
 
 		[Fact]

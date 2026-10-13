@@ -68,8 +68,7 @@ namespace SecureValue.Unity.Tests
 			SecureString fromVar = value;
 			Assert.AreEqual("crown_01", fromVar.Decrypted);
 
-			SecureString fromNull = (string)null!;
-			Assert.AreEqual(string.Empty, fromNull.Decrypted);
+			Assert.Throws<System.ArgumentNullException>(() => (SecureString)(string)null!);
 		}
 
 		[Test]

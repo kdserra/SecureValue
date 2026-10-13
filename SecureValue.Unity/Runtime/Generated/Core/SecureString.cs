@@ -470,10 +470,14 @@ namespace SecureValue
 		}
 #endif
 
-		/// <summary>Secures a string value.</summary>
+		/// <summary>Secures a string value. Never accepts null (throws <see cref="ArgumentNullException"/>).</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public SecureString(string value)
 		{
+			if (value is null)
+			{
+				throw new ArgumentNullException(nameof(value));
+			}
 #if UNITY_5_3_OR_NEWER
 			_serialized = default;
 #endif
@@ -493,7 +497,6 @@ namespace SecureValue
 			_w1B = 0UL;
 			_w2B = 0UL;
 			_w3B = 0UL;
-			value ??= string.Empty;
 			SealAll(value.AsSpan());
 		}
 
@@ -716,22 +719,19 @@ namespace SecureValue
 			);
 		}
 
-		/// <summary>Gets the decrypted plain value. Null when never assigned (an explicit "" is materialized by the constructor).</summary>
-		public string? Decrypted
+		/// <summary>Gets the decrypted plain value. Empty when never assigned; never null.</summary>
+		public string Decrypted
 		{
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			get
 			{
 				if (_mode == StorageMode.Unassigned)
 				{
-					// Never assigned (an explicit "" is materialized by the constructor).
-					return null;
+					return string.Empty;
 				}
 				if (!StoreIsCoherent())
 				{
-					// Structural corruption (for example a mode flip or null backing
-					// array) retains the established unset/default read behavior.
-					return null;
+					Vault.ThrowTampered();
 				}
 				if (_length == 0)
 				{
@@ -816,19 +816,19 @@ namespace SecureValue
 			return new string(plain.Slice(0, _length));
 		}
 
-		/// <summary>Tries to decrypt without throwing. Returns false when never assigned or tampered; tampering still raises <see cref="TamperingNotifier.TamperingDetected"/>.</summary>
+		/// <summary>Tries to decrypt without throwing. Returns false when never assigned or tampered; tampering still raises <see cref="TamperingNotifier.TamperingDetected"/>. The output is never null (empty on failure).</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public bool TryDecrypt([NotNullWhen(true)] out string value)
+		public bool TryDecrypt(out string value)
 		{
 			if (_mode == StorageMode.Unassigned)
 			{
-				value = default!;
+				value = string.Empty;
 				return false;
 			}
 			if (!StoreIsCoherent())
 			{
 				TamperingNotifier.Raise();
-				value = default!;
+				value = string.Empty;
 				return false;
 			}
 			if (_length == 0)
@@ -864,7 +864,7 @@ namespace SecureValue
 				return true;
 			}
 			TamperingNotifier.Raise();
-			value = default!;
+			value = string.Empty;
 			return false;
 		}
 
@@ -901,7 +901,7 @@ namespace SecureValue
 				return true;
 			}
 			TamperingNotifier.Raise();
-			value = default!;
+			value = string.Empty;
 			return false;
 		}
 
@@ -1117,12 +1117,12 @@ namespace SecureValue
 			DecodeWords(rk, salt, ciphers, _length, destination);
 		}
 
-		/// <summary>Parses a string into its secured form.</summary>
+		/// <summary>Parses a string into its secured form. Never accepts null (throws <see cref="ArgumentNullException"/>).</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static SecureString Parse(string? value, IFormatProvider? provider) =>
-			new SecureString(value ?? string.Empty);
+		public static SecureString Parse(string value, IFormatProvider? provider) =>
+			new SecureString(value);
 
-		/// <summary>Tries to parse a string into its secured form (never fails).</summary>
+		/// <summary>Tries to parse a string into its secured form. Returns false on null (result is default).</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool TryParse(
 			string? value,
@@ -1130,7 +1130,12 @@ namespace SecureValue
 			out SecureString result
 		)
 		{
-			result = new SecureString(value ?? string.Empty);
+			if (value is null)
+			{
+				result = default;
+				return false;
+			}
+			result = new SecureString(value);
 			return true;
 		}
 
@@ -1164,7 +1169,7 @@ namespace SecureValue
 		/// <summary>Parses a string into its secured form (explicit parsing).</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		static SecureString System.IParsable<SecureString>.Parse(
-			string? s,
+			string s,
 			IFormatProvider? provider
 		) => Parse(s, provider);
 
@@ -1196,9 +1201,7 @@ namespace SecureValue
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool Equals(SecureString other)
 		{
-			string? a = Decrypted;
-			string? b = other.Decrypted;
-			return string.Equals(a, b, StringComparison.Ordinal);
+			return string.Equals(Decrypted, other.Decrypted, StringComparison.Ordinal);
 		}
 
 		/// <summary>
@@ -1582,7 +1585,7 @@ namespace SecureValue
 		/// <summary>Compares this value with another secured string. Unset reads as empty.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public int CompareTo(SecureString other) =>
-			(Decrypted ?? string.Empty).CompareTo(other.Decrypted ?? string.Empty);
+			Decrypted.CompareTo(other.Decrypted);
 
 		/// <summary>Compares this value with another object.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1595,7 +1598,7 @@ namespace SecureValue
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public override int GetHashCode()
 		{
-			string s = Decrypted ?? string.Empty;
+			string s = Decrypted;
 			unchecked
 			{
 				int hash = 17;
@@ -1607,9 +1610,9 @@ namespace SecureValue
 			}
 		}
 
-		/// <summary>Returns the decrypted value as a string. Empty when never assigned.</summary>
+		/// <summary>Returns the decrypted value as a string. Empty when never assigned; never null.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public override string ToString() => Decrypted ?? string.Empty;
+		public override string ToString() => Decrypted;
 
 		/// <summary>Tests two secured string values for equality.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1641,13 +1644,13 @@ namespace SecureValue
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static implicit operator SecureString(Span<char> value) => SealSpan(value);
 
-		/// <summary>Converts back to the plain string value (decrypts on read). Null when never assigned.</summary>
+		/// <summary>Converts back to the plain string value (decrypts on read). Empty when never assigned; never null.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static implicit operator string?(SecureString value) => value.Decrypted;
+		public static implicit operator string(SecureString value) => value.Decrypted;
 
 		/// <summary>Concatenates two secured string values. Unset reads as empty.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static SecureString operator +(SecureString a, SecureString b) =>
-			new SecureString((a.Decrypted ?? string.Empty) + (b.Decrypted ?? string.Empty));
+			new SecureString(a.Decrypted + b.Decrypted);
 	}
 }

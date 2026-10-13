@@ -99,8 +99,8 @@ namespace SecureValue.Tests
 			Assert.Equal(g, (Guid)ParseIt<SecureGuid>(g.ToString("D"), null));
 			Assert.False(TryParseIt<SecureGuid>("not-a-guid", null, out _));
 			Assert.Equal("hello", (string?)ParseIt<SecureString>("hello", null));
-			Assert.Equal(string.Empty, (string?)ParseIt<SecureString>(null, null));
-			Assert.True(TryParseIt<SecureString>(null, null, out SecureString empty));
+			Assert.Throws<ArgumentNullException>(() => ParseIt<SecureString>(null, null));
+			Assert.False(TryParseIt<SecureString>(null, null, out SecureString empty));
 			Assert.Equal(string.Empty, (string?)empty);
 		}
 
@@ -208,7 +208,9 @@ namespace SecureValue.Tests
 		public void PublicParse_StringAndSpan()
 		{
 			Assert.Equal("hello", (string?)SecureString.Parse("hello", null));
-			Assert.Equal(string.Empty, (string?)SecureString.Parse(null, null));
+			Assert.Throws<ArgumentNullException>(() => SecureString.Parse(null!, null));
+			Assert.False(SecureString.TryParse(null, null, out SecureString rejected));
+			Assert.Equal(string.Empty, (string?)rejected);
 			Assert.True(SecureString.TryParse("hey", null, out SecureString s));
 			Assert.Equal("hey", (string?)s);
 			Assert.Equal("span", (string?)SecureString.Parse("span".AsSpan(), null));

@@ -241,10 +241,10 @@ namespace SecureValue.Tests
 		}
 
 		[Fact]
-		public void String_NullBecomesEmpty()
+		public void String_NullThrows()
 		{
-			SecureString p = new SecureString(null!);
-			Assert.Equal("", (string?)p);
+			Assert.Throws<ArgumentNullException>(() => new SecureString(null!));
+			Assert.Throws<ArgumentNullException>(() => (SecureString)(string)null!);
 		}
 
 		[Fact]
@@ -315,7 +315,7 @@ namespace SecureValue.Tests
 			Assert.Equal(default(DateTime), (DateTime)default(SecureDateTime));
 			Assert.Equal(default(DateTimeOffset), (DateTimeOffset)default(SecureDateTimeOffset));
 			Assert.Equal(default(TimeSpan), (TimeSpan)default(SecureTimeSpan));
-			Assert.Null((string?)default(SecureString));
+			Assert.Equal(string.Empty, (string)default(SecureString));
 #if NET6_0_OR_GREATER
 			Assert.Equal(default(DateOnly), (DateOnly)default(SecureDateOnly));
 			Assert.Equal(default(TimeOnly), (TimeOnly)default(SecureTimeOnly));
@@ -345,7 +345,7 @@ namespace SecureValue.Tests
 			Assert.Equal(0m, (decimal)default(SecureDecimal));
 			Assert.Equal(Guid.Empty, (Guid)default(SecureGuid));
 			Assert.Equal(default(DateTimeOffset), (DateTimeOffset)default(SecureDateTimeOffset));
-			Assert.Null((string?)default(SecureString));
+			Assert.Equal(string.Empty, (string)default(SecureString));
 
 			// live values are preserved untouched
 			Assert.Equal(42, (int)new SecureInt(42));

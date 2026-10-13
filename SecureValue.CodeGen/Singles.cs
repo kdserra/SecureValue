@@ -74,7 +74,7 @@ internal static class Singles
 		}
 	}
 
-	/// <summary>String concatenation with a plain string, both orders (null-safe via BCL +).</summary>
+	/// <summary>String concatenation with a plain string, both orders (null plain operand throws).</summary>
 	public static void EmitStringConcat(StringBuilder sb, string secure)
 	{
 		foreach (bool fwd in new[] { true, false })
@@ -83,6 +83,7 @@ internal static class Singles
 			string rt = fwd ? "string" : secure;
 			string l = fwd ? "a.Decrypted" : "a";
 			string r = fwd ? "b" : "b.Decrypted";
+			string nullSide = fwd ? "b" : "a";
 			sb.Append(
 				Doc(
 					fwd
@@ -91,8 +92,14 @@ internal static class Singles
 				)
 			);
 			sb.Append(Inline);
-			sb.Append($"\t\tpublic static {secure} operator +({lt} a, {rt} b) =>\n");
-			sb.Append($"\t\t\tnew {secure}({l} + {r});\n");
+			sb.Append($"\t\tpublic static {secure} operator +({lt} a, {rt} b)\n");
+			sb.Append("\t\t{\n");
+			sb.Append($"\t\t\tif ({nullSide} is null)\n");
+			sb.Append("\t\t\t{\n");
+			sb.Append($"\t\t\t\tthrow new System.ArgumentNullException(nameof({nullSide}));\n");
+			sb.Append("\t\t\t}\n");
+			sb.Append($"\t\t\treturn new {secure}({l} + {r});\n");
+			sb.Append("\t\t}\n");
 		}
 	}
 

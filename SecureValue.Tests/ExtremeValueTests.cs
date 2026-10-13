@@ -198,8 +198,7 @@ namespace SecureValue.Tests
 		{
 			SecureString empty = "";
 			Assert.Equal("", (string?)empty);
-			SecureString nil = new SecureString(null!);
-			Assert.Equal("", (string?)nil);
+			Assert.Throws<ArgumentNullException>(() => new SecureString(null!));
 			string longValue = new string('z', 1000);
 			SecureString p = longValue;
 			Assert.Equal(longValue, (string?)p);

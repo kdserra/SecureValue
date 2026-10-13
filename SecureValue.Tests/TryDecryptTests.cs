@@ -384,9 +384,9 @@ namespace SecureValue.Tests
 
 			var p = default(SecureString);
 			Assert.False(p.TryDecrypt(out string value));
-			Assert.Null(value);
+			Assert.Equal(string.Empty, value);
 			Assert.Equal(baseline, fired);
-			Assert.Null(p.Decrypted);
+			Assert.Equal(string.Empty, p.Decrypted);
 		}
 
 		[Fact]
@@ -474,7 +474,7 @@ namespace SecureValue.Tests
 			TamperingNotifier.TamperingDetected += () => fired++;
 
 			Assert.False(p.TryDecrypt(out string value));
-			Assert.Null(value);
+			Assert.Equal(string.Empty, value);
 			Assert.Equal(1, fired);
 			Assert.Throws<TamperedException>(() => _ = p.Decrypted);
 		}

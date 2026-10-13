@@ -45,7 +45,9 @@ namespace SecureValue.Tests
 			object unset = Activator.CreateInstance(wrapper)!;
 			Assert.True((bool)wrapper.GetProperty("IsUnset")!.GetValue(unset)!);
 			Type valueType = wrapper.GetProperty("Decrypted")!.PropertyType;
-			object? expected = valueType.IsValueType ? Activator.CreateInstance(valueType) : null;
+			object? expected = valueType.IsValueType
+				? Activator.CreateInstance(valueType)
+				: valueType == typeof(string) ? string.Empty : null;
 			Assert.Equal(expected, wrapper.GetProperty("Decrypted")!.GetValue(unset));
 		}
 

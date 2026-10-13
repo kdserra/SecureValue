@@ -150,7 +150,7 @@ namespace SecureValue.Tests
 		{
 			object box = (SecureString)"small";
 			SetMode(box, "Heap");
-			Assert.Null(((SecureString)box).Decrypted);
+			Assert.Throws<TamperedException>(() => ((SecureString)box).Decrypted);
 			Assert.Throws<TamperedException>(() => ((SecureString)box).Length);
 		}
 
@@ -159,7 +159,7 @@ namespace SecureValue.Tests
 		{
 			object box = (SecureString)new string('x', 100);
 			SetMode(box, "Inline");
-			Assert.Null(((SecureString)box).Decrypted);
+			Assert.Throws<TamperedException>(() => ((SecureString)box).Decrypted);
 		}
 
 		[Fact]
@@ -176,7 +176,7 @@ namespace SecureValue.Tests
 		{
 			object box = (SecureString)"hello";
 			SetLength(box, 99);
-			Assert.Null(((SecureString)box).Decrypted);
+			Assert.Throws<TamperedException>(() => ((SecureString)box).Decrypted);
 		}
 
 		[Fact]
@@ -184,7 +184,7 @@ namespace SecureValue.Tests
 		{
 			object box = (SecureString)new string('x', 100);
 			box.GetType().GetField("_ciphers", Flags)!.SetValue(box, null);
-			Assert.Null(((SecureString)box).Decrypted);
+			Assert.Throws<TamperedException>(() => ((SecureString)box).Decrypted);
 		}
 
 		[Theory]
