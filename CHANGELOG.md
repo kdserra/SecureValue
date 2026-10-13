@@ -1,3 +1,13 @@
+## [3.0.0](https://github.com/kdserra/SecureValue/compare/v2.3.0...v3.0.0) (2026-10-13)
+
+### ⚠ BREAKING CHANGES
+
+* SecureString emits non-nullable by default
+
+### Features
+
+* SecureString emits non-nullable by default ([1d9f1a3](https://github.com/kdserra/SecureValue/commit/1d9f1a30f40691a82bc0ea8016317e6bfd06dae4))
+
 ## [2.3.0](https://github.com/kdserra/SecureValue/compare/v2.2.0...v2.3.0) (2026-10-13)
 
 ### Features
