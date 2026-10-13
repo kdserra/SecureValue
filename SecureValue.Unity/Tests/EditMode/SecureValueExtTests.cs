@@ -25,8 +25,21 @@ namespace SecureValue.Unity.Tests
 				new[] { 3, 1, 2, -5 }.ToSecure().ToDecrypted().ToArray()
 			);
 			CollectionAssert.AreEqual(
-				new[] { "crown_01", string.Empty, "a much longer string that lives on the heap for sure" },
-				new[] { "crown_01", string.Empty, "a much longer string that lives on the heap for sure" }.ToSecure().ToDecrypted().ToArray()
+				new[]
+				{
+					"crown_01",
+					string.Empty,
+					"a much longer string that lives on the heap for sure",
+				},
+				new[]
+				{
+					"crown_01",
+					string.Empty,
+					"a much longer string that lives on the heap for sure",
+				}
+					.ToSecure()
+					.ToDecrypted()
+					.ToArray()
 			);
 			CollectionAssert.AreEqual(
 				new[] { 3.5, 1.25, -0.5 },
@@ -56,7 +69,10 @@ namespace SecureValue.Unity.Tests
 			);
 			CollectionAssert.AreEqual(
 				new[] { new Vector3Int(1, 2, 3), Vector3Int.zero },
-				new[] { new Vector3Int(1, 2, 3), Vector3Int.zero }.ToSecure().ToDecrypted().ToArray()
+				new[] { new Vector3Int(1, 2, 3), Vector3Int.zero }
+					.ToSecure()
+					.ToDecrypted()
+					.ToArray()
 			);
 			CollectionAssert.AreEqual(
 				new[] { new Vector4(1, 2, 3, 4), Vector4.zero },
@@ -72,7 +88,10 @@ namespace SecureValue.Unity.Tests
 			);
 			CollectionAssert.AreEqual(
 				new[] { new Bounds(new Vector3(1, 2, 3), new Vector3(4, 5, 6)), new Bounds() },
-				new[] { new Bounds(new Vector3(1, 2, 3), new Vector3(4, 5, 6)), new Bounds() }.ToSecure().ToDecrypted().ToArray()
+				new[] { new Bounds(new Vector3(1, 2, 3), new Vector3(4, 5, 6)), new Bounds() }
+					.ToSecure()
+					.ToDecrypted()
+					.ToArray()
 			);
 			CollectionAssert.AreEqual(
 				new[]
@@ -84,11 +103,17 @@ namespace SecureValue.Unity.Tests
 				{
 					new BoundsInt(new Vector3Int(1, 2, 3), new Vector3Int(4, 5, 6)),
 					new BoundsInt(),
-				}.ToSecure().ToDecrypted().ToArray()
+				}
+					.ToSecure()
+					.ToDecrypted()
+					.ToArray()
 			);
 			CollectionAssert.AreEqual(
 				new[] { new Color(0.1f, 0.2f, 0.3f, 0.4f), new Color() },
-				new[] { new Color(0.1f, 0.2f, 0.3f, 0.4f), new Color() }.ToSecure().ToDecrypted().ToArray()
+				new[] { new Color(0.1f, 0.2f, 0.3f, 0.4f), new Color() }
+					.ToSecure()
+					.ToDecrypted()
+					.ToArray()
 			);
 			CollectionAssert.AreEqual(
 				new[] { new Color32(1, 2, 3, 4), new Color32() },
@@ -96,7 +121,10 @@ namespace SecureValue.Unity.Tests
 			);
 			CollectionAssert.AreEqual(
 				new[] { Quaternion.identity, new Quaternion(1, 2, 3, 4) },
-				new[] { Quaternion.identity, new Quaternion(1, 2, 3, 4) }.ToSecure().ToDecrypted().ToArray()
+				new[] { Quaternion.identity, new Quaternion(1, 2, 3, 4) }
+					.ToSecure()
+					.ToDecrypted()
+					.ToArray()
 			);
 			CollectionAssert.AreEqual(
 				new[] { Matrix4x4.identity, new Matrix4x4() },
@@ -104,13 +132,23 @@ namespace SecureValue.Unity.Tests
 			);
 			CollectionAssert.AreEqual(
 				new[] { new Plane(new Vector3(0, 1, 0), 5), new Plane() },
-				new[] { new Plane(new Vector3(0, 1, 0), 5), new Plane() }.ToSecure().ToDecrypted().ToArray()
+				new[] { new Plane(new Vector3(0, 1, 0), 5), new Plane() }
+					.ToSecure()
+					.ToDecrypted()
+					.ToArray()
 			);
 			CollectionAssert.AreEqual(
 				new[] { new Ray(new Vector3(1, 2, 3), new Vector3(0, 1, 0)), new Ray() },
-				new[] { new Ray(new Vector3(1, 2, 3), new Vector3(0, 1, 0)), new Ray() }.ToSecure().ToDecrypted().ToArray()
+				new[] { new Ray(new Vector3(1, 2, 3), new Vector3(0, 1, 0)), new Ray() }
+					.ToSecure()
+					.ToDecrypted()
+					.ToArray()
 			);
-			LayerMask[] masks = new[] { new LayerMask() { value = 7 }, new LayerMask() };
+			LayerMask[] masks = new[]
+			{
+				new LayerMask() { value = 7 },
+				new LayerMask(),
+			};
 			int[] back = masks.ToSecure().ToDecrypted().ToArray().Select(m => m.value).ToArray();
 			CollectionAssert.AreEqual(new[] { 7, 0 }, back);
 		}
@@ -155,13 +193,19 @@ namespace SecureValue.Unity.Tests
 		public void Conversions_AreLazy()
 		{
 			IEnumerable<SecureInt> secured = Throwing().ToSecure();
-			Assert.Throws<InvalidOperationException>(() => { _ = secured.ToArray(); });
+			Assert.Throws<InvalidOperationException>(() =>
+			{
+				_ = secured.ToArray();
+			});
 		}
 
 		[Test]
 		public void UnsetElements_DecryptToDefault()
 		{
-			CollectionAssert.AreEqual(new[] { 0 }, new[] { default(SecureInt) }.ToDecrypted().ToArray());
+			CollectionAssert.AreEqual(
+				new[] { 0 },
+				new[] { default(SecureInt) }.ToDecrypted().ToArray()
+			);
 			CollectionAssert.AreEqual(
 				new[] { string.Empty },
 				new[] { default(SecureString) }.ToDecrypted().ToArray()

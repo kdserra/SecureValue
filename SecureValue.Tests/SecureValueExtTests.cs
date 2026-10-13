@@ -17,7 +17,10 @@ namespace SecureValue.Tests
 	/// </summary>
 	public class SecureValueExtTests
 	{
-		private static void RoundTrip<T>(IEnumerable<T> plain, Func<IEnumerable<T>, IEnumerable<T>> cycle)
+		private static void RoundTrip<T>(
+			IEnumerable<T> plain,
+			Func<IEnumerable<T>, IEnumerable<T>> cycle
+		)
 		{
 			T[] expected = plain.ToArray();
 			T[] actual = cycle(expected).ToArray();
@@ -41,7 +44,12 @@ namespace SecureValue.Tests
 			RoundTrip(new[] { 3.5m, 1.25m, -0.5m }, v => v.ToSecure().ToDecrypted());
 			RoundTrip(new[] { 'c', 'a', 'b' }, v => v.ToSecure().ToDecrypted());
 			RoundTrip(
-				new[] { "crown_01", string.Empty, "a much longer string that lives on the heap for sure" },
+				new[]
+				{
+					"crown_01",
+					string.Empty,
+					"a much longer string that lives on the heap for sure",
+				},
 				v => v.ToSecure().ToDecrypted()
 			);
 			Guid g = Guid.NewGuid();
@@ -50,7 +58,10 @@ namespace SecureValue.Tests
 			RoundTrip(new[] { dt, DateTime.MinValue }, v => v.ToSecure().ToDecrypted());
 			DateTimeOffset dto = new(2026, 1, 2, 3, 4, 5, TimeSpan.FromHours(2));
 			RoundTrip(new[] { dto, DateTimeOffset.MinValue }, v => v.ToSecure().ToDecrypted());
-			RoundTrip(new[] { TimeSpan.FromDays(1), TimeSpan.Zero }, v => v.ToSecure().ToDecrypted());
+			RoundTrip(
+				new[] { TimeSpan.FromDays(1), TimeSpan.Zero },
+				v => v.ToSecure().ToDecrypted()
+			);
 		}
 
 #if NET
@@ -68,8 +79,14 @@ namespace SecureValue.Tests
 		[Fact]
 		public void Core_DateOnlyTimeOnlyRoundTrips()
 		{
-			RoundTrip(new[] { new DateOnly(2026, 1, 2), DateOnly.MinValue }, v => v.ToSecure().ToDecrypted());
-			RoundTrip(new[] { new TimeOnly(3, 4, 5), TimeOnly.MinValue }, v => v.ToSecure().ToDecrypted());
+			RoundTrip(
+				new[] { new DateOnly(2026, 1, 2), DateOnly.MinValue },
+				v => v.ToSecure().ToDecrypted()
+			);
+			RoundTrip(
+				new[] { new TimeOnly(3, 4, 5), TimeOnly.MinValue },
+				v => v.ToSecure().ToDecrypted()
+			);
 		}
 #endif
 
@@ -85,7 +102,10 @@ namespace SecureValue.Tests
 				new[] { new Matrix3x2(1, 2, 3, 4, 5, 6), default(Matrix3x2) },
 				v => v.ToSecure().ToDecrypted()
 			);
-			RoundTrip(new[] { Matrix4x4.Identity, default(Matrix4x4) }, v => v.ToSecure().ToDecrypted());
+			RoundTrip(
+				new[] { Matrix4x4.Identity, default(Matrix4x4) },
+				v => v.ToSecure().ToDecrypted()
+			);
 			RoundTrip(
 				new[] { new Plane(new Vector3(0, 1, 0), 5), default(Plane) },
 				v => v.ToSecure().ToDecrypted()
@@ -95,8 +115,14 @@ namespace SecureValue.Tests
 				v => v.ToSecure().ToDecrypted()
 			);
 			RoundTrip(new[] { new Vector2(1, 2), Vector2.Zero }, v => v.ToSecure().ToDecrypted());
-			RoundTrip(new[] { new Vector3(1, 2, 3), Vector3.Zero }, v => v.ToSecure().ToDecrypted());
-			RoundTrip(new[] { new Vector4(1, 2, 3, 4), Vector4.Zero }, v => v.ToSecure().ToDecrypted());
+			RoundTrip(
+				new[] { new Vector3(1, 2, 3), Vector3.Zero },
+				v => v.ToSecure().ToDecrypted()
+			);
+			RoundTrip(
+				new[] { new Vector4(1, 2, 3, 4), Vector4.Zero },
+				v => v.ToSecure().ToDecrypted()
+			);
 		}
 
 		[Fact]
