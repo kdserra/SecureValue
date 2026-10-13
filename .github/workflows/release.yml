@@ -100,6 +100,11 @@ jobs:
         run: dotnet build SecureValue.slnx -c Release --no-restore --nologo -v minimal
 
       - name: Test (release gate — failures stop the release below)
+        # Pin TMPDIR so Path.GetTempPath() (init payload location) agrees with
+        # the validate step below. GitHub's RUNNER_TEMP (/home/runner/work/_temp)
+        # is NOT the same as the default /tmp Path.GetTempPath() returns.
+        env:
+          TMPDIR: ${{ runner.temp }}
         run: dotnet test SecureValue.slnx -c Release --no-build --nologo -v minimal
 
       - name: Persistence validate run (fresh process reloads the payload file)
@@ -112,11 +117,11 @@ jobs:
         # file, version re-init) so a silent init can never pass as validation.
         env:
           SECUREVALUE_PERSISTENCE_MODE: validate
+          TMPDIR: ${{ runner.temp }}
         run: |
-          PAYLOAD="$RUNNER_TEMP/SecureValue.CrossSessionPersistence.json"
-          # Default Path.GetTempPath() on Linux is /tmp, not RUNNER_TEMP; check both.
-          ls -l /tmp/SecureValue.CrossSessionPersistence.json "$PAYLOAD" || true
-          test -f /tmp/SecureValue.CrossSessionPersistence.json || test -f "$PAYLOAD" || (echo "::error::Persistence payload file missing before validate run — init did not produce one." && exit 1)
+          PAYLOAD="${{ runner.temp }}/SecureValue.CrossSessionPersistence.json"
+          ls -l "$PAYLOAD" || true
+          test -f "$PAYLOAD" || (echo "::error::Persistence payload file missing before validate run — init did not produce one." && exit 1)
           dotnet test SecureValue.slnx -c Release --no-build --nologo -v minimal --filter "FullyQualifiedName~PersistenceTests"
 
       - name: Setup Node (push only)
