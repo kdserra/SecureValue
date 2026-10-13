@@ -273,7 +273,7 @@ namespace SecureValue.Unity.Tests
 
 			var s = default(SecureString);
 			Assert.IsFalse(s.TryDecrypt(out string sv));
-			Assert.IsNull(sv);
+			Assert.AreEqual(string.Empty, sv);
 
 			Assert.AreEqual(baseline, fired);
 			Assert.AreEqual(0, i.Decrypted);
@@ -310,7 +310,7 @@ namespace SecureValue.Unity.Tests
 
 			var s = (SecureString)sbox;
 			Assert.IsFalse(s.TryDecrypt(out string sv));
-			Assert.IsNull(sv);
+			Assert.AreEqual(string.Empty, sv);
 			Assert.AreEqual(1, fired);
 
 			// The throwing read is unchanged: still fail-closed after a try-read.

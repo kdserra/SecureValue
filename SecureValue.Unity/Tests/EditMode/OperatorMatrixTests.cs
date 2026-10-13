@@ -196,7 +196,15 @@ namespace SecureValue.Unity.Tests
 			Assert.IsTrue(s == "foo");
 			Assert.IsTrue("foo" == s);
 			Assert.IsTrue(s != "bar");
-			Assert.IsTrue(s != (string)null!);
+			Assert.IsNotNull((string?)s);
+			Assert.Throws<ArgumentNullException>(() =>
+			{
+				_ = s + (string)null!;
+			});
+			Assert.Throws<ArgumentNullException>(() =>
+			{
+				_ = (string)null! + s;
+			});
 		}
 
 		[Test]

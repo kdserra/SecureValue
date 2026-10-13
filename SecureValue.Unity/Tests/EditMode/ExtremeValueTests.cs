@@ -189,8 +189,10 @@ namespace SecureValue.Unity.Tests
 		{
 			SecureString empty = "";
 			Assert.AreEqual("", (string?)empty);
-			SecureString nil = new SecureString(null!);
-			Assert.AreEqual("", (string?)nil);
+			Assert.Throws<ArgumentNullException>(() =>
+			{
+				_ = new SecureString(null!);
+			});
 			string longValue = new string('z', 1000);
 			SecureString p = longValue;
 			Assert.AreEqual(longValue, (string?)p);

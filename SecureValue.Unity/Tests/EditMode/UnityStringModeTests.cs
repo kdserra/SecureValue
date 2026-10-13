@@ -75,7 +75,10 @@ namespace SecureValue.Unity.Tests
 			Type modeType = box.GetType().GetNestedType("StorageMode", Flags);
 			Assert.NotNull(modeType);
 			box.GetType().GetField("_mode", Flags).SetValue(box, Enum.Parse(modeType, "Heap"));
-			Assert.IsNull(((SecureString)box).Decrypted);
+			Assert.Throws<TamperedException>(() =>
+			{
+				_ = ((SecureString)box).Decrypted;
+			});
 		}
 
 		[Test]
