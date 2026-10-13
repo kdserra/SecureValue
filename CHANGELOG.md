@@ -1,3 +1,10 @@
+## [2.3.0](https://github.com/kdserra/SecureValue/compare/v2.2.0...v2.3.0) (2026-10-13)
+
+### Features
+
+* add domain salt ([2f9fd77](https://github.com/kdserra/SecureValue/commit/2f9fd777802e748051f1f67e2e19ce94faea3311))
+* use mac to store detection state ([cbe9f88](https://github.com/kdserra/SecureValue/commit/cbe9f88c94a4076f551be07a6d6fee521f0e7412))
+
 ## [2.2.0](https://github.com/kdserra/SecureValue/compare/v2.1.0...v2.2.0) (2026-10-10)
 
 ### Features
