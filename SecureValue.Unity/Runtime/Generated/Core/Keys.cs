@@ -94,6 +94,14 @@ namespace SecureValue
 			);
 		}
 
+		/// <summary>Generates one fresh CSPRNG word (per-process nonces).</summary>
+		internal static ulong NewSaltWord()
+		{
+			Span<byte> bytes = stackalloc byte[8];
+			RandomNumberGenerator.Fill(bytes);
+			return ReadULong(bytes, 0);
+		}
+
 		private static ulong ReadULong(ReadOnlySpan<byte> b, int i) =>
 			(ulong)b[i]
 			| (ulong)b[i + 1] << 8

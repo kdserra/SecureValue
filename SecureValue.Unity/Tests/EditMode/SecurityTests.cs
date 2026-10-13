@@ -226,6 +226,79 @@ namespace SecureValue.Unity.Tests
 			Assert.IsTrue(TamperingNotifier.HasDetectedTampering);
 		}
 
+		private static FieldInfo DomainSaltField() =>
+			typeof(TamperingNotifier).GetField(
+				"_domainSalt",
+				BindingFlags.NonPublic | BindingFlags.Static
+			);
+
+		private static uint ExpectedCode(ulong domainSalt, bool detected) =>
+			Mac.ComputeTag(
+				detected ? 1UL : 0UL,
+				Vault.DeriveProcessTagKey(domainSalt)
+			);
+
+		[Test]
+		public void DomainSalt_IsNonzeroAndStableAcrossReset()
+		{
+			// The domain salt is a per-process CSPRNG nonce: present (never the
+			// unset marker) and fixed for the run — reset paths rewrite only the
+			// stored code, never the salt (re-randomizing would orphan the code
+			// and spuriously read as detected).
+			ulong before = (ulong)DomainSaltField().GetValue(null);
+			Assert.AreNotEqual(0UL, before);
+
+			TamperingNotifier.ResetThrottleForTesting();
+
+			ulong after = (ulong)DomainSaltField().GetValue(null);
+			Assert.AreEqual(before, after);
+			Assert.IsFalse(TamperingNotifier.HasDetectedTampering);
+		}
+
+		[Test]
+		public void DetectionHash_MatchesDerivedDomainCodes()
+		{
+			// The stored code must equal an independent recomputation through the
+			// notifier's derivation path (flag bit under the domain-salted tag key):
+			// clean after reset, detected after Raise.
+			ulong salt = (ulong)DomainSaltField().GetValue(null);
+			uint clean = ExpectedCode(salt, false);
+			uint detected = ExpectedCode(salt, true);
+			Assert.AreNotEqual(clean, detected);
+
+			try
+			{
+				Assert.IsFalse(TamperingNotifier.HasDetectedTampering);
+				Assert.AreEqual(clean, (uint)DetectionHashField().GetValue(null));
+
+				TamperingNotifier.Raise();
+
+				Assert.IsTrue(TamperingNotifier.HasDetectedTampering);
+				Assert.AreEqual(detected, (uint)DetectionHashField().GetValue(null));
+			}
+			finally
+			{
+				TamperingNotifier.ResetThrottleForTesting();
+			}
+			Assert.IsFalse(TamperingNotifier.HasDetectedTampering);
+		}
+
+		[Test]
+		public void DetectionHash_NotUnderRawMasterKey()
+		{
+			// Regression guard: the codes must be domain-separated from the raw
+			// process key. No raw master-key consumer may remain anywhere.
+			ulong salt = (ulong)DomainSaltField().GetValue(null);
+			Assert.AreNotEqual(
+				Mac.ComputeTag(0UL, Keys.ProcessSet),
+				ExpectedCode(salt, false)
+			);
+			Assert.AreNotEqual(
+				Mac.ComputeTag(1UL, Keys.ProcessSet),
+				ExpectedCode(salt, true)
+			);
+		}
+
 		[Test]
 		public void ZeroedLiveCell_ReadsDefaultWithoutNotifying()
 		{

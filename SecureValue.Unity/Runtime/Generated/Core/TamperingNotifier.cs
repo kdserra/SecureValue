@@ -23,13 +23,16 @@ namespace SecureValue
 		/// <summary>MAC-verified detection state.</summary>
 		private static uint _detectionHash = H(false);
 
+		/// <summary>Per-process CSPRNG domain salt for the detection codes. </summary>
+		private static readonly ulong _domainSalt = Keys.NewSaltWord();
+
 		/// <summary>Maximum tamper-event dispatches per process run (storm bound).</summary>
 		private const int MaxTamperDispatches = 1;
 
-		/// <summary>Keyed state code. </summary>
+		/// <summary>Keyed state code.</summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static uint H(bool detected) =>
-			Mac.ComputeTag(detected ? 1UL : 0UL, Keys.ProcessSet);
+			Mac.ComputeTag(detected ? 1UL : 0UL, Vault.DeriveProcessTagKey(_domainSalt));
 
 		/// <summary>Gets whether tampering has been detected at any point during the process run.</summary>
 		public static bool HasDetectedTampering
@@ -82,10 +85,11 @@ namespace SecureValue
 			_handlers = null;
 			_dispatchCount = 0;
 			Volatile.Write(ref _detectionHash, H(false));
+			// Don't reset the domain salt.
 		}
 #endif
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static void Raise()
 		{
 			Volatile.Write(ref _detectionHash, H(true));
