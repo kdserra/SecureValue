@@ -120,9 +120,10 @@ jobs:
           TMPDIR: ${{ runner.temp }}
         run: |
           PAYLOAD="${{ runner.temp }}/SecureValue.CrossSessionPersistence.json"
+          echo "SecureValue persistence validate: mode=$SECUREVALUE_PERSISTENCE_MODE payload=$PAYLOAD"
           ls -l "$PAYLOAD" || true
           test -f "$PAYLOAD" || (echo "::error::Persistence payload file missing before validate run — init did not produce one." && exit 1)
-          dotnet test SecureValue.slnx -c Release --no-build --nologo -v minimal --filter "FullyQualifiedName~PersistenceTests"
+          dotnet test SecureValue.slnx -c Release --no-build --nologo -v normal --logger "console;verbosity=normal" --filter "FullyQualifiedName~PersistenceTests"
 
       - name: Setup Node (push only)
         if: github.event_name == 'push'

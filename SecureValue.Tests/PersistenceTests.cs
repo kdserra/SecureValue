@@ -37,7 +37,11 @@ namespace SecureValue.Tests
 				"validate",
 				StringComparison.OrdinalIgnoreCase
 			);
-			if (!File.Exists(path))
+			bool fileFound = File.Exists(path);
+			Console.WriteLine(
+				$"SecureValue persistence: mode={(strictValidate ? "validate" : "init-or-validate")}, fileFound={fileFound}, path={path}"
+			);
+			if (!fileFound)
 			{
 				if (strictValidate)
 				{
@@ -95,6 +99,9 @@ namespace SecureValue.Tests
 			>(entriesElement.GetRawText());
 			Assert.NotNull(entries);
 			ValidatePayloads(entries!);
+			Console.WriteLine(
+				$"SecureValue persistence: validated {entries!.Count} entries against original constants (version {version})."
+			);
 		}
 
 		private static string CapturePayloads()
